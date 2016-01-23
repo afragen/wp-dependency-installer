@@ -74,6 +74,7 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 
 		/**
 		 * Prepare json data from wp-dependencies.json for use.
+		 * 
 		 * @param $config
 		 *
 		 * @return bool
@@ -150,21 +151,6 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		}
 
 		/**
-		 * Show dependency installation message.
-		 */
-		public static function message() {
-			foreach ( self::$notices as $notice ) {
-				?>
-				<div class="updated notice is-dismissible" style="margin-left:20%">
-					<p>
-						<?php echo $notice;  _e( ' has been installed and activated as a dependency.' ) ?>
-					</p>
-				</div>
-				<?php
-			}
-		}
-
-		/**
 		 * Remove plugin install actions.
 		 *
 		 * @return array()
@@ -189,5 +175,21 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 			return trailingslashit( $new_source );
 		}
 
+		/**
+		 * Show dependency installation message.
+		 */
+		public static function message() {
+			foreach ( self::$notices as $notice ) {
+				?>
+				<div class="updated notice is-dismissible" style="margin-left:20%">
+					<p>
+						<?php echo $notice;  _e( ' has been installed and activated as a dependency.' ) ?>
+					</p>
+				</div>
+				<?php
+			}
+		}
+
 	}
+
 }
