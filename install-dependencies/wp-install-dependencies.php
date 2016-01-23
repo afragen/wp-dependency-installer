@@ -27,7 +27,10 @@ if ( isset( $_REQUEST['action'] ) && 'heartbeat' === $_REQUEST['action'] ) {
  * Instantiate class.
  */
 add_action( 'plugins_loaded', function() {
-	new WP_Install_Dependencies();
+	if ( file_exists( __DIR__ . '/wp-dependencies.json' ) ) {
+		$config = file_get_contents( __DIR__ . '/wp-dependencies.json' );
+	}
+	new WP_Install_Dependencies( $config );
 } );
 
 if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
@@ -51,8 +54,9 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 
 		/**
 		 * WP_Install_Dependencies constructor.
+		 * @param $config
 		 */
-		public function __construct() {
+		public function __construct( $config ) {
 			/*
 			 * Only run on plugin pages.
 			 */
@@ -65,9 +69,6 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/file.php';
 			require_once ABSPATH . 'wp-admin/includes/misc.php';
 
-			if ( file_exists( __DIR__ . '/wp-dependencies.json' ) ) {
-				$config = file_get_contents( __DIR__ . '/wp-dependencies.json' );
-			}
 			$config = ! empty( $config ) ? json_decode( $config ) : null;
 			$this->prepare_json( $config );
 
