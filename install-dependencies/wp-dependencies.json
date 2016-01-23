@@ -1,0 +1,34 @@
+{
+  "github-updater": {
+    "name": "GitHub Updater",
+    "slug": "github-updater/github-updater.php",
+    "git": "github",
+    "uri": "https://github.com/afragen/github-updater",
+    "branch": "master",
+    "token": null
+  },
+  "test": {
+    "name": "Test Plugin",
+    "slug": "test-plugin/test-plugin.php",
+    "git": "github",
+    "uri": "https://github.com/afragen/test-plugin",
+    "branch": "master",
+    "token": null
+  },
+  "test-bitbucket": {
+    "name": "Test Plugin Notags",
+    "slug": "test-plugin-notags/test-plugin-notags.php",
+    "git": "bitbucket",
+    "uri": "https://bitbucket.org/afragen/test-plugin-notags",
+    "branch": "master",
+    "token": null
+  },
+  "test-gitlab": {
+    "name": "Test Gitlab Plugin2",
+    "slug": "test-gitlab-plugin2/test-gitlab-plugin2.php",
+    "git": "gitlab",
+    "uri": "https://github.com/afragen/test-gitlab-plugin2",
+    "branch": "develop",
+    "token": null
+  }
+}
