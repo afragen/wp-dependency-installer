@@ -70,11 +70,22 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 			}
 			$config = ! empty( $config ) ? json_decode( $config ) : null;
 			$this->prepare_json( $config );
+
+			/**
+			 * Remove links and checkbox from Plugins page
+			 * so user can't delete or deactivate dependency.
+			 */
+			foreach ( $config as $dependency ) {
+				add_filter( 'network_admin_plugin_action_links_' . $dependency->slug, array( &$this, 'dependency_active' ) );
+				add_filter( 'plugin_action_links_' . $dependency->slug, array( &$this, 'dependency_active' ) );
+				add_action( 'after_plugin_row_' . $dependency->slug, array( &$this, 'hide_dependency_plugin_row_info' ), 10, 1 );
+			}
+
 		}
 
 		/**
 		 * Prepare json data from wp-dependencies.json for use.
-		 * 
+		 *
 		 * @param $config
 		 *
 		 * @return bool
@@ -87,10 +98,6 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 
 			foreach ( $config as $dependency ) {
 				if ( file_exists( WP_PLUGIN_DIR . '/' . $dependency->slug ) ) {
-					// Ensure dependency is active.
-					if ( is_plugin_inactive( $dependency->slug ) ) {
-						activate_plugin( $dependency->slug, null, true );
-					}
 					continue;
 				}
 				$download_link = null;
@@ -173,6 +180,34 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 			$wp_filesystem->move( $source, $new_source );
 
 			return trailingslashit( $new_source );
+		}
+
+		/**
+		 * Remove specific row actions.
+		 * @param $actions
+		 *
+		 * @return array
+		 */
+		public function dependency_active( $actions ) {
+			if ( isset( $actions['activate'] ) ) {
+				unset( $actions['activate'] );
+			}
+			if ( isset( $actions['delete'] ) ) {
+				unset( $actions['delete'] );
+			}
+			if ( isset( $actions['deactivate'] ) ) {
+				unset( $actions['deactivate'] );
+			}
+
+			return array_merge( array( 'dependency' => esc_html__('Plugin Dependency' ) ), $actions );
+		}
+
+		/**
+		 * jQuery to hide checkbox in plugin row.
+		 * @param $slug
+		 */
+		public function hide_dependency_plugin_row_info( $slug ) {
+			print('<script>jQuery(".active[data-plugin=\'' . $slug . '\'] .check-column input").remove();</script>');
 		}
 
 		/**
