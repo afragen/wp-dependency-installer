@@ -70,6 +70,12 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/misc.php';
 
 			$config = ! empty( $config ) ? json_decode( $config ) : null;
+			/*
+			 * Exit for malformed json files.
+			 */
+			if ( empty( $config ) ) {
+				return false;
+			}
 			$this->prepare_json( $config );
 
 			/**
@@ -92,10 +98,6 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		 * @return bool
 		 */
 		protected function prepare_json( $config ) {
-
-			if ( empty( $config ) ) {
-				return false;
-			}
 
 			foreach ( $config as $dependency ) {
 				if ( file_exists( WP_PLUGIN_DIR . '/' . $dependency->slug ) ) {
