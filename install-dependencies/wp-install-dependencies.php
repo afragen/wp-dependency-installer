@@ -101,6 +101,9 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 
 			foreach ( $config as $dependency ) {
 				if ( file_exists( WP_PLUGIN_DIR . '/' . $dependency->slug ) ) {
+					if ( is_plugin_inactive( $dependency->slug ) ) {
+						activate_plugin( $dependency->slug, null, true );
+					}
 					continue;
 				}
 				$download_link = null;
