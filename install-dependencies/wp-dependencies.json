@@ -20,8 +20,7 @@
     "slug": "test-plugin-notags/test-plugin-notags.php",
     "git": "bitbucket",
     "uri": "https://bitbucket.org/afragen/test-plugin-notags",
-    "branch": "master",
-    "token": null
+    "branch": "master"
   },
   "test-gitlab": {
     "name": "Test Gitlab Plugin2",
