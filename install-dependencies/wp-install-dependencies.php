@@ -53,6 +53,12 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		protected static $notices;
 
 		/**
+		 * Holds data of uninstalled dependencies.
+		 * @var
+		 */
+		protected static $not_installed;
+		
+		/**
 		 * WP_Install_Dependencies constructor.
 		 * @param $config
 		 */
@@ -93,7 +99,9 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 					$dependent_plugin = $dependency;
 					continue;
 				}
+				$dependency->installed = false;
 				if ( file_exists( WP_PLUGIN_DIR . '/' . $dependency->slug ) ) {
+					$dependency->installed = true;
 					if ( is_plugin_inactive( $dependency->slug ) && ! $dependency->optional ) {
 						activate_plugin( $dependency->slug, null, true );
 					}
@@ -126,6 +134,11 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 						break;
 				}
 
+				if ( ! $dependency->installed ) {
+					self::$not_installed[ dirname( $dependency->slug ) ]['name'] = $dependency->name;
+					self::$not_installed[ dirname( $dependency->slug ) ]['link'] = $dependency->download_link;
+				}
+
 				self::$dependency = $dependency;
 				self::$dependency->optional ? $this->optional_install() : $this->install();
 				$this->dependency( $config );
@@ -136,7 +149,7 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		 * Install and activate dependency.
 		 */
 		public function install() {
-			if ( ! file_exists( WP_PLUGIN_DIR . '/' . self::$dependency->slug ) ) {
+			if ( ! self::$dependency->installed ) {
 				$type     = 'plugin';
 				$nonce    = wp_nonce_url( self::$dependency->download_link );
 				$upgrader = new \Plugin_Upgrader( $skin = new \Plugin_Installer_Skin( compact( 'type', 'title', 'url', 'nonce', 'plugin', 'api' ) ) );
@@ -187,19 +200,16 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		 * @return bool
 		 */
 		public function optional_install_plugin_row() {
-			if ( file_exists( WP_PLUGIN_DIR . '/' . self::$dependency->slug ) ) {
-				return false;
-			}
 			$wp_list_table = _get_list_table( 'WP_MS_Themes_List_Table' );
 
 			echo '<tr class="plugin-update-tr" data-slug="' . dirname( self::$dependency->dependent_plugin ) . '" data-plugin="' . self::$dependency->dependent_plugin . '"><td colspan="' . $wp_list_table->get_column_count() . '" class="plugin-update colspanchange"><div class="update-message update-ok">';
 
-			print( self::$dependency->name . ' ' . esc_html__( 'is listed as an optional dependency.' ) . ' ' );
-
-			print( '<a href="' . self::$dependency->download_link . '">' . esc_html__( 'Download Now' ) . '</a>' );
+			foreach ( self::$not_installed as $not_installed ) {
+				print( $not_installed['name'] . ' ' . esc_html__( 'is listed as an optional dependency.' ) . ' ' );
+				print( '<a href="' . $not_installed['link'] . '">' . esc_html__( 'Download Now' ) . '</a><br>' );
+			}
 
 			echo '</div></td></tr>';
-
 			print('<script>jQuery(".active[data-plugin=\'' . self::$dependency->dependent_plugin . '\']").addClass("update");</script>');
 		}
 
@@ -210,7 +220,7 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		public function dependency( $config ) {
 			foreach ( $config as $dependency ) {
 				if ( ! $dependency instanceof \stdClass ||
-				     ! file_exists( WP_PLUGIN_DIR . '/' . $dependency->slug )
+				     isset( $dependency->installed ) && ! $dependency->installed
 				) {
 					continue;
 				}

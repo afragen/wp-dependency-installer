@@ -15,7 +15,7 @@
     "git": "bitbucket",
     "uri": "https://bitbucket.org/afragen/test-plugin-notags",
     "branch": "master",
-    "optional": false,
+    "optional": true,
     "token": null
   },
   "test-gitlab": {
