@@ -1,10 +1,12 @@
 {
+  "wp-install-dependencies": "wp-install-dependencies/test-install-dependency.php",
   "test": {
     "name": "Test Plugin",
     "slug": "test-plugin/test-plugin.php",
     "git": "github",
     "uri": "https://github.com/afragen/test-plugin",
     "branch": "master",
+    "optional": true,
     "token": null
   },
   "test-bitbucket": {
@@ -12,7 +14,9 @@
     "slug": "test-plugin-notags/test-plugin-notags.php",
     "git": "bitbucket",
     "uri": "https://bitbucket.org/afragen/test-plugin-notags",
-    "branch": "master"
+    "branch": "master",
+    "optional": true,
+    "token": null
   },
   "test-gitlab": {
     "name": "Test Gitlab Plugin2",
@@ -20,6 +24,7 @@
     "git": "gitlab",
     "uri": "https://github.com/afragen/test-gitlab-plugin2",
     "branch": "develop",
+    "optional": true,
     "token": null
   }
 }

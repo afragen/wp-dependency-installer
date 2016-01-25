@@ -1,10 +1,30 @@
 {
+  "wp-install-dependencies": "wp-install-dependencies/test-install-dependency.php",
   "github-updater": {
     "name": "GitHub Updater",
     "slug": "github-updater/github-updater.php",
     "git": "github",
     "uri": "https://github.com/afragen/github-updater",
     "branch": "master",
+    "optional": true,
+    "token": null
+  },
+  "test-bitbucket": {
+    "name": "Test Plugin Notags",
+    "slug": "test-plugin-notags/test-plugin-notags.php",
+    "git": "bitbucket",
+    "uri": "https://bitbucket.org/afragen/test-plugin-notags",
+    "branch": "master",
+    "optional": false,
+    "token": null
+  },
+  "test-gitlab": {
+    "name": "Test Gitlab Plugin2",
+    "slug": "test-gitlab-plugin2/test-gitlab-plugin2.php",
+    "git": "gitlab",
+    "uri": "https://github.com/afragen/test-gitlab-plugin2",
+    "branch": "develop",
+    "optional": true,
     "token": null
   }
 }

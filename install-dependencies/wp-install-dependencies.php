@@ -77,17 +77,6 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 				return false;
 			}
 			$this->prepare_json( $config );
-
-			/**
-			 * Remove links and checkbox from Plugins page
-			 * so user can't delete or deactivate dependency.
-			 */
-			foreach ( $config as $dependency ) {
-				add_filter( 'network_admin_plugin_action_links_' . $dependency->slug, array( &$this, 'dependency_active' ) );
-				add_filter( 'plugin_action_links_' . $dependency->slug, array( &$this, 'dependency_active' ) );
-				add_action( 'after_plugin_row_' . $dependency->slug, array( &$this, 'hide_dependency_plugin_row_info' ), 10, 1 );
-			}
-
 		}
 
 		/**
@@ -98,15 +87,19 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		 * @return bool
 		 */
 		protected function prepare_json( $config ) {
-
+			$dependent_plugin = null;
 			foreach ( $config as $dependency ) {
-				if ( file_exists( WP_PLUGIN_DIR . '/' . $dependency->slug ) ) {
-					if ( is_plugin_inactive( $dependency->slug ) ) {
-						activate_plugin( $dependency->slug, null, true );
-					}
+				if ( ! $dependency instanceof \stdClass ) {
+					$dependent_plugin = $dependency;
 					continue;
 				}
+				if ( file_exists( WP_PLUGIN_DIR . '/' . $dependency->slug ) ) {
+					if ( is_plugin_inactive( $dependency->slug ) && ! $dependency->optional ) {
+						activate_plugin( $dependency->slug, null, true );
+					}
+				}
 				$download_link = null;
+				$dependency->dependent_plugin = $dependent_plugin;
 				$path = parse_url( $dependency->uri, PHP_URL_PATH );
 				$owner_repo = trim( $path, '/' );  // strip surrounding slashes
 				$owner_repo = str_replace( '.git', '', $owner_repo ); //strip incorrect URI ending
@@ -134,7 +127,8 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 				}
 
 				self::$dependency = $dependency;
-				$this->install();
+				self::$dependency->optional ? $this->optional_install() : $this->install();
+				$this->dependency( $config );
 			}
 		}
 
@@ -142,24 +136,93 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		 * Install and activate dependency.
 		 */
 		public function install() {
-			$type     = 'plugin';
-			$nonce    = wp_nonce_url( self::$dependency->download_link );
+			if ( ! file_exists( WP_PLUGIN_DIR . '/' . self::$dependency->slug ) ) {
+				$type     = 'plugin';
+				$nonce    = wp_nonce_url( self::$dependency->download_link );
+				$upgrader = new \Plugin_Upgrader( $skin = new \Plugin_Installer_Skin( compact( 'type', 'title', 'url', 'nonce', 'plugin', 'api' ) ) );
 
-			$upgrader = new \Plugin_Upgrader( $skin = new \Plugin_Installer_Skin( compact( 'type', 'title', 'url', 'nonce', 'plugin', 'api' ) ) );
+				add_filter( 'install_plugin_complete_actions', array( &$this, 'install_plugin_complete_actions' ), 10, 0 );
+				add_filter( 'upgrader_source_selection', array( &$this, 'upgrader_source_selection' ), 10, 2 );
 
-			add_filter( 'install_plugin_complete_actions', array( &$this, 'install_plugin_complete_actions' ), 10, 0 );
-			add_filter( 'upgrader_source_selection', array( &$this, 'upgrader_source_selection' ), 10, 2 );
+				$upgrader->install( self::$dependency->download_link );
+				wp_cache_flush();
 
-			$upgrader->install( self::$dependency->download_link );
-			wp_cache_flush();
-			activate_plugin( self::$dependency->slug, null, true );
+				if ( ! self::$dependency->optional ) {
+					activate_plugin( self::$dependency->slug, null, true );
+				}
 
-			if ( is_admin() && ! defined( 'DOING_AJAX' ) &&
-			     $upgrader->skin->result
-			) {
-				self::$notices[] = self::$dependency->name;
-				add_action( 'admin_notices', array( __CLASS__, 'message' ) );
-				add_action( 'network_admin_notices', array( __CLASS__, 'message' ) );
+				if ( is_admin() && ! defined( 'DOING_AJAX' ) &&
+				     $upgrader->skin->result
+				) {
+					self::$notices[] = self::$dependency->name;
+					add_action( 'admin_notices', array( __CLASS__, 'message' ) );
+					add_action( 'network_admin_notices', array( __CLASS__, 'message' ) );
+				}
+			}
+		}
+
+		/**
+		 * Install but don't activate optional dependencies.
+		 * Label dependent plugin.
+		 */
+		public function optional_install() {
+			$this->install();
+
+			if ( ! is_multisite() || is_network_admin() ) {
+				add_action( 'after_plugin_row_' . self::$dependency->dependent_plugin, array( &$this, 'optional_install_plugin_row' ), 10, 0 );
+				add_filter( 'network_admin_plugin_action_links_' . self::$dependency->dependent_plugin, function( $actions ){
+					return array_merge( array( 'dependency' => esc_html__( 'Dependent Plugin' ) ), $actions );
+				});
+				add_filter( 'plugin_action_links_' . self::$dependency->dependent_plugin, function( $actions ){
+					return array_merge( array( 'dependency' => esc_html__( 'Dependent Plugin' ) ), $actions );
+				});
+			}
+		}
+
+		/**
+		 * Add plugin theme row meta to plugin that has dependencies.
+		 *
+		 * @TODO Figure out how to install plugin from here.
+		 *
+		 * @return bool
+		 */
+		public function optional_install_plugin_row() {
+			if ( file_exists( WP_PLUGIN_DIR . '/' . self::$dependency->slug ) ) {
+				return false;
+			}
+			$wp_list_table = _get_list_table( 'WP_MS_Themes_List_Table' );
+
+			echo '<tr class="plugin-update-tr" data-slug="' . dirname( self::$dependency->dependent_plugin ) . '" data-plugin="' . self::$dependency->dependent_plugin . '"><td colspan="' . $wp_list_table->get_column_count() . '" class="plugin-update colspanchange"><div class="update-message update-ok">';
+
+			print( self::$dependency->name . ' ' . esc_html__( 'is listed as an optional dependency.' ) . ' ' );
+
+			print( '<a href="#?install_dependency=true">' . esc_html__( 'Install Now' ) . '</a>' );
+
+			echo '</div></td></tr>';
+		}
+
+		/**
+		 * Remove links and checkbox from plugins page via hooks.
+		 * @param $config
+		 */
+		public function dependency( $config ) {
+			foreach ( $config as $dependency ) {
+				if ( ! $dependency instanceof \stdClass ||
+				     ! file_exists( WP_PLUGIN_DIR . '/' . $dependency->slug )
+				) {
+					continue;
+				}
+				if ( ! $dependency->optional ) {
+					add_filter( 'network_admin_plugin_action_links_' . $dependency->slug, array( &$this, 'dependency_active' ) );
+					add_filter( 'plugin_action_links_' . $dependency->slug, array( &$this, 'dependency_active' ) );
+					add_action( 'after_plugin_row_' . $dependency->slug, array( &$this, 'hide_dependency_plugin_row_info' ), 10, 1 );
+				}
+
+				if ( $dependency->optional ) {
+					add_filter( 'network_admin_plugin_action_links_' . $dependency->slug, array( &$this, 'dependency_optional' ) );
+					add_filter( 'plugin_action_links_' . $dependency->slug, array( &$this, 'dependency_optional' ) );
+
+				}
 			}
 		}
 
@@ -189,7 +252,7 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		}
 
 		/**
-		 * Remove specific row actions.
+		 * Remove specific row actions for dependencies.
 		 * @param $actions
 		 *
 		 * @return array
@@ -205,7 +268,21 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 				unset( $actions['deactivate'] );
 			}
 
-			return array_merge( array( 'dependency' => esc_html__('Plugin Dependency' ) ), $actions );
+			return array_merge( array( 'dependency' => esc_html__( 'Plugin Dependency' ) ), $actions );
+		}
+
+		/**
+		 * Remove specific row actions for optional dependencies.
+		 * @param $actions
+		 *
+		 * @return array
+		 */
+		public function dependency_optional( $actions ) {
+			if ( isset( $actions['delete'] ) ) {
+				unset( $actions['delete'] );
+			}
+
+			return array_merge( array( 'dependency' => esc_html__( 'Optional Plugin Dependency' ) ), $actions );
 		}
 
 		/**
@@ -222,7 +299,7 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		public static function message() {
 			foreach ( self::$notices as $notice ) {
 				?>
-				<div class="updated notice is-dismissible" style="margin-left:20%">
+				<div class="updated notice is-dismissible" style="margin-left:18%; float:left; width:75%;">
 					<p>
 						<?php echo $notice;  _e( ' has been installed and activated as a dependency.' ) ?>
 					</p>
