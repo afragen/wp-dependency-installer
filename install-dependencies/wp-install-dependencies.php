@@ -166,7 +166,7 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		 * Label dependent plugin.
 		 */
 		public function optional_install() {
-			$this->install();
+			//$this->install();
 
 			if ( ! is_multisite() || is_network_admin() ) {
 				add_action( 'after_plugin_row_' . self::$dependency->dependent_plugin, array( &$this, 'optional_install_plugin_row' ), 10, 0 );
@@ -196,7 +196,7 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 
 			print( self::$dependency->name . ' ' . esc_html__( 'is listed as an optional dependency.' ) . ' ' );
 
-			print( '<a href="#?install_dependency=true">' . esc_html__( 'Install Now' ) . '</a>' );
+			print( '<a href="' . self::$dependency->download_link . '">' . esc_html__( 'Download Now' ) . '</a>' );
 
 			echo '</div></td></tr>';
 
