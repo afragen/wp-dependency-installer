@@ -199,6 +199,8 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 			print( '<a href="#?install_dependency=true">' . esc_html__( 'Install Now' ) . '</a>' );
 
 			echo '</div></td></tr>';
+
+			print('<script>jQuery(".active[data-plugin=\'' . self::$dependency->dependent_plugin . '\']").addClass("update");</script>');
 		}
 
 		/**
