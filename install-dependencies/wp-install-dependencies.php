@@ -177,8 +177,8 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 				     $upgrader->skin->result
 				) {
 					self::$notices[] = $this->dependency->name;
-					add_action( 'admin_notices', array( __CLASS__, 'message' ) );
-					add_action( 'network_admin_notices', array( __CLASS__, 'message' ) );
+					add_action( 'admin_notices', array( &$this, 'message' ) );
+					add_action( 'network_admin_notices', array( &$this, 'message' ) );
 				}
 
 				unset( $this->not_installed[ dirname( $this->dependency->slug ) ] );
@@ -238,7 +238,7 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		/**
 		 * Show dependency installation message.
 		 */
-		public static function message() {
+		public function message() {
 			foreach ( self::$notices as $notice ) {
 				?>
 				<div class="updated notice is-dismissible">
