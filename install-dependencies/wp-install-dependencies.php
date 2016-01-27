@@ -71,7 +71,6 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 				return false;
 			}
 
-			require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 			require_once ABSPATH . 'wp-admin/includes/file.php';
 			require_once ABSPATH . 'wp-admin/includes/misc.php';
 
@@ -154,14 +153,13 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		 */
 		public function install() {
 			if ( ! $this->is_installed() ) {
+				add_filter( 'upgrader_source_selection', array( &$this, 'upgrader_source_selection' ), 10, 2 );
+
 				$skin = new WPID_Plugin_Installer_Skin( array(
 					'type'      => 'plugin',
 					'nonce'     => wp_nonce_url( $this->dependency->download_link ),
-				) );
+					) );
 				$upgrader = new Plugin_Upgrader( $skin );
-
-				add_filter( 'upgrader_source_selection', array( &$this, 'upgrader_source_selection' ), 10, 2 );
-
 				$upgrader->install( $this->dependency->download_link );
 				wp_cache_flush();
 
