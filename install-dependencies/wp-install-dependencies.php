@@ -100,11 +100,6 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 					continue;
 				}
 
-				if ( file_exists( WP_PLUGIN_DIR . '/' . $dependency->slug ) ) {
-					$dependency->installed = true;
-				} else {
-					$dependency->installed = false;
-				}
 				$download_link = null;
 				$dependency->dependent_plugin = $dependent_plugin;
 				$path = parse_url( $dependency->uri, PHP_URL_PATH );
@@ -133,15 +128,16 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 						break;
 				}
 
-				if ( ! $dependency->installed ) {
+				$this->dependency = $dependency;
+				$this->dependency->installed = $this->is_installed();
+
+				if ( ! $this->is_installed() ) {
 					$this->not_installed[ dirname( $dependency->slug ) ]['name'] = $dependency->name;
 					$this->not_installed[ dirname( $dependency->slug ) ]['link'] = $dependency->download_link;
 				}
 
-				$this->dependency = $dependency;
 				$this->dependency->optional ? $this->optional_install() : $this->install();
 			}
-
 
 		}
 
@@ -193,7 +189,7 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		public function optional_install() {
 			//$this->install();
 
-			if ( ! is_multisite() || is_network_admin() && ! $this->dependency->installed ) {
+			if ( ! is_multisite() || is_network_admin() && ! $this->is_installed() ) {
 				add_action( 'after_plugin_row_' . $this->dependency->dependent_plugin, array( &$this, 'optional_install_plugin_row' ), 10, 0 );
 
 			}
