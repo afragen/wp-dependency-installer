@@ -322,4 +322,13 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 
 	}
 
+	require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+
+	class WPID_Plugin_Installer_Skin extends Plugin_Installer_Skin {
+		public function header() {}
+		public function footer() {}
+		public function error( $errors ) {}
+		public function feedback( $string ) {}
+	}
+
 }
