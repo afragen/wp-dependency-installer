@@ -223,7 +223,6 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		 */
 		function is_installed() {
 			$plugins = get_plugins();
-
 			return isset( $plugins[ $this->dependency->slug ] );
 		}
 
@@ -252,15 +251,15 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 
 
 				if ( ! $this->dependency->optional ) {
-					//activate_plugin( $this->dependency->slug, null, true );
+					activate_plugin( $this->dependency->slug, null, true );
 				}
 
 				if ( is_admin() && ! defined( 'DOING_AJAX' ) &&
 				     $upgrader->skin->result
 				) {
-					//self::$notices[] = $this->dependency->name;
-					//add_action( 'admin_notices', array( &$this, 'message' ) );
-					//add_action( 'network_admin_notices', array( &$this, 'message' ) );
+					self::$notices[] = $this->dependency->name;
+					add_action( 'admin_notices', array( &$this, 'message' ) );
+					add_action( 'network_admin_notices', array( &$this, 'message' ) );
 				}
 
 				unset( $this->not_installed[ dirname( $this->dependency->slug ) ] );
