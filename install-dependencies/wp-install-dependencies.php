@@ -279,7 +279,6 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 
 			if ( ! is_multisite() || is_network_admin() && ! $this->is_installed() ) {
 				add_action( 'after_plugin_row_' . $this->dependency->dependent_plugin, array( &$this, 'optional_install_plugin_row' ), 10, 0 );
-
 			}
 		}
 
@@ -295,7 +294,7 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 
 			foreach ( $this->config as $dependency ) {
 				if ( ! $dependency instanceof stdClass ||
-				     $dependency->installed
+				     ! is_plugin_inactive( $dependency->slug )
 				) {
 					continue;
 				}
