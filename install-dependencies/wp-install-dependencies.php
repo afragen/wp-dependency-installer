@@ -54,7 +54,7 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		 *
 		 * @var
 		 */
-		protected static $notices;
+		protected $notices;
 
 		/**
 		 * Holds data of uninstalled dependencies.
@@ -92,9 +92,9 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 			add_action( 'admin_footer', array( $this, 'admin_footer' ) );
 			add_action( 'wp_ajax_github_updater', array( $this, 'ajax_router' ) );
 
-			add_action( 'admin_init', array( $this, 'admin_init' ) );
-			add_action( 'admin_notices', array( $this, 'admin_notices' ) );
-			add_action( 'network_admin_notices', array( $this, 'admin_notices' ) );
+			//add_action( 'admin_init', array( $this, 'admin_init' ) );
+			//add_action( 'admin_notices', array( $this, 'admin_notices' ) );
+			//add_action( 'network_admin_notices', array( $this, 'admin_notices' ) );
 		}
 
 		/**
@@ -216,6 +216,7 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 				$this->dependency->optional ? $this->optional_install() : $this->install();
 			}
 
+			return $config;
 		}
 
 		/**
@@ -257,7 +258,7 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 				if ( is_admin() && ! defined( 'DOING_AJAX' ) &&
 				     $upgrader->skin->result
 				) {
-					self::$notices[] = $this->dependency->name;
+					$this->notices[] = $this->dependency->name;
 					add_action( 'admin_notices', array( &$this, 'message' ) );
 					add_action( 'network_admin_notices', array( &$this, 'message' ) );
 				}
@@ -292,11 +293,19 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		public function optional_install_plugin_row() {
 			$wp_list_table = _get_list_table( 'WP_MS_Themes_List_Table' );
 
-			foreach ( $this->not_installed as $not_installed ) {
-				echo '<tr class="plugin-update-tr" data-slug="' . dirname( $this->dependency->dependent_plugin ) . '" data-plugin="' . $this->dependency->dependent_plugin . '"><td colspan="' . $wp_list_table->get_column_count() . '" class="plugin-update colspanchange"><div class="update-message update-ok">';
-				print( $not_installed['name'] . ' ' . esc_html__( 'is listed as an optional dependency.' ) . ' ' );
-				print( '<a href="' . $not_installed['link'] . '">' . esc_html__( 'Download Now' ) . '</a><br>' );
+			foreach ( $this->config as $dependency ) {
+				if ( ! $dependency instanceof stdClass ||
+				     $dependency->installed
+				) {
+					continue;
+				}
+				$this->dependency = $dependency;
+				$this->admin_init();
+				echo '<tr class="plugin-update-tr" data-slug="' . dirname( $dependency->dependent_plugin ) . '" data-plugin="' . $dependency->dependent_plugin . '"><td colspan="' . $wp_list_table->get_column_count() . '" class="plugin-update colspanchange"><div class="update-message update-ok">';
+				print( $dependency->name . ' ' . esc_html__( 'is listed as an optional dependency.' ) . ' ' );
+				print( '<a href="' . $dependency->download_link . '">' . esc_html__( 'Download Now' ) . '</a><br>' );
 
+				$this->admin_notices();
 				echo '</div></td></tr>';
 			}
 			print( '<script>jQuery(".active[data-plugin=\'' . $this->dependency->dependent_plugin . '\']").addClass("update");</script>' );
@@ -322,12 +331,11 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		 * Show dependency installation message.
 		 */
 		public function message() {
-			foreach ( self::$notices as $notice ) {
+			foreach ( $this->notices as $notice ) {
 				?>
 				<div class="updated notice is-dismissible">
 					<p>
-						<?php echo $notice;
-						_e( ' has been installed and activated as a dependency.' ) ?>
+						<?php printf( __( ' has been installed and activated as a dependency.' ), $notice ); ?>
 					</p>
 				</div>
 				<?php
@@ -363,11 +371,12 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 				$action = $this->message['action'];
 				$notice = $this->message['text'];
 				$notice .= ' <a href="javascript:;" class="ghu-button" data-action="' . $action . '">' . ucfirst( $action ) . ' Now &raquo;</a>';
-				?>
+				/*?>
 				<div class="updated notice is-dismissible github-updater">
 					<p><?php echo $notice; ?></p>
 				</div>
-				<?php
+				<?php*/
+				echo $notice;
 			}
 		}
 	}
