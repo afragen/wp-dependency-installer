@@ -294,7 +294,7 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 
 			foreach ( $this->config as $dependency ) {
 				if ( ! $dependency instanceof stdClass ||
-				     ! is_plugin_inactive( $dependency->slug )
+				     is_plugin_active( $dependency->slug )
 				) {
 					continue;
 				}
