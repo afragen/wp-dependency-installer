@@ -301,8 +301,8 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 				$this->dependency = $dependency;
 				$this->admin_init();
 				echo '<tr class="plugin-update-tr" data-slug="' . dirname( $dependency->dependent_plugin ) . '" data-plugin="' . $dependency->dependent_plugin . '"><td colspan="' . $wp_list_table->get_column_count() . '" class="plugin-update colspanchange"><div class="update-message update-ok">';
-				print( $dependency->name . ' ' . esc_html__( 'is listed as an optional dependency.' ) . ' ' );
-				print( '<a href="' . $dependency->download_link . '">' . esc_html__( 'Download Now' ) . '</a><br>' );
+				//print( $dependency->name . ' ' . esc_html__( 'is listed as an optional dependency.' ) . ' ' );
+				//print( '<a href="' . $dependency->download_link . '">' . esc_html__( 'Download Now' ) . '</a><br>' );
 
 				$this->admin_notices();
 				echo '</div></td></tr>';
