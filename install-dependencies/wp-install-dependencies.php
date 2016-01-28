@@ -301,10 +301,10 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 				$this->dependency = $dependency;
 				$this->admin_init();
 				echo '<tr class="plugin-update-tr" data-slug="' . dirname( $dependency->dependent_plugin ) . '" data-plugin="' . $dependency->dependent_plugin . '"><td colspan="' . $wp_list_table->get_column_count() . '" class="plugin-update colspanchange"><div class="update-message update-ok">';
-				//print( $dependency->name . ' ' . esc_html__( 'is listed as an optional dependency.' ) . ' ' );
-				//print( '<a href="' . $dependency->download_link . '">' . esc_html__( 'Download Now' ) . '</a><br>' );
+				print( '<p>' . $dependency->name . ' ' . esc_html__( 'is listed as an optional dependency.' ) . ' ' );
+				print( '<a href="' . $dependency->download_link . '">' . esc_html__( 'Download Now' ) . '</a></p>' );
 
-				$this->admin_notices();
+				//$this->admin_notices();
 				echo '</div></td></tr>';
 			}
 			print( '<script>jQuery(".active[data-plugin=\'' . $this->dependency->dependent_plugin . '\']").addClass("update");</script>' );
@@ -369,13 +369,13 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 			if ( ! empty( $this->message ) ) {
 				$action = $this->message['action'];
 				$notice = $this->message['text'];
-				$notice .= ' <a href="javascript:;" class="ghu-button" data-action="' . $action . '">' . ucfirst( $action ) . ' Now &raquo;</a>';
+				$notice .= '<a href="javascript:;" class="ghu-button" data-action="' . $action . '">' . ucfirst( $action ) . ' Now &raquo;</a>';
 				/*?>
 				<div class="updated notice is-dismissible github-updater">
 					<p><?php echo $notice; ?></p>
 				</div>
 				<?php*/
-				echo $notice;
+				echo '<p>' . $notice . '</p>';
 			}
 		}
 	}
