@@ -330,7 +330,7 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 				?>
 				<div class="updated notice is-dismissible">
 					<p>
-						<?php printf( __( ' has been installed and activated as a dependency.' ), $notice ); ?>
+						<?php printf( __( '%s has been installed and activated as a dependency.' ), $notice ); ?>
 					</p>
 				</div>
 				<?php
