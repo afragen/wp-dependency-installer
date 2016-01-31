@@ -44,20 +44,22 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 
 		/**
 		 * Holds plugin dependency data from wp-dependencies.json
-		 *
 		 * @var
 		 */
 		protected $dependency;
 
 		/**
 		 * Holds names of installed dependencies for admin notices.
-		 *
 		 * @var
 		 */
 		protected $notices;
 
+		/**
+		 * Holds notice message.
+		 * @var array
+		 */
 		protected $message;
-
+		
 		/**
 		 * WP_Install_Dependencies constructor.
 		 *
@@ -71,9 +73,6 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 			if ( false === strstr( $pagenow, 'plugin' ) ) {
 				return false;
 			}
-
-			require_once ABSPATH . 'wp-admin/includes/file.php';
-			require_once ABSPATH . 'wp-admin/includes/misc.php';
 
 			$config = ! empty( $config ) ? json_decode( $config ) : null;
 			/*
@@ -228,6 +227,9 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		 */
 		public function install() {
 			if ( ! $this->is_installed() ) {
+				require_once ABSPATH . 'wp-admin/includes/file.php';
+				require_once ABSPATH . 'wp-admin/includes/misc.php';
+
 				add_filter( 'upgrader_source_selection', array( &$this, 'upgrader_source_selection' ), 10, 2 );
 
 				$skin     = new WPID_Plugin_Installer_Skin( array(
@@ -245,7 +247,6 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 				if ( 'error' == $result['status'] ) {
 					return $result;
 				}
-
 
 				if ( ! $this->dependency->optional ) {
 					activate_plugin( $this->dependency->slug, null, true );
