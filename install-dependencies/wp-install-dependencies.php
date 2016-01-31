@@ -56,12 +56,7 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		 */
 		protected $notices;
 
-		/**
-		 * Holds data of uninstalled dependencies.
-		 *
-		 * @var
-		 */
-		protected $not_installed;
+		protected $message;
 
 		/**
 		 * WP_Install_Dependencies constructor.
@@ -207,12 +202,6 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 
 				$this->dependency            = $dependency;
 				$this->dependency->installed = $this->is_installed();
-
-				if ( ! $this->is_installed() ) {
-					$this->not_installed[ dirname( $dependency->slug ) ]['name'] = $dependency->name;
-					$this->not_installed[ dirname( $dependency->slug ) ]['link'] = $dependency->download_link;
-				}
-
 				$this->dependency->optional ? $this->optional_install() : $this->install();
 			}
 
@@ -263,7 +252,6 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 					add_action( 'network_admin_notices', array( &$this, 'message' ) );
 				}
 
-				unset( $this->not_installed[ dirname( $this->dependency->slug ) ] );
 				$this->dependency->installed = true;
 
 				return array( 'status' => 'ok', 'message' => sprintf( __( '%s has been installed and activated.' ), $this->dependency->name ) );
