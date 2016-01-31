@@ -77,10 +77,17 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 
 			$config = ! empty( $config ) ? json_decode( $config ) : null;
 			/*
-			 * Exit for malformed json files.
+			 * Exit for json_decode error.
 			 */
 			if ( is_null( $config ) ) {
-				return array( 'status' => 'error', 'message' => 'JSON file format error.' );
+				$this->message = array(
+					'status' => 'error',
+					'message' => '<code>wp-dependencies.json</code> ' . json_last_error_msg()
+				);
+				add_action( 'admin_notices', array( &$this, 'admin_notices' ) );
+				add_action( 'network_admin_notices', array( &$this, 'admin_notices' ) );
+
+				return false;
 			}
 			$this->config = $this->prepare_json( $config );
 
@@ -280,7 +287,7 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		public function optional_install_plugin_row() {
 			$wp_list_table = _get_list_table( 'WP_MS_Themes_List_Table' );
 
-			foreach ( $this->config as $dependency ) {
+			foreach ( (object) $this->config as $dependency ) {
 				if ( ! $dependency instanceof stdClass ||
 				     is_plugin_active( $dependency->slug )
 				) {
@@ -354,7 +361,7 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		 * Display admin notices / action links
 		 */
 		public function admin_notices() {
-			if ( ! empty( $this->message ) ) {
+			if ( ! empty( $this->message ) && ! is_null( $this->config )) {
 				$action = $this->message['action'];
 				$notice = $this->message['text'];
 				$notice .= '<a href="javascript:;" class="ghu-button" data-action="' . $action . '"> ' . ucfirst( $action ) . ' Now &raquo;</a>';
@@ -364,6 +371,15 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 				</div>
 				<?php*/
 				echo $notice;
+			}
+			if ( is_null( $this->config ) && ! empty( $this->message ) ) {
+				$status = $this->message['status'];
+				$message = $this->message['message'];
+				?>
+				<div class="<?php echo $status; ?> notice is-dismissible github-updater">
+					<p><?php echo $message; ?></p>
+				</div>
+				<?php
 			}
 		}
 	}
