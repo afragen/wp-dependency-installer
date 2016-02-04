@@ -76,7 +76,7 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 			if ( is_null( $config ) ) {
 				$this->notices[] = array(
 					'status' => 'error',
-					'message' => '<code>wp-dependencies.json</code> ' . json_last_error_msg()
+					'message' => 'wp-dependencies.json ' . json_last_error_msg()
 				);
 				add_action( 'admin_notices', array( &$this, 'admin_notices' ) );
 				add_action( 'network_admin_notices', array( &$this, 'admin_notices' ) );
@@ -254,7 +254,7 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 				}
 
 				$this->notices[] = array(
-					'status' => 'ok',
+					'status' => 'updated',
 					'message' => sprintf( __( '%s has been installed.' ), $this->dependency->name ) );
 				$this->notices[] = $result;
 
@@ -304,7 +304,7 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 				return array( 'status' => 'error', 'message' => $result->get_error_message() );
 			}
 
-			return array( 'status' => 'ok', 'message' => sprintf( __( '%s has been activated.' ), $this->dependency->name ) );
+			return array( 'status' => 'updated', 'message' => sprintf( __( '%s has been activated.' ), $this->dependency->name ) );
 		}
 
 		/**
@@ -322,17 +322,21 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		public function admin_notices() {
 			$this->admin_init();
 			foreach ( $this->notices as $notice ) {
-				$label = esc_html__( 'Plugin Dependency' ) . ': ';
+				$label  = esc_html__( 'Plugin Dependency' ) . ': ';
+				$status = null;
 				if ( ! empty( $notice['action'] ) ) {
+					$status  = 'updated';
 					$action  = esc_attr( $notice['action'] );
 					$message = esc_html( $notice['text'] );
 					$message .= ' <a href="javascript:;" class="ghu-button" data-action="' . $action . '">' . ucfirst( $action ) . ' Now &raquo;</a>';
 				}
 				if ( ! empty( $notice['status'] ) ) {
+					$status  = $notice['status'];
+					$label   = null;
 					$message = esc_html( $notice['message'] );
 				}
 				?>
-				<div class="updated notice is-dismissible github-updater">
+				<div class="<?php echo $status ?> notice is-dismissible github-updater">
 					<p><?php echo $label . $message; ?></p>
 				</div>
 				<?php
