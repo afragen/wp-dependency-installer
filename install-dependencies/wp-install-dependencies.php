@@ -322,17 +322,18 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		public function admin_notices() {
 			$this->admin_init();
 			foreach ( $this->notices as $notice ) {
+				$label = esc_html__( 'Plugin Dependency' ) . ': ';
 				if ( ! empty( $notice['action'] ) ) {
-					$action  = $notice['action'];
-					$message = $notice['text'] . ' ';
-					$message .= '<a href="javascript:;" class="ghu-button" data-action="' . $action . '">' . ucfirst( $action ) . ' Now &raquo;</a>';
+					$action  = esc_attr( $notice['action'] );
+					$message = esc_html( $notice['text'] );
+					$message .= ' <a href="javascript:;" class="ghu-button" data-action="' . $action . '">' . ucfirst( $action ) . ' Now &raquo;</a>';
 				}
 				if ( ! empty( $notice['status'] ) ) {
-					$message = $notice['message'];
+					$message = esc_html( $notice['message'] );
 				}
 				?>
 				<div class="updated notice is-dismissible github-updater">
-					<p><?php echo $message; ?></p>
+					<p><?php echo $label . $message; ?></p>
 				</div>
 				<?php
 			}
