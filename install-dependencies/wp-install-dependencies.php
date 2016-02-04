@@ -59,7 +59,7 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		 * @var array
 		 */
 		protected $message;
-		
+
 		/**
 		 * WP_Install_Dependencies constructor.
 		 *
