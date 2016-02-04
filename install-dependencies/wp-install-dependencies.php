@@ -311,7 +311,7 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		 * Dismiss admin notice for a week.
 		 */
 		public function dismiss() {
-			//set_transient( 'github_updater_dismiss_notice', 'yes', ( 60 * 60 * 24 * 7 ) );
+			//set_transient( 'github_updater_dismiss_notice', true, WEEK_IN_SECONDS );
 
 			return array( 'status' => 'ok', 'message' => '' );
 		}
