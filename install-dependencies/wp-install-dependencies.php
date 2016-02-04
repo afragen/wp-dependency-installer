@@ -55,12 +55,6 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		protected $notices;
 
 		/**
-		 * Holds notice message.
-		 * @var array
-		 */
-		protected $message;
-
-		/**
 		 * WP_Install_Dependencies constructor.
 		 *
 		 * @param $config
@@ -73,13 +67,14 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 			if ( false === strstr( $pagenow, 'plugin' ) ) {
 				return false;
 			}
+			delete_option('active_plugins');
 
 			$config = ! empty( $config ) ? json_decode( $config ) : null;
 			/*
 			 * Exit for json_decode error.
 			 */
 			if ( is_null( $config ) ) {
-				$this->message = array(
+				$this->notices[] = array(
 					'status' => 'error',
 					'message' => '<code>wp-dependencies.json</code> ' . json_last_error_msg()
 				);
@@ -105,18 +100,28 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 			if ( get_transient( 'github_updater_dismiss_notice' ) ) {
 				return;
 			}
-			if ( $this->is_installed() ) {
-				if ( ! is_plugin_active( $this->dependency->slug ) ) {
-					$this->message = array(
-						'action' => 'activate',
-						'text'   => sprintf( __( 'Please activate the %s plugin.' ), $this->dependency->name )
+			foreach ( (object) $this->config as $dependency ) {
+				$message = null;
+				if ( ! $dependency instanceof stdClass ||
+				     is_plugin_active( $dependency->slug )
+				) {
+					continue;
+				}
+				$this->dependency = $dependency;
+				if ( $this->is_installed() ) {
+					if ( ! is_plugin_active( $dependency->slug ) ) {
+						$message = array(
+							'action' => 'activate',
+							'text'   => sprintf( __( 'Please activate the %s plugin.' ), $this->dependency->name )
+						);
+					}
+				} else {
+					$message = array(
+						'action' => 'install',
+						'text'   => sprintf( __( 'The %s plugin is required.' ), $dependency->name )
 					);
 				}
-			} else {
-				$this->message = array(
-					'action' => 'install',
-					'text'   => sprintf( __( 'The %s plugin is required.' ), $this->dependency->name )
-				);
+				$this->notices[] = $message;
 			}
 		}
 
@@ -248,62 +253,30 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 					return $result;
 				}
 
-				if ( ! $this->dependency->optional ) {
-					activate_plugin( $this->dependency->slug, null, true );
-				}
+				$this->notices[] = array(
+					'status' => 'ok',
+					'message' => sprintf( __( '%s has been installed.' ), $this->dependency->name ) );
+				$this->notices[] = $result;
 
 				if ( is_admin() && ! defined( 'DOING_AJAX' ) &&
 				     $upgrader->skin->result
 				) {
-					$this->notices[] = $this->dependency->name;
-					add_action( 'admin_notices', array( &$this, 'message' ) );
-					add_action( 'network_admin_notices', array( &$this, 'message' ) );
+					add_action( 'admin_notices', array( &$this, 'admin_notices' ) );
+					add_action( 'network_admin_notices', array( &$this, 'admin_notices' ) );
 				}
 
 				$this->dependency->installed = true;
-
-				return array( 'status' => 'ok', 'message' => sprintf( __( '%s has been installed and activated.' ), $this->dependency->name ) );
 			}
 		}
 
 		/**
 		 * Install but don't activate optional dependencies.
-		 * Label dependent plugin.
 		 */
 		public function optional_install() {
-			//$this->install();
-
 			if ( ! is_multisite() || is_network_admin() && ! $this->is_installed() ) {
-				add_action( 'after_plugin_row_' . $this->dependency->dependent_plugin, array( &$this, 'optional_install_plugin_row' ), 10, 0 );
+				add_action( 'admin_notices', array( &$this, 'admin_notices' ) );
+				add_action( 'network_admin_notices', array( &$this, 'admin_notices' ) );
 			}
-		}
-
-		/**
-		 * Add plugin theme row meta to plugin that has dependencies.
-		 *
-		 * @TODO Figure out how to install plugin from here.
-		 *
-		 * @return bool
-		 */
-		public function optional_install_plugin_row() {
-			$wp_list_table = _get_list_table( 'WP_MS_Themes_List_Table' );
-
-			foreach ( (object) $this->config as $dependency ) {
-				if ( ! $dependency instanceof stdClass ||
-				     is_plugin_active( $dependency->slug )
-				) {
-					continue;
-				}
-				$this->dependency = $dependency;
-				$this->admin_init();
-				echo '<tr class="plugin-update-tr" data-slug="' . dirname( $dependency->dependent_plugin ) . '" data-plugin="' . $dependency->dependent_plugin . '"><td colspan="' . $wp_list_table->get_column_count() . '" class="plugin-update colspanchange"><div class="update-message update-ok">';
-				//print( $dependency->name . ' ' . esc_html__( 'is listed as an optional dependency.' ) . ' ' );
-				//print( '<a href="' . $dependency->download_link . '">' . esc_html__( 'Download Now' ) . '</a><br>' );
-
-				$this->admin_notices();
-				echo '</div></td></tr>';
-			}
-			print( '<script>jQuery(".active[data-plugin=\'' . $this->dependency->dependent_plugin . '\']").addClass("update");</script>' );
 		}
 
 		/**
@@ -323,22 +296,7 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		}
 
 		/**
-		 * Show dependency installation message.
-		 */
-		public function message() {
-			foreach ( $this->notices as $notice ) {
-				?>
-				<div class="updated notice is-dismissible">
-					<p>
-						<?php printf( __( '%s has been installed and activated as a dependency.' ), $notice ); ?>
-					</p>
-				</div>
-				<?php
-			}
-		}
-
-		/**
-		 * Activate GHU
+		 * Activate dependency.
 		 */
 		public function activate() {
 			$result = activate_plugin( $this->dependency->slug );
@@ -350,7 +308,7 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		}
 
 		/**
-		 * Dismiss admin notice for a week
+		 * Dismiss admin notice for a week.
 		 */
 		public function dismiss() {
 			//set_transient( 'github_updater_dismiss_notice', 'yes', ( 60 * 60 * 24 * 7 ) );
@@ -359,25 +317,21 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		}
 
 		/**
-		 * Display admin notices / action links
+		 * Display admin notices / action links.
 		 */
 		public function admin_notices() {
-			if ( ! empty( $this->message ) && ! is_null( $this->config )) {
-				$action = $this->message['action'];
-				$notice = $this->message['text'];
-				$notice .= '<a href="javascript:;" class="ghu-button" data-action="' . $action . '"> ' . ucfirst( $action ) . ' Now &raquo;</a>';
-				/*?>
-				<div class="updated notice is-dismissible github-updater">
-					<p><?php echo $notice; ?></p>
-				</div>
-				<?php*/
-				echo $notice;
-			}
-			if ( is_null( $this->config ) && ! empty( $this->message ) ) {
-				$status = $this->message['status'];
-				$message = $this->message['message'];
+			$this->admin_init();
+			foreach ( $this->notices as $notice ) {
+				if ( ! empty( $notice['action'] ) ) {
+					$action  = $notice['action'];
+					$message = $notice['text'] . ' ';
+					$message .= '<a href="javascript:;" class="ghu-button" data-action="' . $action . '">' . ucfirst( $action ) . ' Now &raquo;</a>';
+				}
+				if ( ! empty( $notice['status'] ) ) {
+					$message = $notice['message'];
+				}
 				?>
-				<div class="<?php echo $status; ?> notice is-dismissible github-updater">
+				<div class="updated notice is-dismissible github-updater">
 					<p><?php echo $message; ?></p>
 				</div>
 				<?php
