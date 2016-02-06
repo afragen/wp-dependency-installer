@@ -107,6 +107,38 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		}
 
 		/**
+		 * Determine if dependency is active or installed
+		 */
+		function admin_init() {
+			if ( get_transient( 'github_updater_dismiss_notice' ) ) {
+				return;
+			}
+			foreach ( (object) $this->config as $dependency ) {
+				$message = null;
+				if ( ! $dependency instanceof stdClass ||
+				     is_plugin_active( $dependency->slug )
+				) {
+					continue;
+				}
+				$this->dependency = $dependency;
+				if ( $this->is_installed() ) {
+					if ( ! is_plugin_active( $dependency->slug ) ) {
+						$message = array(
+							'action' => 'activate',
+							'text'   => sprintf( __( 'Please activate the %s plugin.' ), $this->dependency->name )
+						);
+					}
+				} else {
+					$message = array(
+						'action' => 'install',
+						'text'   => sprintf( __( 'The %s plugin is required.' ), $dependency->name )
+					);
+				}
+				$this->notices[] = $message;
+			}
+		}
+
+		/**
 		 * Register jQuery AJAX
 		 */
 		function admin_footer() {
@@ -211,38 +243,6 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		}
 
 		/**
-		 * Initialize notices.
-		 */
-		function init_notices() {
-			if ( get_transient( 'github_updater_dismiss_notice' ) ) {
-				return;
-			}
-			foreach ( (object) $this->config as $dependency ) {
-				$message = null;
-				if ( ! $dependency instanceof stdClass ||
-				     is_plugin_active( $dependency->slug )
-				) {
-					continue;
-				}
-				$this->dependency = $dependency;
-				if ( $this->is_installed() ) {
-					if ( ! is_plugin_active( $dependency->slug ) ) {
-						$message = array(
-							'action' => 'activate',
-							'text'   => sprintf( __( 'Please activate the %s plugin.' ), $this->dependency->name )
-						);
-					}
-				} else {
-					$message = array(
-						'action' => 'install',
-						'text'   => sprintf( __( 'The %s plugin is required.' ), $dependency->name )
-					);
-				}
-				$this->notices[] = $message;
-			}
-		}
-
-		/**
 		 * Install and activate dependency.
 		 */
 		public function install() {
@@ -317,7 +317,7 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		 * Display admin notices / action links.
 		 */
 		public function admin_notices() {
-			$this->init_notices();
+			$this->admin_init();
 			foreach ( $this->notices as $notice ) {
 				$label  = esc_html__( 'Plugin Dependency' ) . ': ';
 				$status = null;
