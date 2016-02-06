@@ -1,8 +1,44 @@
-# wp-install-dependencies
-A lightweight class to add to WordPress plugins to automatically install plugin dependencies.
+# WP Install Dependencies
+* Contributors: [Andy Fragen](https://github.com/afragen), [Matt Gibbs](https://github.com/mgibbs189), [contributors](https://github.com/afragen/github-updater/graphs/contributors)
+* Tags: plugin, theme, dependency, install
+* Requires at least: 3.8
+* Requires PHP: 5.3
+* Tested up to: 4.4
+* Stable tag: master
+* Donate link: 
+* License: GPLv2 or later
+* License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-This contains an example plugin.
+A lightweight class to add to WordPress plugins to automatically install required plugin dependencies. Uses a JSON config file to declare plugin dependencies.
 
-This is still very much in development, but it works.
+## Description
 
-All dependencies are installed, optional dependencies are not activated.
+This contains an example plugin. **This is still very much in development, but it works, sort of.** All required dependencies are installed, optional dependencies are not.
+
+Working on javascript method of installing and activating like [Install GitHub Updater](https://github.com/mgibbs189/install-github-updater)
+
+## JSON config file format
+
+```json
+{
+  "wp-install-dependencies": "my-plugin-slug/my-plugin-slug.php",
+  "github-updater": {
+    "name": "GitHub Updater",
+    "slug": "github-updater/github-updater.php",
+    "git": "github",
+    "uri": "https://github.com/afragen/github-updater",
+    "branch": "master",
+    "optional": false,
+    "token": null
+  },
+  "test": {
+    "name": "Test Plugin",
+    "slug": "test-plugin/test-plugin.php",
+    "git": "github",
+    "uri": "https://github.com/afragen/test-plugin",
+    "branch": "master",
+    "optional": true,
+    "token": null
+  }
+}
+```
