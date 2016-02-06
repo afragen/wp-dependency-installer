@@ -189,30 +189,28 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @return bool
 		 */
 		protected function prepare_json( $config ) {
-			$dependent_plugin = null;
 			foreach ( $config as $dependency ) {
 				if ( ! $dependency instanceof \stdClass ) {
-					$dependent_plugin = $dependency;
 					continue;
 				}
 
 				$download_link                = null;
-				$dependency->dependent_plugin = $dependent_plugin;
 				$path                         = parse_url( $dependency->uri, PHP_URL_PATH );
 				$owner_repo                   = trim( $path, '/' );  // strip surrounding slashes
 				$owner_repo                   = str_replace( '.git', '', $owner_repo ); //strip incorrect URI ending
 
-				switch ( $dependency->git ) {
+				switch ( $dependency->host ) {
+					case 'wordpress':
+						$download_link = 'https://downloads.wordpress.org/plugin/' . basename( $owner_repo ) . '.zip';
+						break;
 					case 'github':
 						$download_link = 'https://api.github.com/repos/' . $owner_repo . '/zipball/' . $dependency->branch;
 						if ( ! empty( $dependency->token ) ) {
 							$download_link = add_query_arg( 'access_token', $dependency->token, $download_link );
 						}
-						$dependency->download_link = $download_link;
 						break;
 					case 'bitbucket':
-						$download_link             = 'https://bitbucket.org/' . $owner_repo . '/get/' . $dependency->branch . '.zip';
-						$dependency->download_link = $download_link;
+						$download_link = 'https://bitbucket.org/' . $owner_repo . '/get/' . $dependency->branch . '.zip';
 						break;
 					case 'gitlab':
 						$download_link = 'https://gitlab.com/' . $owner_repo . '/repository/archive.zip';
@@ -220,10 +218,10 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 						if ( ! empty( $dependency->token ) ) {
 							$download_link = add_query_arg( 'private_token', $dependency->token, $download_link );
 						}
-						$dependency->download_link = $download_link;
 						break;
 				}
 
+				$dependency->download_link = $download_link;
 				$this->dependency = $dependency;
 				$this->dependency->installed = $this->is_installed();
 				if ( ! $this->dependency->optional ) {
