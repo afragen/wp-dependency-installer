@@ -29,6 +29,8 @@ include_once( __DIR__ . '/install-dependencies/wp-install-dependencies.php' );
 
 ## JSON config file format
 
+This file must be named `wp-dependencies.json`.
+
 ```json
 {
   "wp-install-dependencies": "my-plugin-slug/my-plugin-slug.php",
