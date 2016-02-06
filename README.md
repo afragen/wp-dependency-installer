@@ -42,7 +42,7 @@ This file must be named `wp-dependencies.json`.
      "host": "wordpress",
      "uri": "https://wordpress.org/plugins/hello-dolly",
      "branch": "trunk",
-     "optional": false,
+     "optional": true,
      "token": null
    },
  "github-updater": {
@@ -54,11 +54,11 @@ This file must be named `wp-dependencies.json`.
     "optional": false,
     "token": null
   },
-  "test": {
-    "name": "Test Plugin",
-    "slug": "test-plugin/test-plugin.php",
-    "git": "github",
-    "uri": "https://github.com/afragen/test-plugin",
+  "test-bitbucket-plugin": {
+    "name": "Test Bitbucket Plugin",
+    "slug": "test-bitbucket-plugin/test-bitbucket-plugin.php",
+    "host": "bitbucket",
+    "uri": "https://bitbucket.org/afragen/test-bitbucket-plugin",
     "branch": "master",
     "optional": true,
     "token": null
