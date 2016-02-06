@@ -9,7 +9,7 @@
 * License: GPLv2 or later
 * License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-A lightweight class to add to WordPress plugins to automatically install required plugin dependencies. Uses a JSON config file to declare plugin dependencies.
+A lightweight class to add to WordPress plugins or themes to automatically install required plugin dependencies. Uses a JSON config file to declare plugin dependencies.
 
 ## Description
 

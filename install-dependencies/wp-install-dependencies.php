@@ -3,10 +3,15 @@
 /**
  * WP Install Dependencies
  *
+ * A lightweight class to add to WordPress plugins or themes to automatically install
+ * required plugin dependencies. Uses a JSON config file to declare plugin dependencies.
+ *
  * @package   WP_Install_Dependencies
  * @author    Andy Fragen
+ * @author    Matt Gibbs
  * @license   GPL-2.0+
  * @link      https://github.com/afragen/wp-install-dependencies
+ * @version   0.5
  */
 
 /*
