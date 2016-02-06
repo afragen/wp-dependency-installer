@@ -40,6 +40,10 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 	 */
 	class WP_Install_Dependencies {
 
+		/**
+		 * Holds the JSON file contents.
+		 * @var bool
+		 */
 		protected $config;
 
 		/**
