@@ -64,7 +64,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		protected $notices;
 
 		/**
-		 * WP_Install_Dependencies constructor.
+		 * WP_Dependency_Installer constructor.
 		 *
 		 * @param $config
 		 */
