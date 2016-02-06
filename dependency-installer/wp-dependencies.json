@@ -1,5 +1,4 @@
 {
-  "type": "plugin",
   "hello-dolly": {
     "name": "Hello Dolly",
     "slug": "hello-dolly/hello.php",
