@@ -316,7 +316,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 */
 		public function admin_notices() {
 			foreach ( $this->notices as $notice ) {
-				$label  = esc_html__( 'Plugin Dependency' ) . ': ';
+				$label  = esc_html__( 'WP Dependency Installer' ) . ': ';
 				$status = null;
 				if ( ! empty( $notice['action'] ) ) {
 					$status  = 'updated';
@@ -326,7 +326,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				}
 				if ( ! empty( $notice['status'] ) ) {
 					$status  = $notice['status'];
-					$label   = null;
 					$message = esc_html( $notice['message'] );
 				}
 				?>
