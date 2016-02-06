@@ -1,5 +1,4 @@
 {
-  "type": "plugin",
   "github-updater": {
     "name": "GitHub Updater",
     "slug": "github-updater/github-updater.php",

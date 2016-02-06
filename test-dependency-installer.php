@@ -14,4 +14,4 @@
  * Requires PHP: 5.3
  */
 
-include_once( __DIR__ . '/install-dependencies/wp-install-dependencies.php' );
+include_once( __DIR__ . '/dependency-installer/wp-dependency-installer.php' );
