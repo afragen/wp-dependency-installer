@@ -13,6 +13,8 @@ A lightweight class to add to WordPress plugins or themes to automatically insta
 
 ## Description
 
+This is a drop in class for developers to optionally or automatically install plugin dependencies for their own plugins or themes. It can install a plugin from w.org, GitHub, Bitbucket, or GitLab.
+
 This contains an example plugin. **This is still very much in development, but it works, sort of.** Only required dependencies are installed automatically, optional dependencies are not.
 
 Working on javascript method of installing and activating like [Install GitHub Updater](https://github.com/mgibbs189/install-github-updater)
@@ -34,7 +36,16 @@ This file must be named `wp-dependencies.json`.
 ```json
 {
   "type": "plugin",
-  "github-updater": {
+   "hello-dolly": {
+     "name": "Hello Dolly",
+     "slug": "hello-dolly/hello.php",
+     "host": "wordpress",
+     "uri": "https://wordpress.org/plugins/hello-dolly",
+     "branch": "trunk",
+     "optional": false,
+     "token": null
+   },
+ "github-updater": {
     "name": "GitHub Updater",
     "slug": "github-updater/github-updater.php",
     "git": "github",
