@@ -317,7 +317,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 */
 		public function admin_notices() {
 			foreach ( $this->notices as $notice ) {
-				$label  = esc_html__( 'WP Dependency Installer' ) . ': ';
 				$status = null;
 				if ( ! empty( $notice['action'] ) ) {
 					$status  = 'updated';
@@ -331,7 +330,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				}
 				?>
 				<div class="<?php echo $status ?> notice is-dismissible github-updater">
-					<p><?php echo $label . $message; ?></p>
+					<p><?php esc_html_e( 'WP Dependency Installer' ); echo ': ' . $message; ?></p>
 				</div>
 				<?php
 			}
