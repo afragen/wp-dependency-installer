@@ -33,7 +33,7 @@ This file must be named `wp-dependencies.json`.
 
 ```json
 {
-  "wp-install-dependencies": "my-plugin-slug/my-plugin-slug.php",
+  "type": "plugin",
   "github-updater": {
     "name": "GitHub Updater",
     "slug": "github-updater/github-updater.php",
@@ -54,4 +54,4 @@ This file must be named `wp-dependencies.json`.
   }
 }
 ```
-An example file is included, `wp-dependencies-example.json`.
+The `"type"` element is either **plugin** or **theme** depending upon whether the project using the class with is a plugin or a theme. An example file is included, `wp-dependencies-example.json`.

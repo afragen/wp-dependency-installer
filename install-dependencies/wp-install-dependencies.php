@@ -60,18 +60,9 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		 * @param $config
 		 */
 		public function __construct( $config ) {
-			/*
-			 * Only run on plugin/theme pages.
-			 */
-			global $pagenow;
-			if ( false === strstr( $pagenow, 'plugin' ) &&
-			     false === strstr( $pagenow, 'theme' )
-
-			) {
-				return false;
-			}
 
 			$config = ! empty( $config ) ? json_decode( $config ) : null;
+
 			/*
 			 * Exit for json_decode error.
 			 */
@@ -85,6 +76,17 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 
 				return false;
 			}
+
+			/*
+			 * Only run on plugin/theme pages.
+			 */
+			global $pagenow;
+			if ( ( false === strstr( $pagenow, 'plugin' ) && 'plugin' === $config->type ) ||
+			     ( false === strstr( $pagenow, 'theme' ) && 'theme' === $config->type )
+			) {
+				return false;
+			}
+
 			$this->config = $this->prepare_json( $config );
 
 			add_action( 'admin_footer', array( &$this, 'admin_footer' ) );

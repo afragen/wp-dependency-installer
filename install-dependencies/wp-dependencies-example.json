@@ -1,5 +1,5 @@
 {
-  "wp-install-dependencies": "wp-install-dependencies/test-install-dependency.php",
+  "type": "plugin",
   "github-updater": {
     "name": "GitHub Updater",
     "slug": "github-updater/github-updater.php",
