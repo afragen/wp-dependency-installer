@@ -17,6 +17,16 @@ This contains an example plugin. **This is still very much in development, but i
 
 Working on javascript method of installing and activating like [Install GitHub Updater](https://github.com/mgibbs189/install-github-updater)
 
+## Installation
+
+Copy the `install-dependencies` folder into your project and adapt the `wp-dependencies.json` file to your needs.
+
+Add the following line to your plugin or theme's `functions.php` file. Make sure to adjust for where in your project you install the `install-dependencies` folder.
+
+```php
+include_once( __DIR__ . '/install-dependencies/wp-install-dependencies.php' );
+```
+
 ## JSON config file format
 
 ```json
@@ -42,3 +52,4 @@ Working on javascript method of installing and activating like [Install GitHub U
   }
 }
 ```
+An example file is included, `wp-dependencies-example.json`.
