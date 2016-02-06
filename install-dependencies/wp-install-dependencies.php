@@ -85,12 +85,12 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 			}
 			$this->config = $this->prepare_json( $config );
 
-			add_action( 'admin_footer', array( $this, 'admin_footer' ) );
-			add_action( 'wp_ajax_github_updater', array( $this, 'ajax_router' ) );
+			add_action( 'admin_footer', array( &$this, 'admin_footer' ) );
+			add_action( 'wp_ajax_github_updater', array( &$this, 'ajax_router' ) );
 
 			//add_action( 'admin_init', array( $this, 'admin_init' ) );
-			//add_action( 'admin_notices', array( $this, 'admin_notices' ) );
-			//add_action( 'network_admin_notices', array( $this, 'admin_notices' ) );
+			add_action( 'admin_notices', array( &$this, 'admin_notices' ) );
+			add_action( 'network_admin_notices', array( &$this, 'admin_notices' ) );
 		}
 
 		/**
@@ -211,9 +211,11 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 						break;
 				}
 
-				$this->dependency            = $dependency;
+				$this->dependency = $dependency;
 				$this->dependency->installed = $this->is_installed();
-				$this->dependency->optional ? $this->optional_install() : $this->install();
+				if ( ! $this->dependency->optional ) {
+					$this->install();
+				}
 			}
 
 			return $config;
@@ -257,42 +259,8 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 					'status' => 'updated',
 					'message' => sprintf( __( '%s has been installed.' ), $this->dependency->name ) );
 				$this->notices[] = $result;
-
-				if ( is_admin() && ! defined( 'DOING_AJAX' ) &&
-				     $upgrader->skin->result
-				) {
-					add_action( 'admin_notices', array( &$this, 'admin_notices' ) );
-					add_action( 'network_admin_notices', array( &$this, 'admin_notices' ) );
-				}
-
 				$this->dependency->installed = true;
 			}
-		}
-
-		/**
-		 * Install but don't activate optional dependencies.
-		 */
-		public function optional_install() {
-			if ( ! is_multisite() || is_network_admin() && ! $this->is_installed() ) {
-				add_action( 'admin_notices', array( &$this, 'admin_notices' ) );
-				add_action( 'network_admin_notices', array( &$this, 'admin_notices' ) );
-			}
-		}
-
-		/**
-		 * Correctly rename dependency for activation.
-		 *
-		 * @param $source
-		 * @param $remote_source
-		 *
-		 * @return string
-		 */
-		public function upgrader_source_selection( $source, $remote_source ) {
-			global $wp_filesystem;
-			$new_source = trailingslashit( $remote_source ) . dirname( $this->dependency->slug );
-			$wp_filesystem->move( $source, $new_source );
-
-			return trailingslashit( $new_source );
 		}
 
 		/**
@@ -314,6 +282,22 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 			//set_transient( 'github_updater_dismiss_notice', true, WEEK_IN_SECONDS );
 
 			return array( 'status' => 'ok', 'message' => '' );
+		}
+
+		/**
+		 * Correctly rename dependency for activation.
+		 *
+		 * @param $source
+		 * @param $remote_source
+		 *
+		 * @return string
+		 */
+		public function upgrader_source_selection( $source, $remote_source ) {
+			global $wp_filesystem;
+			$new_source = trailingslashit( $remote_source ) . dirname( $this->dependency->slug );
+			$wp_filesystem->move( $source, $new_source );
+
+			return trailingslashit( $new_source );
 		}
 
 		/**
