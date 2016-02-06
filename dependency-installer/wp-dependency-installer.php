@@ -87,6 +87,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			}
 
 			/*
+			 * Note to self, remove once dismiss method works.
 			 * Only run on plugin/theme pages.
 			 */
 			global $pagenow;
