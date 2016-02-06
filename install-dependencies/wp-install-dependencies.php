@@ -100,6 +100,8 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 
 			add_action( 'admin_footer', array( &$this, 'admin_footer' ) );
 			add_action( 'wp_ajax_github_updater', array( &$this, 'ajax_router' ) );
+
+			//add_action( 'admin_init', array( $this, 'admin_init' ) );
 			add_action( 'admin_notices', array( &$this, 'admin_notices' ) );
 			add_action( 'network_admin_notices', array( &$this, 'admin_notices' ) );
 		}
