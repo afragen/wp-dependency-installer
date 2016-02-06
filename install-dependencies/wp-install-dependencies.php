@@ -1,16 +1,16 @@
 <?php
 
 /**
- * WP Install Dependencies
+ * WP Dependency Installer
  *
  * A lightweight class to add to WordPress plugins or themes to automatically install
  * required plugin dependencies. Uses a JSON config file to declare plugin dependencies.
  *
- * @package   WP_Install_Dependencies
+ * @package   WP_Dependency_Installer
  * @author    Andy Fragen
  * @author    Matt Gibbs
  * @license   GPL-2.0+
- * @link      https://github.com/afragen/wp-install-dependencies
+ * @link      https://github.com/afragen/wp-dependency-installer
  * @version   0.5
  */
 
@@ -35,15 +35,15 @@ add_action( 'init', function() {
 	if ( file_exists( __DIR__ . '/wp-dependencies.json' ) ) {
 		$config = file_get_contents( __DIR__ . '/wp-dependencies.json' );
 	}
-	new WP_Install_Dependencies( $config );
+	new WP_Dependency_Installer( $config );
 } );
 
-if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
+if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 	/**
-	 * Class WP_Install_Dependencies
+	 * Class WP_Dependency_Installer
 	 */
-	class WP_Install_Dependencies {
+	class WP_Dependency_Installer {
 
 		/**
 		 * Holds the JSON file contents.
@@ -251,7 +251,7 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 
 				add_filter( 'upgrader_source_selection', array( &$this, 'upgrader_source_selection' ), 10, 2 );
 
-				$skin     = new WPID_Plugin_Installer_Skin( array(
+				$skin     = new WPDI_Plugin_Installer_Skin( array(
 					'type'  => 'plugin',
 					'nonce' => wp_nonce_url( $this->dependency->download_link ),
 				) );
@@ -340,7 +340,7 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 
 	require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 
-	class WPID_Plugin_Installer_Skin extends Plugin_Installer_Skin {
+	class WPDI_Plugin_Installer_Skin extends Plugin_Installer_Skin {
 		public function header() {}
 		public function footer() {}
 		public function error( $errors ) {}
