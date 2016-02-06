@@ -269,8 +269,7 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 
 				$this->notices[] = array(
 					'status' => 'updated',
-					'message' => sprintf( __( '%s has been installed.' ), $this->dependency->name ) );
-				$this->notices[] = $result;
+					'message' => sprintf( __( '%s has been installed and activated.' ), $this->dependency->name ) );
 				$this->dependency->installed = true;
 			}
 		}
