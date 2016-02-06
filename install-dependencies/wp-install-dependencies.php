@@ -98,16 +98,15 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 
 			$this->config = $this->prepare_json( $config );
 
-			add_action( 'admin_footer', array( &$this, 'admin_footer' ) );
-			add_action( 'wp_ajax_github_updater', array( &$this, 'ajax_router' ) );
-
-			//add_action( 'admin_init', array( $this, 'admin_init' ) );
+			add_action( 'admin_init', array( &$this, 'admin_init' ) );
 			add_action( 'admin_notices', array( &$this, 'admin_notices' ) );
 			add_action( 'network_admin_notices', array( &$this, 'admin_notices' ) );
+			add_action( 'admin_footer', array( &$this, 'admin_footer' ) );
+			add_action( 'wp_ajax_github_updater', array( &$this, 'ajax_router' ) );
 		}
 
 		/**
-		 * Determine if dependency is active or installed
+		 * Determine if dependency is active or installed.
 		 */
 		function admin_init() {
 			if ( get_transient( 'github_updater_dismiss_notice' ) ) {
@@ -139,7 +138,7 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		}
 
 		/**
-		 * Register jQuery AJAX
+		 * Register jQuery AJAX.
 		 */
 		function admin_footer() {
 			?>
@@ -169,7 +168,7 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		}
 
 		/**
-		 * AJAX router
+		 * AJAX router.
 		 */
 		function ajax_router() {
 			$method    = isset( $_POST['method'] ) ? $_POST['method'] : '';
@@ -317,7 +316,6 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		 * Display admin notices / action links.
 		 */
 		public function admin_notices() {
-			$this->admin_init();
 			foreach ( $this->notices as $notice ) {
 				$label  = esc_html__( 'Plugin Dependency' ) . ': ';
 				$status = null;
