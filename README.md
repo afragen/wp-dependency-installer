@@ -21,10 +21,10 @@ Working on javascript method of installing and activating like [Install GitHub U
 
 Copy the `dependency-installer` folder into your project and adapt the `wp-dependencies.json` file to your needs.
 
-Add the following line to your plugin or theme's `functions.php` file. Make sure to adjust for where in your project you install the `install-dependencies` folder.
+Add the following line to your plugin or theme's `functions.php` file. Make sure to adjust for where in your project you install the `dependency-installer` folder.
 
 ```php
-include_once( __DIR__ . '/dependency-installer/wp-install-dependencies.php' );
+include_once( __DIR__ . '/dependency-installer/wp-dependency-installer.php' );
 ```
 
 ## JSON config file format
