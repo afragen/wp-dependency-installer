@@ -26,7 +26,7 @@ if ( isset( $_REQUEST['action'] ) && 'heartbeat' === $_REQUEST['action'] ) {
 /**
  * Instantiate class.
  */
-add_action( 'plugins_loaded', function() {
+add_action( 'init', function() {
 	if ( file_exists( __DIR__ . '/wp-dependencies.json' ) ) {
 		$config = file_get_contents( __DIR__ . '/wp-dependencies.json' );
 	}
@@ -61,13 +61,15 @@ if ( ! class_exists( 'WP_Install_Dependencies' ) ) {
 		 */
 		public function __construct( $config ) {
 			/*
-			 * Only run on plugin pages.
+			 * Only run on plugin/theme pages.
 			 */
 			global $pagenow;
-			if ( false === strstr( $pagenow, 'plugin' ) ) {
+			if ( false === strstr( $pagenow, 'plugin' ) &&
+			     false === strstr( $pagenow, 'theme' )
+
+			) {
 				return false;
 			}
-			delete_option('active_plugins');
 
 			$config = ! empty( $config ) ? json_decode( $config ) : null;
 			/*
