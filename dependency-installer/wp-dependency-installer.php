@@ -279,7 +279,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * Activate dependency.
 		 */
 		public function activate() {
-			$result = activate_plugin( $this->dependency->slug );
+			$result = activate_plugin( $this->dependency->slug, null, true );
 			if ( is_wp_error( $result ) ) {
 				return array( 'status' => 'error', 'message' => $result->get_error_message() );
 			}
