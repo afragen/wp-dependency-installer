@@ -250,13 +250,14 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			if ( is_wp_error( $result ) ) {
 				return array( 'status' => 'error', 'message' => $result->get_error_message() );
 			}
+
 			wp_cache_flush();
 			$result = $this->activate( $slug );
 			if ( 'error' == $result['status'] ) {
 				return $result;
 			}
 
-			$this->notices[] = array(
+			return array(
 				'status' => 'updated',
 				'message' => sprintf( __( '%s has been installed and activated.' ), $this->config[ $slug ]['name'] )
 			);
@@ -266,7 +267,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * Activate dependency.
 		 */
 		public function activate( $slug ) {
-			$result = activate_plugin( $slug, null, true );
+			$result = activate_plugin( $slug ); // should this be network-wide?
 
 			if ( is_wp_error( $result ) ) {
 				return array( 'status' => 'error', 'message' => $result->get_error_message() );
