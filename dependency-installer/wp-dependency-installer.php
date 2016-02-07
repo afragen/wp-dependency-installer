@@ -58,7 +58,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * Holds names of installed dependencies for admin notices.
 		 * @var
 		 */
-		protected $notices;
+		protected $notices = array();
 
 		/**
 		 * WP_Dependency_Installer constructor.
@@ -135,8 +135,10 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				}
 
 				$this->config[ $slug ]['download_link'] = $download_link;
+
+				// Install required dependencies
 				if ( ! $dependency['optional'] ) {
-					$this->install( $slug );
+					$this->notices[] = $this->install( $slug );
 				}
 			}
 		}
