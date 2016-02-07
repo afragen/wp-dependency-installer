@@ -135,11 +135,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				}
 
 				$this->config[ $slug ]['download_link'] = $download_link;
-
-				// Install required dependencies
-				if ( ! $dependency['optional'] ) {
-					$this->notices[] = $this->install( $slug );
-				}
 			}
 		}
 
@@ -165,11 +160,16 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 					);
 				}
 				else {
-					$this->notices[] = array(
-						'action'	=> 'install',
-						'slug'		=> $slug,
-						'text'		=> sprintf( __( 'The %s plugin is required.' ), $dependency['name'] )
-					);
+					if ( isset( $dependency['optional'] ) && false === $dependency['optional'] ) {
+						$this->notices[] = $this->install( $slug );
+					}
+					else {
+						$this->notices[] = array(
+							'action'	=> 'install',
+							'slug'		=> $slug,
+							'text'		=> sprintf( __( 'The %s plugin is required.' ), $dependency['name'] )
+						);
+					}
 				}
 			}
 		}
