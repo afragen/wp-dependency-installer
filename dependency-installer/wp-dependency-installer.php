@@ -66,7 +66,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @param $config
 		 */
 		public function __construct() {
-			add_action( 'init', array( $this, 'apply_config' ), 99 );
 			add_action( 'admin_init', array( $this, 'admin_init' ) );
 			add_action( 'admin_footer', array( $this, 'admin_footer' ) );
 			add_action( 'admin_notices', array( $this, 'admin_notices' ) );
@@ -87,7 +86,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Register dependencies (supports multiple instances)
 		 */
-		function register( $config ) {
+		public function register( $config ) {
 			if ( empty( $config ) ) {
 				return;
 			}
@@ -108,7 +107,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Process the registered dependencies
 		 */
-		function apply_config() {
+		public function apply_config() {
 			foreach ( $this->config as $dependency ) {
 				$uri = $dependency['uri'];
 				$slug = $dependency['slug'];
@@ -145,7 +144,12 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Determine if dependency is active or installed.
 		 */
-		function admin_init() {
+		public function admin_init() {
+
+			// Get the gears turning
+			$this->apply_config();
+
+			// Generate admin notices
 			foreach ( $this->config as $slug => $dependency ) {
 				if ( is_plugin_active( $slug ) ) {
 					continue;
@@ -171,7 +175,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Register jQuery AJAX.
 		 */
-		function admin_footer() {
+		public function admin_footer() {
 			?>
 			<script>
 				(function ($) {
@@ -205,7 +209,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * AJAX router.
 		 */
-		function ajax_router() {
+		public function ajax_router() {
 			$method		= isset( $_POST['method'] ) ? $_POST['method'] : '';
 			$slug 		= isset( $_POST['slug'] ) ? $_POST['slug'] : '';
 			$whitelist	= array( 'install', 'activate', 'dismiss' );
@@ -220,7 +224,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Is dependency installed?
 		 */
-		function is_installed( $slug ) {
+		public function is_installed( $slug ) {
 			$plugins = get_plugins();
 			return isset( $plugins[ $slug ] );
 		}
@@ -298,22 +302,21 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 */
 		public function admin_notices() {
 			foreach ( $this->notices as $notice ) {
-				$status = null;
+				$status = empty( $notice['status'] ) ? 'updated' : $notice['status'];
+
 				if ( ! empty( $notice['action'] ) ) {
-					$status		= 'updated';
 					$action 	= esc_attr( $notice['action'] );
 					$message 	= esc_html( $notice['text'] );
 					$message 	.= ' <a href="javascript:;" class="wpdi-button" data-action="' . $action . '" data-slug="' . $notice['slug'] . '">' . ucfirst( $action ) . ' Now &raquo;</a>';
 				}
 				if ( ! empty( $notice['status'] ) ) {
-					$status  = $notice['status'];
 					$message = esc_html( $notice['message'] );
 				}
-				?>
+?>
 				<div class="<?php echo $status ?> notice is-dismissible dependency-installer">
-					<p><?php esc_html_e( 'WP Dependency Installer' ); echo ': ' . $message; ?></p>
+					<p><?php echo '<strong>[' . esc_html__( 'Dependency' ) . ']</strong> ' . $message; ?></p>
 				</div>
-				<?php
+<?php
 			}
 		}
 	}
