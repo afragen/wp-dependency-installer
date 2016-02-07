@@ -97,7 +97,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			}
 
 			// Register dependency if new or required
-			foreach ( $config as $slug => $dependency ) {
+			foreach ( $config as $dependency ) {
+				$slug = $dependency['slug'];
 				if ( ! isset( $this->config[ $slug ] ) || ! $dependency['optional'] ) {
 					$this->config[ $slug ] = $dependency;
 				}
@@ -108,8 +109,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * Process the registered dependencies
 		 */
 		function apply_config() {
-			foreach ( $this->config as $slug => $dependency ) {
+			foreach ( $this->config as $dependency ) {
 				$uri = $dependency['uri'];
+				$slug = $dependency['slug'];
 				$path = parse_url( $uri, PHP_URL_PATH );
 				$owner_repo = str_replace( '.git', '', trim( $path, '/' ) );
 
@@ -227,34 +229,33 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * Install and activate dependency.
 		 */
 		public function install( $slug ) {
-			if ( ! $this->is_installed( $slug ) ) {
-				require_once ABSPATH . 'wp-admin/includes/file.php';
-				require_once ABSPATH . 'wp-admin/includes/misc.php';
-
-				$this->current_slug = $slug;
-				add_filter( 'upgrader_source_selection', array( $this, 'upgrader_source_selection' ), 10, 2 );
-
-				$skin     = new WPDI_Plugin_Installer_Skin( array(
-					'type'  => 'plugin',
-					'nonce' => wp_nonce_url( $this->config[ $slug ]['download_link'] ),
-				) );
-				$upgrader = new Plugin_Upgrader( $skin );
-				$result   = $upgrader->install( $this->config[ $slug ]['download_link'] );
-
-				if ( is_wp_error( $result ) ) {
-					return array( 'status' => 'error', 'message' => $result->get_error_message() );
-				}
-				wp_cache_flush();
-				$result = $this->activate( $slug );
-				if ( 'error' == $result['status'] ) {
-					return $result;
-				}
-
-				$this->notices[] = array(
-					'status' => 'updated',
-					'message' => sprintf( __( '%s has been installed and activated.' ), $this->config[ $slug ]['name'] )
-				);
+			if ( $this->is_installed( $slug ) ) {
+				return;
 			}
+
+			$this->current_slug = $slug;
+			add_filter( 'upgrader_source_selection', array( $this, 'upgrader_source_selection' ), 10, 2 );
+
+			$skin     = new WPDI_Plugin_Installer_Skin( array(
+				'type'  => 'plugin',
+				'nonce' => wp_nonce_url( $this->config[ $slug ]['download_link'] ),
+			) );
+			$upgrader = new Plugin_Upgrader( $skin );
+			$result   = $upgrader->install( $this->config[ $slug ]['download_link'] );
+
+			if ( is_wp_error( $result ) ) {
+				return array( 'status' => 'error', 'message' => $result->get_error_message() );
+			}
+			wp_cache_flush();
+			$result = $this->activate( $slug );
+			if ( 'error' == $result['status'] ) {
+				return $result;
+			}
+
+			$this->notices[] = array(
+				'status' => 'updated',
+				'message' => sprintf( __( '%s has been installed and activated.' ), $this->config[ $slug ]['name'] )
+			);
 		}
 
 		/**
@@ -289,7 +290,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			global $wp_filesystem;
 			$new_source = trailingslashit( $remote_source ) . dirname( $this->current_slug );
 			$wp_filesystem->move( $source, $new_source );
-
 			return trailingslashit( $new_source );
 		}
 
@@ -301,10 +301,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				$status = null;
 				if ( ! empty( $notice['action'] ) ) {
 					$status		= 'updated';
-					$slug 		= $notice['slug'];
 					$action 	= esc_attr( $notice['action'] );
 					$message 	= esc_html( $notice['text'] );
-					$message 	.= ' <a href="javascript:;" class="wpdi-button" data-action="' . $action . '" data-slug="' . $slug . '">' . ucfirst( $action ) . ' Now &raquo;</a>';
+					$message 	.= ' <a href="javascript:;" class="wpdi-button" data-action="' . $action . '" data-slug="' . $notice['slug'] . '">' . ucfirst( $action ) . ' Now &raquo;</a>';
 				}
 				if ( ! empty( $notice['status'] ) ) {
 					$status  = $notice['status'];
