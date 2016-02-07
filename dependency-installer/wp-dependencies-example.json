@@ -1,34 +1,34 @@
-{
-  "hello-dolly": {
-    "name": "Hello Dolly",
-    "slug": "hello-dolly/hello.php",
-    "uri": "https://wordpress.org/plugins/hello-dolly",
-    "branch": "trunk",
-    "optional": true,
-    "token": null
-  },
-  "github-updater": {
-    "name": "GitHub Updater",
-    "slug": "github-updater/github-updater.php",
-    "uri": "https://github.com/afragen/github-updater",
-    "branch": "master",
-    "optional": false,
-    "token": null
-  },
-  "test-bitbucket-plugin": {
-    "name": "Test Bitbucket Plugin",
-    "slug": "test-bitbucket-plugin/test-bitbucket-plugin.php",
-    "uri": "https://bitbucket.org/afragen/test-bitbucket-plugin",
-    "branch": "master",
-    "optional": true,
-    "token": null
-  },
-  "test-gitlab": {
-    "name": "Test Gitlab Plugin2",
-    "slug": "test-gitlab-plugin2/test-gitlab-plugin2.php",
-    "uri": "https://github.com/afragen/test-gitlab-plugin2",
-    "branch": "develop",
-    "optional": true,
-    "token": null
+[
+  {
+      "name": "Hello Dolly",
+      "slug": "hello-dolly/hello.php",
+      "uri": "https://wordpress.org/plugins/hello-dolly",
+      "branch": "trunk",
+      "optional": true,
+      "token": null
+    },
+    {
+      "name": "GitHub Updater",
+      "slug": "github-updater/github-updater.php",
+      "uri": "https://github.com/afragen/github-updater",
+      "branch": "master",
+      "optional": true,
+      "token": null
+    },
+    {
+      "name": "Test Plugin Notags",
+      "slug": "test-plugin-notags/test-plugin-notags.php",
+      "uri": "https://bitbucket.org/afragen/test-plugin-notags",
+      "branch": "master",
+      "optional": true,
+      "token": null
+    },
+    {
+      "name": "Test Gitlab Plugin2",
+      "slug": "test-gitlab-plugin2/test-gitlab-plugin2.php",
+      "uri": "https://github.com/afragen/test-gitlab-plugin2",
+      "branch": "develop",
+      "optional": true,
+      "token": null
   }
-}
+]
