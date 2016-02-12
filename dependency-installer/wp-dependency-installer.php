@@ -37,33 +37,35 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 	class WP_Dependency_Installer {
 
 		/**
-		 * Holds the singleton instance
+		 * Holds the singleton instance.
+		 *
 		 * @var
 		 */
 		private static $instance;
 
 		/**
 		 * Holds the JSON file contents.
+		 *
 		 * @var
 		 */
 		protected $config = array();
 
 		/**
-		 * Holds the current dependency's slug
+		 * Holds the current dependency's slug.
+		 *
 		 * @var
 		 */
 		protected $current_slug;
 
 		/**
 		 * Holds names of installed dependencies for admin notices.
+		 *
 		 * @var
 		 */
 		protected $notices = array();
 
 		/**
 		 * WP_Dependency_Installer constructor.
-		 *
-		 * @param $config
 		 */
 		public function __construct() {
 			add_action( 'admin_init', array( $this, 'admin_init' ) );
@@ -80,11 +82,14 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			if ( ! isset( self::$instance ) ) {
 				self::$instance = new self;
 			}
+
 			return self::$instance;
 		}
 
 		/**
 		 * Register dependencies (supports multiple instances)
+		 *
+		 * @param $config
 		 */
 		public function register( $config ) {
 			if ( empty( $config ) ) {
@@ -109,9 +114,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 */
 		public function apply_config() {
 			foreach ( $this->config as $dependency ) {
-				$uri = $dependency['uri'];
-				$slug = $dependency['slug'];
-				$path = parse_url( $uri, PHP_URL_PATH );
+				$uri        = $dependency['uri'];
+				$slug       = $dependency['slug'];
+				$path       = parse_url( $uri, PHP_URL_PATH );
 				$owner_repo = str_replace( '.git', '', trim( $path, '/' ) );
 
 				switch ( $uri ) {
@@ -156,20 +161,18 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 				if ( $this->is_installed( $slug ) ) {
 					$this->notices[] = array(
-						'action'	=> 'activate',
-						'slug'		=> $slug,
-						'text'		=> sprintf( __( 'Please activate the %s plugin.' ), $dependency['name'] )
+						'action' => 'activate',
+						'slug'   => $slug,
+						'text'   => sprintf( __( 'Please activate the %s plugin.' ), $dependency['name'] ),
 					);
-				}
-				else {
+				} else {
 					if ( isset( $dependency['optional'] ) && false === $dependency['optional'] ) {
 						$this->notices[] = $this->install( $slug );
-					}
-					else {
+					} else {
 						$this->notices[] = array(
-							'action'	=> 'install',
-							'slug'		=> $slug,
-							'text'		=> sprintf( __( 'The %s plugin is required.' ), $dependency['name'] )
+							'action' => 'install',
+							'slug'   => $slug,
+							'text'   => sprintf( __( 'The %s plugin is required.' ), $dependency['name'] ),
 						);
 					}
 				}
@@ -191,7 +194,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 							$.post(ajaxurl, {
 								action: 'dependency_installer',
 								method: $this.attr('data-action'),
-								slug: $this.attr('data-slug')
+								slug  : $this.attr('data-slug')
 							}, function (response) {
 								$parent.html(response);
 							});
@@ -201,7 +204,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 							$.post(ajaxurl, {
 								action: 'dependency_installer',
 								method: 'dismiss',
-								slug: $this.attr('data-slug')
+								slug  : $this.attr('data-slug')
 							});
 						});
 					});
@@ -214,9 +217,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * AJAX router.
 		 */
 		public function ajax_router() {
-			$method		= isset( $_POST['method'] ) ? $_POST['method'] : '';
-			$slug 		= isset( $_POST['slug'] ) ? $_POST['slug'] : '';
-			$whitelist	= array( 'install', 'activate', 'dismiss' );
+			$method    = isset( $_POST['method'] ) ? $_POST['method'] : '';
+			$slug      = isset( $_POST['slug'] ) ? $_POST['slug'] : '';
+			$whitelist = array( 'install', 'activate', 'dismiss' );
 
 			if ( in_array( $method, $whitelist ) ) {
 				$response = $this->$method( $slug );
@@ -227,18 +230,27 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 		/**
 		 * Is dependency installed?
+		 *
+		 * @param $slug
+		 *
+		 * @return boolean
 		 */
 		public function is_installed( $slug ) {
 			$plugins = get_plugins();
+
 			return isset( $plugins[ $slug ] );
 		}
 
 		/**
 		 * Install and activate dependency.
+		 *
+		 * @param $slug
+		 *
+		 * @return array
 		 */
 		public function install( $slug ) {
-			if ( $this->is_installed( $slug ) ) {
-				return;
+			if ( $this->is_installed( $slug ) && ! current_user_can( 'update_plugins' ) ) {
+				return false;
 			}
 
 			$this->current_slug = $slug;
@@ -262,22 +274,32 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			}
 
 			return array(
-				'status' => 'updated',
-				'message' => sprintf( __( '%s has been installed and activated.' ), $this->config[ $slug ]['name'] )
+				'status'  => 'updated',
+				'message' => sprintf( __( '%s has been installed and activated.' ), $this->config[ $slug ]['name'] ),
 			);
 		}
 
 		/**
 		 * Activate dependency.
+		 *
+		 * @param $slug
+		 *
+		 * @return array
 		 */
 		public function activate( $slug ) {
-			$result = activate_plugin( $slug ); // should this be network-wide?
+
+			// if requesting plugin is network activated - yes
+			// should this be network-wide? No if theme is requesting.
+			$result = activate_plugin( $slug );
 
 			if ( is_wp_error( $result ) ) {
 				return array( 'status' => 'error', 'message' => $result->get_error_message() );
 			}
 
-			return array( 'status' => 'updated', 'message' => sprintf( __( '%s has been activated.' ), $this->config[ $slug ]['name'] ) );
+			return array(
+				'status'  => 'updated',
+				'message' => sprintf( __( '%s has been activated.' ), $this->config[ $slug ]['name'] ),
+			);
 		}
 
 		/**
@@ -299,6 +321,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			global $wp_filesystem;
 			$new_source = trailingslashit( $remote_source ) . dirname( $this->current_slug );
 			$wp_filesystem->move( $source, $new_source );
+
 			return trailingslashit( $new_source );
 		}
 
@@ -310,18 +333,18 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				$status = empty( $notice['status'] ) ? 'updated' : $notice['status'];
 
 				if ( ! empty( $notice['action'] ) ) {
-					$action 	= esc_attr( $notice['action'] );
-					$message 	= esc_html( $notice['text'] );
-					$message 	.= ' <a href="javascript:;" class="wpdi-button" data-action="' . $action . '" data-slug="' . $notice['slug'] . '">' . ucfirst( $action ) . ' Now &raquo;</a>';
+					$action  = esc_attr( $notice['action'] );
+					$message = esc_html( $notice['text'] );
+					$message .= ' <a href="javascript:;" class="wpdi-button" data-action="' . $action . '" data-slug="' . $notice['slug'] . '">' . ucfirst( $action ) . ' Now &raquo;</a>';
 				}
 				if ( ! empty( $notice['status'] ) ) {
 					$message = esc_html( $notice['message'] );
 				}
-?>
+				?>
 				<div class="<?php echo $status ?> notice is-dismissible dependency-installer">
 					<p><?php echo '<strong>[' . esc_html__( 'Dependency' ) . ']</strong> ' . $message; ?></p>
 				</div>
-<?php
+				<?php
 			}
 		}
 	}
