@@ -29,16 +29,6 @@ if ( isset( $_REQUEST['action'] ) && 'heartbeat' === $_REQUEST['action'] ) {
 	return false;
 }
 
-/**
- * Instantiate class.
- */
-add_action( 'init', function() {
-	if ( file_exists( __DIR__ . '/wp-dependencies.json' ) ) {
-		$config = file_get_contents( __DIR__ . '/wp-dependencies.json' );
-	}
-	new WP_Dependency_Installer( $config );
-} );
-
 if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 	/**
@@ -47,120 +37,169 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 	class WP_Dependency_Installer {
 
 		/**
-		 * Holds the JSON file contents.
-		 * @var bool
-		 */
-		protected $config;
-
-		/**
-		 * Holds plugin dependency data from wp-dependencies.json
+		 * Holds the singleton instance
 		 * @var
 		 */
-		protected $dependency;
+		private static $instance;
+
+		/**
+		 * Holds the JSON file contents.
+		 * @var
+		 */
+		protected $config = array();
+
+		/**
+		 * Holds the current dependency's slug
+		 * @var
+		 */
+		protected $current_slug;
 
 		/**
 		 * Holds names of installed dependencies for admin notices.
 		 * @var
 		 */
-		protected $notices;
+		protected $notices = array();
 
 		/**
 		 * WP_Dependency_Installer constructor.
 		 *
 		 * @param $config
 		 */
-		public function __construct( $config ) {
+		public function __construct() {
+			add_action( 'admin_init', array( $this, 'admin_init' ) );
+			add_action( 'admin_footer', array( $this, 'admin_footer' ) );
+			add_action( 'admin_notices', array( $this, 'admin_notices' ) );
+			add_action( 'network_admin_notices', array( $this, 'admin_notices' ) );
+			add_action( 'wp_ajax_dependency_installer', array( $this, 'ajax_router' ) );
+		}
 
-			$config = ! empty( $config ) ? json_decode( $config ) : null;
+		/**
+		 * Singleton
+		 */
+		public static function instance() {
+			if ( ! isset( self::$instance ) ) {
+				self::$instance = new self;
+			}
+			return self::$instance;
+		}
 
-			/*
-			 * Exit for json_decode error.
-			 */
-			if ( is_null( $config ) ) {
-				$this->notices[] = array(
-					'status' => 'error',
-					'message' => 'wp-dependencies.json ' . json_last_error_msg()
-				);
-				add_action( 'admin_notices', array( &$this, 'admin_notices' ) );
-				add_action( 'network_admin_notices', array( &$this, 'admin_notices' ) );
-
-				return false;
+		/**
+		 * Register dependencies (supports multiple instances)
+		 */
+		public function register( $config ) {
+			if ( empty( $config ) ) {
+				return;
 			}
 
-			/*
-			 * Note to self, remove once dismiss method works.
-			 * Only run on plugin/theme pages.
-			 */
-			global $pagenow;
-			if ( ( false === strstr( $pagenow, 'plugin' ) && 'plugin' === $config->type ) ||
-			     ( false === strstr( $pagenow, 'theme' ) && 'theme' === $config->type )
-			) {
-				return false;
+			if ( null === ( $config = json_decode( $config, true ) ) ) {
+				return;
 			}
 
-			$this->config = $this->prepare_json( $config );
+			// Register dependency if new or required
+			foreach ( $config as $dependency ) {
+				$slug = $dependency['slug'];
+				if ( ! isset( $this->config[ $slug ] ) || ! $dependency['optional'] ) {
+					$this->config[ $slug ] = $dependency;
+				}
+			}
+		}
 
-			add_action( 'admin_init', array( &$this, 'admin_init' ) );
-			add_action( 'admin_notices', array( &$this, 'admin_notices' ) );
-			add_action( 'network_admin_notices', array( &$this, 'admin_notices' ) );
-			add_action( 'admin_footer', array( &$this, 'admin_footer' ) );
-			add_action( 'wp_ajax_github_updater', array( &$this, 'ajax_router' ) );
+		/**
+		 * Process the registered dependencies
+		 */
+		public function apply_config() {
+			foreach ( $this->config as $dependency ) {
+				$uri = $dependency['uri'];
+				$slug = $dependency['slug'];
+				$path = parse_url( $uri, PHP_URL_PATH );
+				$owner_repo = str_replace( '.git', '', trim( $path, '/' ) );
+
+				if ( false !== strpos( $uri, 'github.com' ) ) {
+					$download_link = 'https://api.github.com/repos/' . $owner_repo . '/zipball/' . $dependency['branch'];
+					if ( ! empty( $dependency['token'] ) ) {
+						$download_link = add_query_arg( 'access_token', $dependency['token'], $download_link );
+					}
+				}
+				elseif ( false !== strpos( $uri, 'bitbucket.org' ) ) {
+					$download_link = 'https://bitbucket.org/' . $owner_repo . '/get/' . $dependency['branch'] . '.zip';
+				}
+				elseif ( false !== strpos( $uri, 'gitlab.com' ) ) {
+					$download_link = 'https://gitlab.com/' . $owner_repo . '/repository/archive.zip';
+					$download_link = add_query_arg( 'ref', $dependency['branch'], $download_link );
+					if ( ! empty( $dependency['token'] ) ) {
+						$download_link = add_query_arg( 'private_token', $dependency['token'], $download_link );
+					}
+				}
+				elseif ( false !== strpos( $uri, 'wordpress.org' ) ) {
+					$download_link = 'https://downloads.wordpress.org/plugin/' . basename( $owner_repo ) . '.zip';
+				}
+
+				$this->config[ $slug ]['download_link'] = $download_link;
+			}
 		}
 
 		/**
 		 * Determine if dependency is active or installed.
 		 */
-		function admin_init() {
-			if ( get_transient( 'github_updater_dismiss_notice' ) ) {
-				return;
-			}
-			foreach ( (object) $this->config as $dependency ) {
-				$message = null;
-				if ( ! $dependency instanceof stdClass ||
-				     is_plugin_active( $dependency->slug )
-				) {
+		public function admin_init() {
+
+			// Get the gears turning
+			$this->apply_config();
+
+			// Generate admin notices
+			foreach ( $this->config as $slug => $dependency ) {
+				if ( is_plugin_active( $slug ) ) {
 					continue;
 				}
-				$this->dependency = $dependency;
-				if ( $this->is_installed() ) {
-					if ( ! is_plugin_active( $dependency->slug ) ) {
-						$message = array(
-							'action' => 'activate',
-							'text'   => sprintf( __( 'Please activate the %s plugin.' ), $this->dependency->name )
-						);
-					}
-				} else {
-					$message = array(
-						'action' => 'install',
-						'text'   => sprintf( __( 'The %s plugin is required.' ), $dependency->name )
+
+				if ( $this->is_installed( $slug ) ) {
+					$this->notices[] = array(
+						'action'	=> 'activate',
+						'slug'		=> $slug,
+						'text'		=> sprintf( __( 'Please activate the %s plugin.' ), $dependency['name'] )
 					);
 				}
-				$this->notices[] = $message;
+				else {
+					if ( isset( $dependency['optional'] ) && false === $dependency['optional'] ) {
+						$this->notices[] = $this->install( $slug );
+					}
+					else {
+						$this->notices[] = array(
+							'action'	=> 'install',
+							'slug'		=> $slug,
+							'text'		=> sprintf( __( 'The %s plugin is required.' ), $dependency['name'] )
+						);
+					}
+				}
 			}
 		}
 
 		/**
 		 * Register jQuery AJAX.
 		 */
-		function admin_footer() {
+		public function admin_footer() {
 			?>
 			<script>
 				(function ($) {
 					$(function () {
-						$(document).on('click', '.ghu-button', function () {
+						$(document).on('click', '.wpdi-button', function () {
 							var $this = $(this);
-							$('.github-updater p').html('Running...');
+							var $parent = $(this).closest('p');
+							$parent.html('Running...');
 							$.post(ajaxurl, {
-								action: 'github_updater',
-								method: $this.attr('data-action')
+								action: 'dependency_installer',
+								method: $this.attr('data-action'),
+								slug: $this.attr('data-slug')
 							}, function (response) {
-								$('.github-updater p').html(response);
+								$parent.html(response);
 							});
 						});
-						$(document).on('click', '.github-updater .notice-dismiss', function () {
+						$(document).on('click', '.dependency-installer .notice-dismiss', function () {
+							var $this = $(this);
 							$.post(ajaxurl, {
-								action: 'github_updater',
-								method: 'dismiss'
+								action: 'dependency_installer',
+								method: 'dismiss',
+								slug: $this.attr('data-slug')
 							});
 						});
 					});
@@ -172,127 +211,78 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * AJAX router.
 		 */
-		function ajax_router() {
-			$method    = isset( $_POST['method'] ) ? $_POST['method'] : '';
-			$whitelist = array( 'install', 'activate', 'dismiss' );
+		public function ajax_router() {
+			$method		= isset( $_POST['method'] ) ? $_POST['method'] : '';
+			$slug 		= isset( $_POST['slug'] ) ? $_POST['slug'] : '';
+			$whitelist	= array( 'install', 'activate', 'dismiss' );
+
 			if ( in_array( $method, $whitelist ) ) {
-				$response = $this->$method();
+				$response = $this->$method( $slug );
 				echo $response['message'];
 			}
 			wp_die();
 		}
 
 		/**
-		 * Prepare json data from wp-dependencies.json for use.
-		 *
-		 * @param $config
-		 *
-		 * @return bool
-		 */
-		protected function prepare_json( $config ) {
-			foreach ( $config as $dependency ) {
-				if ( ! $dependency instanceof \stdClass ) {
-					continue;
-				}
-
-				$download_link                = null;
-				$path                         = parse_url( $dependency->uri, PHP_URL_PATH );
-				$owner_repo                   = trim( $path, '/' );  // strip surrounding slashes
-				$owner_repo                   = str_replace( '.git', '', $owner_repo ); //strip incorrect URI ending
-
-				switch ( $dependency->host ) {
-					case 'wordpress':
-						$download_link = 'https://downloads.wordpress.org/plugin/' . basename( $owner_repo ) . '.zip';
-						break;
-					case 'github':
-						$download_link = 'https://api.github.com/repos/' . $owner_repo . '/zipball/' . $dependency->branch;
-						if ( ! empty( $dependency->token ) ) {
-							$download_link = add_query_arg( 'access_token', $dependency->token, $download_link );
-						}
-						break;
-					case 'bitbucket':
-						$download_link = 'https://bitbucket.org/' . $owner_repo . '/get/' . $dependency->branch . '.zip';
-						break;
-					case 'gitlab':
-						$download_link = 'https://gitlab.com/' . $owner_repo . '/repository/archive.zip';
-						$download_link = add_query_arg( 'ref', $dependency->branch, $download_link );
-						if ( ! empty( $dependency->token ) ) {
-							$download_link = add_query_arg( 'private_token', $dependency->token, $download_link );
-						}
-						break;
-				}
-
-				$dependency->download_link = $download_link;
-				$this->dependency = $dependency;
-				$this->dependency->installed = $this->is_installed();
-				if ( ! $this->dependency->optional ) {
-					$this->install();
-				}
-			}
-
-			return $config;
-		}
-
-		/**
 		 * Is dependency installed?
 		 */
-		function is_installed() {
+		public function is_installed( $slug ) {
 			$plugins = get_plugins();
-			return isset( $plugins[ $this->dependency->slug ] );
+			return isset( $plugins[ $slug ] );
 		}
 
 		/**
 		 * Install and activate dependency.
 		 */
-		public function install() {
-			if ( ! $this->is_installed() ) {
-				require_once ABSPATH . 'wp-admin/includes/file.php';
-				require_once ABSPATH . 'wp-admin/includes/misc.php';
-
-				add_filter( 'upgrader_source_selection', array( &$this, 'upgrader_source_selection' ), 10, 2 );
-
-				$skin     = new WPDI_Plugin_Installer_Skin( array(
-					'type'  => 'plugin',
-					'nonce' => wp_nonce_url( $this->dependency->download_link ),
-				) );
-				$upgrader = new Plugin_Upgrader( $skin );
-				$result   = $upgrader->install( $this->dependency->download_link );
-
-				if ( is_wp_error( $result ) ) {
-					return array( 'status' => 'error', 'message' => $result->get_error_message() );
-				}
-				wp_cache_flush();
-				$result = $this->activate();
-				if ( 'error' == $result['status'] ) {
-					return $result;
-				}
-
-				$this->notices[] = array(
-					'status' => 'updated',
-					'message' => sprintf( __( '%s has been installed and activated.' ), $this->dependency->name ) );
-				$this->dependency->installed = true;
+		public function install( $slug ) {
+			if ( $this->is_installed( $slug ) ) {
+				return;
 			}
+
+			$this->current_slug = $slug;
+			add_filter( 'upgrader_source_selection', array( $this, 'upgrader_source_selection' ), 10, 2 );
+
+			$skin     = new WPDI_Plugin_Installer_Skin( array(
+				'type'  => 'plugin',
+				'nonce' => wp_nonce_url( $this->config[ $slug ]['download_link'] ),
+			) );
+			$upgrader = new Plugin_Upgrader( $skin );
+			$result   = $upgrader->install( $this->config[ $slug ]['download_link'] );
+
+			if ( is_wp_error( $result ) ) {
+				return array( 'status' => 'error', 'message' => $result->get_error_message() );
+			}
+
+			wp_cache_flush();
+			$result = $this->activate( $slug );
+			if ( 'error' == $result['status'] ) {
+				return $result;
+			}
+
+			return array(
+				'status' => 'updated',
+				'message' => sprintf( __( '%s has been installed and activated.' ), $this->config[ $slug ]['name'] )
+			);
 		}
 
 		/**
 		 * Activate dependency.
 		 */
-		public function activate() {
-			$result = activate_plugin( $this->dependency->slug, null, true );
+		public function activate( $slug ) {
+			$result = activate_plugin( $slug ); // should this be network-wide?
+
 			if ( is_wp_error( $result ) ) {
 				return array( 'status' => 'error', 'message' => $result->get_error_message() );
 			}
 
-			return array( 'status' => 'updated', 'message' => sprintf( __( '%s has been activated.' ), $this->dependency->name ) );
+			return array( 'status' => 'updated', 'message' => sprintf( __( '%s has been activated.' ), $this->config[ $slug ]['name'] ) );
 		}
 
 		/**
 		 * Dismiss admin notice for a week.
 		 */
 		public function dismiss() {
-			//set_transient( 'github_updater_dismiss_notice', true, WEEK_IN_SECONDS );
-
-			return array( 'status' => 'ok', 'message' => '' );
+			return array( 'status' => 'updated', 'message' => '' );
 		}
 
 		/**
@@ -305,9 +295,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 */
 		public function upgrader_source_selection( $source, $remote_source ) {
 			global $wp_filesystem;
-			$new_source = trailingslashit( $remote_source ) . dirname( $this->dependency->slug );
+			$new_source = trailingslashit( $remote_source ) . dirname( $this->current_slug );
 			$wp_filesystem->move( $source, $new_source );
-
 			return trailingslashit( $new_source );
 		}
 
@@ -316,22 +305,21 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 */
 		public function admin_notices() {
 			foreach ( $this->notices as $notice ) {
-				$status = null;
+				$status = empty( $notice['status'] ) ? 'updated' : $notice['status'];
+
 				if ( ! empty( $notice['action'] ) ) {
-					$status  = 'updated';
-					$action  = esc_attr( $notice['action'] );
-					$message = esc_html( $notice['text'] );
-					$message .= ' <a href="javascript:;" class="ghu-button" data-action="' . $action . '">' . ucfirst( $action ) . ' Now &raquo;</a>';
+					$action 	= esc_attr( $notice['action'] );
+					$message 	= esc_html( $notice['text'] );
+					$message 	.= ' <a href="javascript:;" class="wpdi-button" data-action="' . $action . '" data-slug="' . $notice['slug'] . '">' . ucfirst( $action ) . ' Now &raquo;</a>';
 				}
 				if ( ! empty( $notice['status'] ) ) {
-					$status  = $notice['status'];
 					$message = esc_html( $notice['message'] );
 				}
-				?>
-				<div class="<?php echo $status ?> notice is-dismissible github-updater">
-					<p><?php esc_html_e( 'WP Dependency Installer' ); echo ': ' . $message; ?></p>
+?>
+				<div class="<?php echo $status ?> notice is-dismissible dependency-installer">
+					<p><?php echo '<strong>[' . esc_html__( 'Dependency' ) . ']</strong> ' . $message; ?></p>
 				</div>
-				<?php
+<?php
 			}
 		}
 	}
@@ -345,4 +333,17 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		public function feedback( $string ) {}
 	}
 
+	function WPDI() {
+		return WP_Dependency_Installer::instance();
+	}
+
+	WPDI();
+}
+
+/**
+ * Register wp-dependencies.json
+ */
+if ( file_exists( __DIR__ . '/wp-dependencies.json' ) ) {
+	$config = file_get_contents( __DIR__ . '/wp-dependencies.json' );
+	WPDI()->register( $config );
 }
