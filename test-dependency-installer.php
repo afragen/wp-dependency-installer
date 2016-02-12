@@ -1,11 +1,11 @@
 <?php
 
 /**
- * Plugin Name: Test  Dependency Installer
+ * Plugin Name: Test Dependency Installer
  * Plugin URI: https://github.com/afragen/wp-dependency-installer
  * Description: This plugin is used for test dependency installation of remote sourced plugins.
  * Version: 0.1
- * Author: Andy Fragen
+ * Author: Andy Fragen, Matt Gibbs
  * License: GNU General Public License v2
  * License URI: http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  * GitHub Plugin URI: https://github.com/afragen/wp-dependency-installer
