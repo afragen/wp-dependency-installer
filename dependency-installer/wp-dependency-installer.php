@@ -114,24 +114,26 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				$path = parse_url( $uri, PHP_URL_PATH );
 				$owner_repo = str_replace( '.git', '', trim( $path, '/' ) );
 
-				if ( false !== strpos( $uri, 'github.com' ) ) {
-					$download_link = 'https://api.github.com/repos/' . $owner_repo . '/zipball/' . $dependency['branch'];
-					if ( ! empty( $dependency['token'] ) ) {
-						$download_link = add_query_arg( 'access_token', $dependency['token'], $download_link );
-					}
-				}
-				elseif ( false !== strpos( $uri, 'bitbucket.org' ) ) {
-					$download_link = 'https://bitbucket.org/' . $owner_repo . '/get/' . $dependency['branch'] . '.zip';
-				}
-				elseif ( false !== strpos( $uri, 'gitlab.com' ) ) {
-					$download_link = 'https://gitlab.com/' . $owner_repo . '/repository/archive.zip';
-					$download_link = add_query_arg( 'ref', $dependency['branch'], $download_link );
-					if ( ! empty( $dependency['token'] ) ) {
-						$download_link = add_query_arg( 'private_token', $dependency['token'], $download_link );
-					}
-				}
-				elseif ( false !== strpos( $uri, 'wordpress.org' ) ) {
-					$download_link = 'https://downloads.wordpress.org/plugin/' . basename( $owner_repo ) . '.zip';
+				switch ( $uri ) {
+					case ( false !== strpos( $uri, 'github.com' ) ):
+						$download_link = 'https://api.github.com/repos/' . $owner_repo . '/zipball/' . $dependency['branch'];
+						if ( ! empty( $dependency['token'] ) ) {
+							$download_link = add_query_arg( 'access_token', $dependency['token'], $download_link );
+						}
+						break;
+					case ( false !== strpos( $uri, 'bitbucket.org' ) ):
+						$download_link = 'https://bitbucket.org/' . $owner_repo . '/get/' . $dependency['branch'] . '.zip';
+						break;
+					case ( false !== strpos( $uri, 'gitlab.com' ) ):
+						$download_link = 'https://gitlab.com/' . $owner_repo . '/repository/archive.zip';
+						$download_link = add_query_arg( 'ref', $dependency['branch'], $download_link );
+						if ( ! empty( $dependency['token'] ) ) {
+							$download_link = add_query_arg( 'private_token', $dependency['token'], $download_link );
+						}
+						break;
+					case( false !== strpos( $uri, 'wordpress.org' ) ):
+						$download_link = 'https://downloads.wordpress.org/plugin/' . basename( $owner_repo ) . '.zip';
+						break;
 				}
 
 				$this->config[ $slug ]['download_link'] = $download_link;
