@@ -336,6 +336,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * Display admin notices / action links.
 		 */
 		public function admin_notices() {
+			$message = null;
 			foreach ( $this->notices as $notice ) {
 				$status = empty( $notice['status'] ) ? 'updated' : $notice['status'];
 
