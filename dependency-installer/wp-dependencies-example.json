@@ -1,6 +1,7 @@
 [
   {
     "name": "Hello Dolly",
+    "host": "wordpress",
     "slug": "hello-dolly/hello.php",
     "uri": "https://wordpress.org/plugins/hello-dolly",
     "branch": "trunk",
@@ -9,14 +10,16 @@
   },
   {
     "name": "GitHub Updater",
+    "host": "github",
     "slug": "github-updater/github-updater.php",
-    "uri": "https://github.com/afragen/github-updater",
+    "uri": "afragen/github-updater",
     "branch": "master",
     "optional": true,
     "token": null
   },
   {
     "name": "Test Plugin Notags",
+    "host": "bitbucket",
     "slug": "test-plugin-notags/test-plugin-notags.php",
     "uri": "https://bitbucket.org/afragen/test-plugin-notags",
     "branch": "master",
@@ -25,6 +28,7 @@
   },
   {
     "name": "Test Gitlab Plugin2",
+    "host": "gitlab",
     "slug": "test-gitlab-plugin2/test-gitlab-plugin2.php",
     "uri": "https://gilab.com/afragen/test-gitlab-plugin2",
     "branch": "develop",
