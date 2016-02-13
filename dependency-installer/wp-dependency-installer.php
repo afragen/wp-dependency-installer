@@ -12,7 +12,7 @@
  * @author    Matt Gibbs
  * @license   GPL-2.0+
  * @link      https://github.com/afragen/wp-dependency-installer
- * @version   0.5
+ * @version   0.6
  */
 
 /**
