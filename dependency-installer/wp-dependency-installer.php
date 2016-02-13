@@ -114,12 +114,13 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 */
 		public function apply_config() {
 			foreach ( $this->config as $dependency ) {
-				$uri        = $dependency['uri'];
-				$slug       = $dependency['slug'];
-				$host       = explode( '.', parse_url( $uri, PHP_URL_HOST ) );
-				$host       = isset( $dependency['host'] ) ? $dependency['host'] : $host[1];
-				$path       = parse_url( $uri, PHP_URL_PATH );
-				$owner_repo = str_replace( '.git', '', trim( $path, '/' ) );
+				$download_link = null;
+				$uri           = $dependency['uri'];
+				$slug          = $dependency['slug'];
+				$host          = explode( '.', parse_url( $uri, PHP_URL_HOST ) );
+				$host          = isset( $dependency['host'] ) ? $dependency['host'] : $host[0];
+				$path          = parse_url( $uri, PHP_URL_PATH );
+				$owner_repo    = str_replace( '.git', '', trim( $path, '/' ) );
 
 				switch ( $host ) {
 					case ( 'github' ):
