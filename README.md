@@ -71,7 +71,7 @@ This file must be named `wp-dependencies.json`.
   }
 ]
 ```
-An example file is included, `wp-dependencies-example.json`. You may use a shorthand uri such as `<owner>/<repo>`.
+An example file is included, `wp-dependencies-example.json`. You may use a shorthand uri such as `<owner>/<repo>` but only if you include the `host` element in the JSON. If you have a full URI in the `uri` element then the `host` element is optional.
 
 ## Development
 
