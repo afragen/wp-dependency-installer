@@ -35,7 +35,7 @@ This file must be named `wp-dependencies.json`.
 [
   {
     "name": "Hello Dolly",
-    "host": "wordpress,
+    "host": "wordpress",
     "slug": "hello-dolly/hello.php",
     "uri": "https://wordpress.org/plugins/hello-dolly",
     "branch": "trunk",
