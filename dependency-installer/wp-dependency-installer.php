@@ -15,14 +15,14 @@
  * @version   0.5
  */
 
-/*
+/**
  * Exit if called directly.
  */
 if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-/*
+/**
  * Don't run during heartbeat.
  */
 if ( isset( $_REQUEST['action'] ) && 'heartbeat' === $_REQUEST['action'] ) {
@@ -76,7 +76,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		}
 
 		/**
-		 * Singleton
+		 * Singleton.
 		 */
 		public static function instance() {
 			if ( ! isset( self::$instance ) ) {
@@ -87,7 +87,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		}
 
 		/**
-		 * Register dependencies (supports multiple instances)
+		 * Register dependencies (supports multiple instances).
 		 *
 		 * @param $config
 		 */
@@ -110,33 +110,36 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		}
 
 		/**
-		 * Process the registered dependencies
+		 * Process the registered dependencies.
 		 */
 		public function apply_config() {
 			foreach ( $this->config as $dependency ) {
-				$uri        = $dependency['uri'];
-				$slug       = $dependency['slug'];
-				$path       = parse_url( $uri, PHP_URL_PATH );
-				$owner_repo = str_replace( '.git', '', trim( $path, '/' ) );
+				$download_link = null;
+				$uri           = $dependency['uri'];
+				$slug          = $dependency['slug'];
+				$host          = explode( '.', parse_url( $uri, PHP_URL_HOST ) );
+				$host          = isset( $dependency['host'] ) ? $dependency['host'] : $host[0];
+				$path          = parse_url( $uri, PHP_URL_PATH );
+				$owner_repo    = str_replace( '.git', '', trim( $path, '/' ) );
 
-				switch ( $uri ) {
-					case ( false !== strpos( $uri, 'github.com' ) ):
+				switch ( $host ) {
+					case ( 'github' ):
 						$download_link = 'https://api.github.com/repos/' . $owner_repo . '/zipball/' . $dependency['branch'];
 						if ( ! empty( $dependency['token'] ) ) {
 							$download_link = add_query_arg( 'access_token', $dependency['token'], $download_link );
 						}
 						break;
-					case ( false !== strpos( $uri, 'bitbucket.org' ) ):
+					case ( 'bitbucket' ):
 						$download_link = 'https://bitbucket.org/' . $owner_repo . '/get/' . $dependency['branch'] . '.zip';
 						break;
-					case ( false !== strpos( $uri, 'gitlab.com' ) ):
+					case ( 'gitlab' ):
 						$download_link = 'https://gitlab.com/' . $owner_repo . '/repository/archive.zip';
 						$download_link = add_query_arg( 'ref', $dependency['branch'], $download_link );
 						if ( ! empty( $dependency['token'] ) ) {
 							$download_link = add_query_arg( 'private_token', $dependency['token'], $download_link );
 						}
 						break;
-					case( false !== strpos( $uri, 'wordpress.org' ) ):
+					case( 'wordpress' ):
 						$download_link = 'https://downloads.wordpress.org/plugin/' . basename( $owner_repo ) . '.zip';
 						break;
 				}
@@ -282,15 +285,19 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Activate dependency.
 		 *
+		 * @TODO don't network activate if dependency is required by a theme
+		 *
 		 * @param $slug
 		 *
 		 * @return array
 		 */
 		public function activate( $slug ) {
 
-			// if requesting plugin is network activated - yes
-			// should this be network-wide? No if theme is requesting.
-			$result = activate_plugin( $slug );
+			/**
+			 * if plugin is requesting - yes
+			 * if theme is requesting - no
+			 */
+			$result = activate_plugin( $slug, null, true );
 
 			if ( is_wp_error( $result ) ) {
 				return array( 'status' => 'error', 'message' => $result->get_error_message() );
@@ -329,6 +336,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * Display admin notices / action links.
 		 */
 		public function admin_notices() {
+			$message = null;
 			foreach ( $this->notices as $notice ) {
 				$status = empty( $notice['status'] ) ? 'updated' : $notice['status'];
 

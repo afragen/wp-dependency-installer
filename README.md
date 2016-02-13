@@ -1,4 +1,4 @@
-# WP  Dependency Installer
+# WP Dependency Installer
 * Contributors: [Andy Fragen](https://github.com/afragen), [Matt Gibbs](https://github.com/mgibbs189), [contributors](https://github.com/afragen/wp-dependency-installer/graphs/contributors)
 * Tags: plugin, dependency, install
 * Requires at least: 3.8
@@ -35,6 +35,7 @@ This file must be named `wp-dependencies.json`.
 [
   {
     "name": "Hello Dolly",
+    "host": "wordpress",
     "slug": "hello-dolly/hello.php",
     "uri": "https://wordpress.org/plugins/hello-dolly",
     "branch": "trunk",
@@ -43,14 +44,16 @@ This file must be named `wp-dependencies.json`.
   },
   {
     "name": "GitHub Updater",
-    "slug": "github-updater/github-updater.php",
-    "uri": "https://github.com/afragen/github-updater",
+	"host": "github",
+	"slug": "github-updater/github-updater.php",
+    "uri": "afragen/github-updater",
     "branch": "master",
     "optional": true,
     "token": null
   },
   {
     "name": "Test Plugin Notags",
+    "host": "bitbucket",
     "slug": "test-plugin-notags/test-plugin-notags.php",
     "uri": "https://bitbucket.org/afragen/test-plugin-notags",
     "branch": "master",
@@ -59,6 +62,7 @@ This file must be named `wp-dependencies.json`.
   },
   {
     "name": "Test Gitlab Plugin2",
+    "host": "gitlab",
     "slug": "test-gitlab-plugin2/test-gitlab-plugin2.php",
     "uri": "https://gitlab.com/afragen/test-gitlab-plugin2",
     "branch": "develop",
@@ -67,7 +71,7 @@ This file must be named `wp-dependencies.json`.
   }
 ]
 ```
-An example file is included, `wp-dependencies-example.json`.
+An example file is included, `wp-dependencies-example.json`. You may use a shorthand uri such as `<owner>/<repo>` but only if you include the `host` element in the JSON. If you have a full URI in the `uri` element then the `host` element is optional.
 
 ## Development
 
