@@ -284,15 +284,19 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Activate dependency.
 		 *
+		 * @TODO don't network activate if dependency is required by a theme
+		 *
 		 * @param $slug
 		 *
 		 * @return array
 		 */
 		public function activate( $slug ) {
 
-			// if requesting plugin is network activated - yes
-			// should this be network-wide? No if theme is requesting.
-			$result = activate_plugin( $slug );
+			/**
+			 * if plugin is requesting - yes
+			 * if theme is requesting - no
+			 */
+			$result = activate_plugin( $slug, null, true );
 
 			if ( is_wp_error( $result ) ) {
 				return array( 'status' => 'error', 'message' => $result->get_error_message() );
