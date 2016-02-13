@@ -15,14 +15,14 @@
  * @version   0.5
  */
 
-/*
+/**
  * Exit if called directly.
  */
 if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-/*
+/**
  * Don't run during heartbeat.
  */
 if ( isset( $_REQUEST['action'] ) && 'heartbeat' === $_REQUEST['action'] ) {
@@ -76,7 +76,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		}
 
 		/**
-		 * Singleton
+		 * Singleton.
 		 */
 		public static function instance() {
 			if ( ! isset( self::$instance ) ) {
@@ -87,7 +87,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		}
 
 		/**
-		 * Register dependencies (supports multiple instances)
+		 * Register dependencies (supports multiple instances).
 		 *
 		 * @param $config
 		 */
@@ -110,7 +110,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		}
 
 		/**
-		 * Process the registered dependencies
+		 * Process the registered dependencies.
 		 */
 		public function apply_config() {
 			foreach ( $this->config as $dependency ) {
