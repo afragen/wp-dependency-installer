@@ -5,7 +5,7 @@
 * Requires PHP: 5.3
 * Tested up to: 4.4
 * Stable tag: master
-* Donate link: 
+* Donate link: http://thefragens.com/wp-dependency-installer
 * License: GPLv2 or later
 * License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
