@@ -12,7 +12,7 @@
  * @author    Matt Gibbs
  * @license   GPL-2.0+
  * @link      https://github.com/afragen/wp-dependency-installer
- * @version   0.6
+ * @version   0.7
  */
 
 /**
@@ -252,7 +252,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @return array
 		 */
 		public function install( $slug ) {
-			if ( $this->is_installed( $slug ) && ! current_user_can( 'update_plugins' ) ) {
+			if ( $this->is_installed( $slug ) || ! current_user_can( 'update_plugins' ) ) {
 				return false;
 			}
 
