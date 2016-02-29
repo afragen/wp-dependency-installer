@@ -2,7 +2,7 @@
 
 /**
  * Plugin Name: Test Dependency Installer
- * Plugin URI: https://github.com/afragen/wp-dependency-installer
+ * Plugin URI: https://github.com/afragen/wp-dependency-installer-donate
  * Description: This plugin is used for test dependency installation of remote sourced plugins.
  * Version: 0.4
  * Author: Andy Fragen, Matt Gibbs
