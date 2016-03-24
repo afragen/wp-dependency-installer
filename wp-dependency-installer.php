@@ -87,6 +87,16 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		}
 
 		/**
+		 * Register wp-dependencies.json
+		 */
+		public function run() {
+			if ( file_exists( __DIR__ . '/wp-dependencies.json' ) ) {
+				$config = file_get_contents( __DIR__ . '/wp-dependencies.json' );
+				$this->register( $config );
+			}
+		}
+		
+		/**
 		 * Register dependencies (supports multiple instances).
 		 *
 		 * @param $config
@@ -369,17 +379,4 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		public function feedback( $string ) {}
 	}
 
-	function WPDI() {
-		return WP_Dependency_Installer::instance();
-	}
-
-	WPDI();
-}
-
-/**
- * Register wp-dependencies.json
- */
-if ( file_exists( __DIR__ . '/wp-dependencies.json' ) ) {
-	$config = file_get_contents( __DIR__ . '/wp-dependencies.json' );
-	WPDI()->register( $config );
 }
