@@ -12,7 +12,7 @@
  * @author    Matt Gibbs
  * @license   GPL-2.0+
  * @link      https://github.com/afragen/wp-dependency-installer
- * @version   0.7
+ * @version   0.8
  */
 
 /**
@@ -95,7 +95,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				$this->register( $config );
 			}
 		}
-		
+
 		/**
 		 * Register dependencies (supports multiple instances).
 		 *
