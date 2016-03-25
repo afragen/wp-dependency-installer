@@ -25,12 +25,19 @@ Add the following line to your plugin or theme's `functions.php` file. Make sure
 
 ```php
 include_once( __DIR__ . '/vendor/wp-install-dependencies/wp-dependency-installer.php' );
-WP_Dependency_Installer::instance()->run();
 ```
 
-This pattern allows for the use of an autoloader in your project. If you use an autoloader simply map the class to the correct path as follows.
+This framework allows for the use of an autoloader in your project. If you use an autoloader simply map the class to the correct path as follows.
 
-`'WP_Dependency_Installer' => __DIR__ . '/vendor/wp-install-dependencies/wp-dependency-installer.php'`
+```php
+'WP_Dependency_Installer' => __DIR__ . '/vendor/wp-install-dependencies/wp-dependency-installer.php'
+```
+
+Then invoke the framework by using the following command.
+
+```php
+WP_Dependency_Installer::instance()->run();
+```
 
 ## JSON config file format
 

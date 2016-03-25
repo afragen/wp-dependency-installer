@@ -15,4 +15,3 @@
  */
 
 include_once( __DIR__ . '/vendor/wp-install-dependencies/wp-dependency-installer.php' );
-WP_Dependency_Installer::instance()->run();
