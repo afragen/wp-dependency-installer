@@ -27,6 +27,8 @@ Add the following line to your plugin or theme's `functions.php` file. Make sure
 include_once( __DIR__ . '/vendor/wp-install-dependencies/wp-dependency-installer.php' );
 ```
 
+### Autoloaders
+
 This framework allows for the use of an autoloader in your project. If you use an autoloader simply map the class to the correct path as follows.
 
 ```php
