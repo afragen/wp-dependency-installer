@@ -372,11 +372,26 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 	require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 
+	/**
+	 * Class WPDI_Plugin_Installer_Skin
+	 */
 	class WPDI_Plugin_Installer_Skin extends Plugin_Installer_Skin {
 		public function header() {}
 		public function footer() {}
 		public function error( $errors ) {}
 		public function feedback( $string ) {}
 	}
+
+	/**
+	 * Function to call class instance.
+	 *
+	 * @return \WP_Dependency_Installer
+	 */
+	function WPDI() {
+		return WP_Dependency_Installer::instance();
+	}
+
+	// Ready, set, go.
+	WPDI()->run();
 
 }
