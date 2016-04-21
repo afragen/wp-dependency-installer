@@ -1,12 +1,11 @@
 [
   {
-    "name": "Hello Dolly",
+    "name": "WordPress REST API",
     "host": "wordpress",
-    "slug": "hello-dolly/hello.php",
-    "uri": "https://wordpress.org/plugins/hello-dolly",
+    "slug": "rest-api/plugin.php",
+    "uri": "https://wordpress.org/plugins/rest-api/",
     "branch": "trunk",
-    "optional": true,
-    "token": null
+    "optional": true
   },
   {
     "name": "GitHub Updater",
@@ -29,7 +28,7 @@
     "name": "Test Gitlab Plugin2",
     "host": "gitlab",
     "slug": "test-gitlab-plugin2/test-gitlab-plugin2.php",
-    "uri": "https://gilab.com/afragen/test-gitlab-plugin2",
+    "uri": "https://gitlab.com/afragen/test-gitlab-plugin2",
     "branch": "develop",
     "optional": true,
     "token": null

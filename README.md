@@ -3,7 +3,7 @@
 * Tags: plugin, dependency, install
 * Requires at least: 3.8
 * Requires PHP: 5.3
-* Tested up to: 4.4
+* Tested up to: 4.5
 * Stable tag: master
 * Donate link: http://thefragens.com/wp-dependency-installer-donate
 * License: GPLv2 or later
@@ -13,39 +13,52 @@ A lightweight class to add to WordPress plugins or themes to automatically insta
 
 ## Description
 
-This is a drop in class for developers to optionally or automatically install plugin dependencies for their own plugins or themes. It can install a plugin from w.org, GitHub, Bitbucket, or GitLab.
+This is a drop in class for developers to optionally or automatically install plugin dependencies for their own plugins or themes. It can install a plugin from w.org, GitHub, Bitbucket, or GitLab. You must include a JSON config file in the same directory as this class file.
 
-This contains an example plugin. Only required dependencies are installed automatically, optional dependencies are not.
+This contains an example plugin and an example JSON configuration file. Only required dependencies are installed automatically, optional dependencies are not.
 
 ## Installation
 
-Copy the `dependency-installer` folder into your project and adapt the `wp-dependencies.json` file to your needs.
+Copy the `wp-install-dependencies` folder into your project and copy or adapt the `wp-dependencies-example.json` file as `wp-dependencies.json` to your needs. Best practices may be to add this directory into your `vendor` directory.
 
-Add the following line to your plugin or theme's `functions.php` file. Make sure to adjust for where in your project you install the `dependency-installer` folder.
+Add the following line to your plugin or to your theme's `functions.php` file. Make sure to adjust for where in your project you install the `wp-install-dependencies` folder.
 
 ```php
-include_once( __DIR__ . '/dependency-installer/wp-dependency-installer.php' );
+include_once( __DIR__ . '/vendor/wp-install-dependencies/wp-dependency-installer.php' );
+```
+
+### Autoloaders
+
+This framework allows for the use of an autoloader in your project. If you use an autoloader simply map the class to the correct path as follows.
+
+```php
+'WP_Dependency_Installer' => __DIR__ . '/vendor/wp-install-dependencies/wp-dependency-installer.php'
+```
+
+Then invoke the framework by using the following command.
+
+```php
+WP_Dependency_Installer::instance()->run();
 ```
 
 ## JSON config file format
 
-This file must be named `wp-dependencies.json`.
+This file must be named `wp-dependencies.json` and it must be in the same directory as `wp-dependency-installer.php`.
 
 ```json
 [
   {
-    "name": "Hello Dolly",
+    "name": "WordPress REST API",
     "host": "wordpress",
-    "slug": "hello-dolly/hello.php",
-    "uri": "https://wordpress.org/plugins/hello-dolly",
+    "slug": "rest-api/plugin.php",
+    "uri": "https://wordpress.org/plugins/rest-api/",
     "branch": "trunk",
-    "optional": true,
-    "token": null
+    "optional": true
   },
   {
     "name": "GitHub Updater",
-	"host": "github",
-	"slug": "github-updater/github-updater.php",
+    "host": "github",
+    "slug": "github-updater/github-updater.php",
     "uri": "afragen/github-updater",
     "branch": "master",
     "optional": true,
@@ -53,7 +66,6 @@ This file must be named `wp-dependencies.json`.
   },
   {
     "name": "Test Plugin Notags",
-    "host": "bitbucket",
     "slug": "test-plugin-notags/test-plugin-notags.php",
     "uri": "https://bitbucket.org/afragen/test-plugin-notags",
     "branch": "master",

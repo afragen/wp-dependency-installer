@@ -12,7 +12,7 @@
  * @author    Matt Gibbs
  * @license   GPL-2.0+
  * @link      https://github.com/afragen/wp-dependency-installer
- * @version   0.7
+ * @version   0.8
  */
 
 /**
@@ -84,6 +84,16 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			}
 
 			return self::$instance;
+		}
+
+		/**
+		 * Register wp-dependencies.json
+		 */
+		public function run() {
+			if ( file_exists( __DIR__ . '/wp-dependencies.json' ) ) {
+				$config = file_get_contents( __DIR__ . '/wp-dependencies.json' );
+				$this->register( $config );
+			}
 		}
 
 		/**
@@ -362,6 +372,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 	require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 
+	/**
+	 * Class WPDI_Plugin_Installer_Skin
+	 */
 	class WPDI_Plugin_Installer_Skin extends Plugin_Installer_Skin {
 		public function header() {}
 		public function footer() {}
@@ -369,17 +382,16 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		public function feedback( $string ) {}
 	}
 
+	/**
+	 * Function to call class instance.
+	 *
+	 * @return \WP_Dependency_Installer
+	 */
 	function WPDI() {
 		return WP_Dependency_Installer::instance();
 	}
 
-	WPDI();
-}
+	// Ready, set, go.
+	WPDI()->run();
 
-/**
- * Register wp-dependencies.json
- */
-if ( file_exists( __DIR__ . '/wp-dependencies.json' ) ) {
-	$config = file_get_contents( __DIR__ . '/wp-dependencies.json' );
-	WPDI()->register( $config );
 }
