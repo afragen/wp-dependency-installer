@@ -21,7 +21,7 @@ This contains an example plugin and an example JSON configuration file. Only req
 
 Copy the `wp-install-dependencies` folder into your project and copy or adapt the `wp-dependencies-example.json` file as `wp-dependencies.json` to your needs. Best practices may be to add this directory into your `vendor` directory.
 
-Add the following line to your plugin or theme's `functions.php` file. Make sure to adjust for where in your project you install the `wp-install-dependencies` folder.
+Add the following line to your plugin or to your theme's `functions.php` file. Make sure to adjust for where in your project you install the `wp-install-dependencies` folder.
 
 ```php
 include_once( __DIR__ . '/vendor/wp-install-dependencies/wp-dependency-installer.php' );
