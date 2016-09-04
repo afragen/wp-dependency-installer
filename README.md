@@ -19,12 +19,12 @@ This contains an example plugin and an example JSON configuration file. Only req
 
 ## Installation
 
-Copy the `wp-install-dependencies` folder into your project and copy or adapt the `wp-dependencies-example.json` file as `wp-dependencies.json` to your needs. Best practices may be to add this directory into your `vendor` directory.
+Copy the `wp-dependency-installer` folder into your project and copy or adapt the `wp-dependencies-example.json` file as `wp-dependencies.json` to your needs. Best practices may be to add this directory into your `vendor` directory.
 
-Add the following line to your plugin or to your theme's `functions.php` file. Make sure to adjust for where in your project you install the `wp-install-dependencies` folder.
+Add the following line to your plugin or to your theme's `functions.php` file. Make sure to adjust for where in your project you install the `wp-dependency-installer` folder.
 
 ```php
-include_once( __DIR__ . '/vendor/wp-install-dependencies/wp-dependency-installer.php' );
+include_once( __DIR__ . '/vendor/wp-dependency-installer/wp-dependency-installer.php' );
 ```
 
 ### Autoloaders
@@ -32,7 +32,7 @@ include_once( __DIR__ . '/vendor/wp-install-dependencies/wp-dependency-installer
 This framework allows for the use of an autoloader in your project. If you use an autoloader simply map the class to the correct path as follows.
 
 ```php
-'WP_Dependency_Installer' => __DIR__ . '/vendor/wp-install-dependencies/wp-dependency-installer.php'
+'WP_Dependency_Installer' => __DIR__ . '/vendor/wp-dependency-installer/wp-dependency-installer.php'
 ```
 
 Then invoke the framework by using the following command.
