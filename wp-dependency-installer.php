@@ -12,7 +12,7 @@
  * @author    Matt Gibbs
  * @license   GPL-2.0+
  * @link      https://github.com/afragen/wp-dependency-installer
- * @version   0.8
+ * @version   0.9
  */
 
 /**
@@ -259,7 +259,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @param $slug
 		 *
-		 * @return array
+		 * @return bool|array
 		 */
 		public function install( $slug ) {
 			if ( $this->is_installed( $slug ) || ! current_user_can( 'update_plugins' ) ) {
@@ -321,6 +321,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 		/**
 		 * Dismiss admin notice for a week.
+		 *
+		 * @return array
 		 */
 		public function dismiss() {
 			return array( 'status' => 'updated', 'message' => '' );
@@ -344,6 +346,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 		/**
 		 * Display admin notices / action links.
+		 *
+		 * @return bool/string
 		 */
 		public function admin_notices() {
 			if ( ! current_user_can( 'update_plugins' ) ) {
@@ -361,8 +365,12 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				if ( ! empty( $notice['status'] ) ) {
 					$message = esc_html( $notice['message'] );
 				}
+				$dismissible = 'dependency-installer-' . dirname( $notice['slug'] ) . '-7';
+				if ( class_exists( '\PAnd' ) && ! \PAnD::is_admin_notice_active( $dismissible ) ) {
+					return false;
+				}
 				?>
-				<div class="<?php echo $status ?> notice is-dismissible dependency-installer">
+				<div data-dismissible="<?php echo $dismissible ?>" class="<?php echo $status ?> notice is-dismissible dependency-installer">
 					<p><?php echo '<strong>[' . esc_html__( 'Dependency' ) . ']</strong> ' . $message; ?></p>
 				</div>
 				<?php
