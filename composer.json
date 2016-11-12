@@ -11,8 +11,7 @@
     },
     {
       "name": "Matt Gibbs",
-      "email": "",
-      "role": "Developer"
+       "role": "Developer"
     }
   ],
   "require": {
