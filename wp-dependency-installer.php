@@ -296,11 +296,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 */
 		public function activate( $slug ) {
 
-			/**
-			 * if plugin is requesting - yes
-			 * if theme is requesting - no
-			 */
-			$result = activate_plugin( $slug, null, true );
+			$result = is_multisite() ? activate_plugin( $slug, null, true ) : activate_plugin( $slug );
 
 			if ( is_wp_error( $result ) ) {
 				return array( 'status' => 'error', 'message' => $result->get_error_message() );
