@@ -274,14 +274,23 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			}
 
 			wp_cache_flush();
-			$result = $this->activate( $slug );
+			if ( ! $this->config[ $slug ]['optional'] ) {
+				$result = $this->activate( $slug );
+
+				return array(
+					'status'  => 'updated',
+					'slug'    => $this->config[ $slug ]['slug'],
+					'message' => sprintf( __( '%s has been installed and activated.' ), $this->config[ $slug ]['name'] ),
+				);
+
+			}
 			if ( 'error' == $result['status'] ) {
 				return $result;
 			}
 
 			return array(
 				'status'  => 'updated',
-				'message' => sprintf( __( '%s has been installed and activated.' ), $this->config[ $slug ]['name'] ),
+				'message' => sprintf( __( '%s has been installed.' ), $this->config[ $slug ]['name'] ),
 			);
 		}
 
