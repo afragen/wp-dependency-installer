@@ -4,14 +4,13 @@
  * Plugin Name: Test Dependency Installer
  * Plugin URI: https://github.com/afragen/wp-dependency-installer
  * Description: This plugin is used for test dependency installation of remote sourced plugins.
- * Version: 0.5
+ * Version: 1.0
  * Author: Andy Fragen, Matt Gibbs
- * License: GNU General Public License v2
- * License URI: http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+ * License: MIT
  * Requires WP: 4.0
  * Requires PHP: 5.3
  */
 
-include_once( __DIR__ . '/vendor/wp-dependency-installer/wp-dependency-installer.php' );
+include_once( __DIR__ . '/vendor/autoload.php' );
 
-WP_Dependency_Installer::instance()->run();
+WP_Dependency_Installer::instance()->run( __DIR__ );
