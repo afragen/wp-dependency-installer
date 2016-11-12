@@ -12,7 +12,7 @@
  * @author    Matt Gibbs
  * @license   MIT
  * @link      https://github.com/afragen/wp-dependency-installer
- * @version   0.9
+ * @version   1.0
  */
 
 /**
@@ -360,7 +360,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				}
 				$dismissible = 'dependency-installer-' . dirname( $notice['slug'] ) . '-7';
 				if ( class_exists( '\PAnd' ) && ! \PAnD::is_admin_notice_active( $dismissible ) ) {
-					return false;
+					continue;
 				}
 				?>
 				<div data-dismissible="<?php echo $dismissible ?>" class="<?php echo $status ?> notice is-dismissible dependency-installer">
@@ -382,17 +382,5 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		public function error( $errors ) {}
 		public function feedback( $string ) {}
 	}
-
-	/**
-	 * Function to call class instance.
-	 *
-	 * @return \WP_Dependency_Installer
-	 */
-	function WPDI() {
-		return WP_Dependency_Installer::instance();
-	}
-
-	// Ready, set, go.
-	//WPDI()->run();
 
 }
