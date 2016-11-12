@@ -26,15 +26,12 @@ Then create a new `wp-dependencies.json` file.
 
 ```cp ./vendor/afragen/wp-dependency-installer/wp-dependencies-example.json wp-dependencies.json```
 
+You will then need to update `wp-dependencies.json` to suit your requirements.
+
 Add the following lines to your plugin or to your theme's `functions.php` file.
 
 ```php
 include_once( __DIR__ . '/vendor/autoload.php' );
-```
-
-Then invoke the framework by using the following command.
-
-```php
 WP_Dependency_Installer::instance()->run( __DIR__ );
 ```
 
@@ -80,6 +77,7 @@ This file must be named `wp-dependencies.json` and it must be in the root direct
   }
 ]
 ```
+
 An example file is included, `wp-dependencies-example.json`. You may use a shorthand uri such as `<owner>/<repo>` but only if you include the `host` element in the JSON. If you have a full URI in the `uri` element then the `host` element is optional.
 
 ## Development
