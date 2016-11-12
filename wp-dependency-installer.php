@@ -10,7 +10,7 @@
  * @package   WP_Dependency_Installer
  * @author    Andy Fragen
  * @author    Matt Gibbs
- * @license   GPL-2.0+
+ * @license   MIT
  * @link      https://github.com/afragen/wp-dependency-installer
  * @version   0.9
  */
@@ -20,13 +20,6 @@
  */
 if ( ! defined( 'WPINC' ) ) {
 	die;
-}
-
-/**
- * Don't run during heartbeat.
- */
-if ( isset( $_REQUEST['action'] ) && 'heartbeat' === $_REQUEST['action'] ) {
-	return false;
 }
 
 if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
@@ -89,9 +82,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Register wp-dependencies.json
 		 */
-		public function run() {
-			if ( file_exists( __DIR__ . '/wp-dependencies.json' ) ) {
-				$config = file_get_contents( __DIR__ . '/wp-dependencies.json' );
+		public function run( $plugin_path ) {
+			if ( file_exists( $plugin_path . '/wp-dependencies.json' ) ) {
+				$config = file_get_contents( $plugin_path . '/wp-dependencies.json' );
 				$this->register( $config );
 			}
 		}
@@ -400,6 +393,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 	}
 
 	// Ready, set, go.
-	WPDI()->run();
+	//WPDI()->run();
 
 }

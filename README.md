@@ -3,11 +3,10 @@
 * Tags: plugin, dependency, install
 * Requires at least: 3.8
 * Requires PHP: 5.3
-* Tested up to: 4.5
+* Tested up to: 4.7
 * Stable tag: master
 * Donate link: http://thefragens.com/wp-dependency-installer-donate
-* License: GPLv2 or later
-* License URI: http://www.gnu.org/licenses/gpl-2.0.html
+* License: MIT
 
 A lightweight class to add to WordPress plugins or themes to automatically install required plugin dependencies. Uses a JSON config file to declare plugin dependencies.
 
@@ -19,31 +18,29 @@ This contains an example plugin and an example JSON configuration file. Only req
 
 ## Installation
 
-Copy the `wp-dependency-installer` folder into your project and copy or adapt the `wp-dependencies-example.json` file as `wp-dependencies.json` to your needs. Best practices may be to add this directory into your `vendor` directory.
+Install the package via composer.
 
-Add the following line to your plugin or to your theme's `functions.php` file. Make sure to adjust for where in your project you install the `wp-dependency-installer` folder.
+Run the composer command: ```composer require afragen/wp-dependency-installer```
 
-```php
-include_once( __DIR__ . '/vendor/wp-dependency-installer/wp-dependency-installer.php' );
-```
+Then create a new `wp-dependencies.json` file.
 
-### Autoloaders
+```cp ./vendor/afragen/wp-dependency-installer/wp-dependencies-example.json wp-dependencies.json```
 
-This framework allows for the use of an autoloader in your project. If you use an autoloader simply map the class to the correct path as follows.
+Add the following lines to your plugin or to your theme's `functions.php` file.
 
 ```php
-'WP_Dependency_Installer' => __DIR__ . '/vendor/wp-dependency-installer/wp-dependency-installer.php'
+include_once( __DIR__ . '/vendor/autoload.php' );
 ```
 
 Then invoke the framework by using the following command.
 
 ```php
-WP_Dependency_Installer::instance()->run();
+WP_Dependency_Installer::instance()->run( __DIR__ );
 ```
 
 ## JSON config file format
 
-This file must be named `wp-dependencies.json` and it must be in the same directory as `wp-dependency-installer.php`.
+This file must be named `wp-dependencies.json` and it must be in the root directory of your plugin or theme.
 
 ```json
 [
