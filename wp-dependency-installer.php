@@ -383,16 +383,4 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		public function feedback( $string ) {}
 	}
 
-	/**
-	 * Function to call class instance.
-	 *
-	 * @return \WP_Dependency_Installer
-	 */
-	function WPDI() {
-		return WP_Dependency_Installer::instance();
-	}
-
-	// Ready, set, go.
-	//WPDI()->run();
-
 }
