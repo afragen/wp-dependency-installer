@@ -369,7 +369,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				}
 				?>
 				<div data-dismissible="<?php echo $dismissible ?>" class="<?php echo $status ?> notice is-dismissible dependency-installer">
-					<p><?php echo '<strong>[' . esc_html__( 'Dependency' ) . ']</strong> ' . $message; ?></p>
+					<p><?php echo '<strong>[' . __( 'Dependency' ) . ']</strong> ' . $message; ?></p>
 				</div>
 				<?php
 			}
