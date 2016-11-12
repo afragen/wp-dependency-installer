@@ -274,14 +274,23 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			}
 
 			wp_cache_flush();
-			$result = $this->activate( $slug );
+			if ( ! $this->config[ $slug ]['optional'] ) {
+				$result = $this->activate( $slug );
+
+				return array(
+					'status'  => 'updated',
+					'slug'    => $this->config[ $slug ]['slug'],
+					'message' => sprintf( __( '%s has been installed and activated.' ), $this->config[ $slug ]['name'] ),
+				);
+
+			}
 			if ( 'error' == $result['status'] ) {
 				return $result;
 			}
 
 			return array(
 				'status'  => 'updated',
-				'message' => sprintf( __( '%s has been installed and activated.' ), $this->config[ $slug ]['name'] ),
+				'message' => sprintf( __( '%s has been installed.' ), $this->config[ $slug ]['name'] ),
 			);
 		}
 
@@ -296,11 +305,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 */
 		public function activate( $slug ) {
 
-			/**
-			 * if plugin is requesting - yes
-			 * if theme is requesting - no
-			 */
-			$result = activate_plugin( $slug, null, true );
+			$result = is_multisite() ? activate_plugin( $slug, null, true ) : activate_plugin( $slug );
 
 			if ( is_wp_error( $result ) ) {
 				return array( 'status' => 'error', 'message' => $result->get_error_message() );
@@ -364,7 +369,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				}
 				?>
 				<div data-dismissible="<?php echo $dismissible ?>" class="<?php echo $status ?> notice is-dismissible dependency-installer">
-					<p><?php echo '<strong>[' . esc_html__( 'Dependency' ) . ']</strong> ' . $message; ?></p>
+					<p><?php echo '<strong>[' . __( 'Dependency' ) . ']</strong> ' . $message; ?></p>
 				</div>
 				<?php
 			}
