@@ -305,7 +305,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 */
 		public function activate( $slug ) {
 
-			$result = is_multisite() ? activate_plugin( $slug, null, true ) : activate_plugin( $slug );
+			// network activate only if on network admin pages.
+			$result = is_network_admin() ? activate_plugin( $slug, null, true ) : activate_plugin( $slug );
 
 			if ( is_wp_error( $result ) ) {
 				return array( 'status' => 'error', 'message' => $result->get_error_message() );
