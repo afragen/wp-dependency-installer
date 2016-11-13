@@ -12,7 +12,7 @@
  * @author    Matt Gibbs
  * @license   MIT
  * @link      https://github.com/afragen/wp-dependency-installer
- * @version   1.0.1
+ * @version   1.1.0
  */
 
 /**
@@ -81,6 +81,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 		/**
 		 * Register wp-dependencies.json
+		 *
+		 * @param string $plugin_path Path to plugin or theme calling the framework.
 		 */
 		public function run( $plugin_path ) {
 			if ( file_exists( $plugin_path . '/wp-dependencies.json' ) ) {
@@ -92,7 +94,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Register dependencies (supports multiple instances).
 		 *
-		 * @param $config
+		 * @param array $config JSON config as array.
 		 */
 		public function register( $config ) {
 			if ( empty( $config ) ) {
@@ -237,7 +239,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Is dependency installed?
 		 *
-		 * @param $slug
+		 * @param string $slug Plugin slug.
 		 *
 		 * @return boolean
 		 */
@@ -250,9 +252,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Install and activate dependency.
 		 *
-		 * @param $slug
+		 * @param string $slug Plugin slug.
 		 *
-		 * @return bool|array
+		 * @return bool|array false or Message.
 		 */
 		public function install( $slug ) {
 			if ( $this->is_installed( $slug ) || ! current_user_can( 'update_plugins' ) ) {
@@ -297,15 +299,14 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Activate dependency.
 		 *
-		 * @TODO don't network activate if dependency is required by a theme
+		 * @param string $slug Plugin slug.
 		 *
-		 * @param $slug
-		 *
-		 * @return array
+		 * @return array Message.
 		 */
 		public function activate( $slug ) {
 
-			$result = is_multisite() ? activate_plugin( $slug, null, true ) : activate_plugin( $slug );
+			// network activate only if on network admin pages.
+			$result = is_network_admin() ? activate_plugin( $slug, null, true ) : activate_plugin( $slug );
 
 			if ( is_wp_error( $result ) ) {
 				return array( 'status' => 'error', 'message' => $result->get_error_message() );
@@ -320,7 +321,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Dismiss admin notice for a week.
 		 *
-		 * @return array
+		 * @return array Empty Message.
 		 */
 		public function dismiss() {
 			return array( 'status' => 'updated', 'message' => '' );
@@ -329,10 +330,10 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Correctly rename dependency for activation.
 		 *
-		 * @param $source
-		 * @param $remote_source
+		 * @param string $source
+		 * @param string $remote_source
 		 *
-		 * @return string
+		 * @return string $new_source
 		 */
 		public function upgrader_source_selection( $source, $remote_source ) {
 			global $wp_filesystem;
@@ -345,7 +346,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Display admin notices / action links.
 		 *
-		 * @return bool/string
+		 * @return bool/string false or Admin notice.
 		 */
 		public function admin_notices() {
 			if ( ! current_user_can( 'update_plugins' ) ) {
