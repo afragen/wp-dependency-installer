@@ -12,7 +12,7 @@
  * @author    Matt Gibbs
  * @license   MIT
  * @link      https://github.com/afragen/wp-dependency-installer
- * @version   1.0
+ * @version   1.0.1
  */
 
 /**
@@ -279,7 +279,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 				return array(
 					'status'  => 'updated',
-					'slug'    => $this->config[ $slug ]['slug'],
+					'slug'    => $slug,
 					'message' => sprintf( __( '%s has been installed and activated.' ), $this->config[ $slug ]['name'] ),
 				);
 
