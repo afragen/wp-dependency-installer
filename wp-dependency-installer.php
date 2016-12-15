@@ -15,6 +15,8 @@
  * @version   1.1.0
  */
 
+namespace Afragen\WP_Dependency_Installer;
+
 /**
  * Exit if called directly.
  */
@@ -382,7 +384,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 	/**
 	 * Class WPDI_Plugin_Installer_Skin
 	 */
-	class WPDI_Plugin_Installer_Skin extends Plugin_Installer_Skin {
+	class WPDI_Plugin_Installer_Skin extends \Plugin_Installer_Skin {
 		public function header() {}
 		public function footer() {}
 		public function error( $errors ) {}
