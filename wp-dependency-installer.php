@@ -12,7 +12,7 @@
  * @author    Matt Gibbs
  * @license   MIT
  * @link      https://github.com/afragen/wp-dependency-installer
- * @version   1.1.0
+ * @version   1.2.0
  */
 
 /**
@@ -163,26 +163,34 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 			// Generate admin notices
 			foreach ( $this->config as $slug => $dependency ) {
+				$is_optional = isset( $dependency['optional'] ) && false === $dependency['optional']
+					? false
+					: true;
+
 				if ( is_plugin_active( $slug ) ) {
 					continue;
 				}
 
 				if ( $this->is_installed( $slug ) ) {
+					if ( $is_optional ) {
+						$this->notices[] = array(
+							'action' => 'activate',
+							'slug'   => $slug,
+							'text'   => sprintf( __( 'Please activate the %s plugin.' ), $dependency['name'] ),
+						);
+
+					} else {
+						$this->notices[] = $this->activate( $slug );
+					}
+
+				} elseif ( $is_optional ) {
 					$this->notices[] = array(
-						'action' => 'activate',
+						'action' => 'install',
 						'slug'   => $slug,
-						'text'   => sprintf( __( 'Please activate the %s plugin.' ), $dependency['name'] ),
+						'text'   => sprintf( __( 'The %s plugin is required.' ), $dependency['name'] ),
 					);
 				} else {
-					if ( isset( $dependency['optional'] ) && false === $dependency['optional'] ) {
-						$this->notices[] = $this->install( $slug );
-					} else {
-						$this->notices[] = array(
-							'action' => 'install',
-							'slug'   => $slug,
-							'text'   => sprintf( __( 'The %s plugin is required.' ), $dependency['name'] ),
-						);
-					}
+					$this->notices[] = $this->install( $slug );
 				}
 			}
 		}
@@ -364,7 +372,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				if ( ! empty( $notice['status'] ) ) {
 					$message = esc_html( $notice['message'] );
 				}
-				$dismissible = 'dependency-installer-' . dirname( $notice['slug'] ) . '-7';
+				$dismissible = isset( $notice['slug'] )
+					? 'dependency-installer-' . dirname( $notice['slug'] ) . '-7'
+					: null;
 				if ( class_exists( '\PAnd' ) && ! \PAnD::is_admin_notice_active( $dismissible ) ) {
 					continue;
 				}

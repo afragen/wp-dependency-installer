@@ -1,19 +1,11 @@
 [
   {
-    "name": "WordPress REST API",
-    "host": "wordpress",
-    "slug": "rest-api/plugin.php",
-    "uri": "https://wordpress.org/plugins/rest-api/",
-    "branch": "trunk",
-    "optional": true
-  },
-  {
     "name": "GitHub Updater",
     "host": "github",
     "slug": "github-updater/github-updater.php",
     "uri": "afragen/github-updater",
     "branch": "master",
-    "optional": true,
+    "optional": false,
     "token": null
   },
   {
