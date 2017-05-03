@@ -3,7 +3,7 @@
 * Tags: plugin, dependency, install
 * Requires at least: 3.8
 * Requires PHP: 5.3
-* Tested up to: 4.7
+* Tested up to: 4.8
 * Stable tag: master
 * Donate link: http://thefragens.com/wp-dependency-installer-donate
 * License: MIT
@@ -14,7 +14,7 @@ A lightweight class to add to WordPress plugins or themes to automatically insta
 
 This is a drop in class for developers to optionally or automatically install plugin dependencies for their own plugins or themes. It can install a plugin from w.org, GitHub, Bitbucket, or GitLab. You must include a JSON config file in the same directory as this class file.
 
-This contains an example plugin and an example JSON configuration file. Only required dependencies are installed automatically, optional dependencies are not.
+This contains an example plugin and an example JSON configuration file. Only required dependencies are installed automatically, optional dependencies are not. Required dependencies are always kept active.
 
 ## Installation
 
@@ -42,20 +42,12 @@ This file must be named `wp-dependencies.json` and it must be in the root direct
 ```json
 [
   {
-    "name": "WordPress REST API",
-    "host": "wordpress",
-    "slug": "rest-api/plugin.php",
-    "uri": "https://wordpress.org/plugins/rest-api/",
-    "branch": "trunk",
-    "optional": true
-  },
-  {
     "name": "GitHub Updater",
     "host": "github",
     "slug": "github-updater/github-updater.php",
     "uri": "afragen/github-updater",
     "branch": "master",
-    "optional": true,
+    "optional": false,
     "token": null
   },
   {
