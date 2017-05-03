@@ -364,7 +364,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				if ( ! empty( $notice['status'] ) ) {
 					$message = esc_html( $notice['message'] );
 				}
-				$dismissible = 'dependency-installer-' . dirname( $notice['slug'] ) . '-7';
+				$dismissible = isset( $notice['slug'] )
+					? 'dependency-installer-' . dirname( $notice['slug'] ) . '-7'
+					: null;
 				if ( class_exists( '\PAnd' ) && ! \PAnD::is_admin_notice_active( $dismissible ) ) {
 					continue;
 				}
