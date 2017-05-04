@@ -12,7 +12,7 @@
  * @author    Matt Gibbs
  * @license   MIT
  * @link      https://github.com/afragen/wp-dependency-installer
- * @version   1.2.0
+ * @version   1.3.0
  */
 
 /**
@@ -94,7 +94,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Register dependencies (supports multiple instances).
 		 *
-		 * @param array $config JSON config as array.
+		 * @param string $config JSON config as string.
 		 */
 		public function register( $config ) {
 			if ( empty( $config ) ) {
@@ -166,6 +166,10 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				$is_optional = isset( $dependency['optional'] ) && false === $dependency['optional']
 					? false
 					: true;
+
+				if ( ! $is_optional ) {
+					$this->hide_plugin_action_links( $slug );
+				}
 
 				if ( is_plugin_active( $slug ) ) {
 					continue;
@@ -285,7 +289,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 			wp_cache_flush();
 			if ( ! $this->config[ $slug ]['optional'] ) {
-				$result = $this->activate( $slug );
+				$this->activate( $slug );
 
 				return array(
 					'status'  => 'updated',
@@ -385,6 +389,43 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				<?php
 			}
 		}
+
+		/**
+		 * Hide links from plugin row.
+		 *
+		 * @param $plugin_file
+		 */
+		public function hide_plugin_action_links( $plugin_file ) {
+			add_filter( 'network_admin_plugin_action_links_' . $plugin_file, array( $this, 'unset_action_links' ) );
+			add_filter( 'plugin_action_links_' . $plugin_file, array( $this, 'unset_action_links' ) );
+			add_action( 'after_plugin_row_' . $plugin_file,
+				function( $plugin_file ) {
+					print( '<script>jQuery(".inactive[data-plugin=\'' . $plugin_file . '\']").attr("class", "active");</script>' );
+					print( '<script>jQuery(".active[data-plugin=\'' . $plugin_file . '\'] .check-column input").remove();</script>' );
+				} );
+		}
+
+		/**
+		 * Unset plugin action links so mandatory plugins can't be modified.
+		 *
+		 * @param $actions
+		 *
+		 * @return mixed
+		 */
+		public function unset_action_links( $actions ) {
+			if ( isset( $actions['edit'] ) ) {
+				unset( $actions['edit'] );
+			}
+			if ( isset( $actions['delete'] ) ) {
+				unset( $actions['delete'] );
+			}
+			if ( isset( $actions['deactivate'] ) ) {
+				unset( $actions['deactivate'] );
+			}
+
+			return array_merge( array( 'required-plugin' => __( 'Plugin dependency' ) ), $actions );
+		}
+
 	}
 
 	require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
