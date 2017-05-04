@@ -94,7 +94,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Register dependencies (supports multiple instances).
 		 *
-		 * @param array $config JSON config as array.
+		 * @param string $config JSON config as string.
 		 */
 		public function register( $config ) {
 			if ( empty( $config ) ) {
