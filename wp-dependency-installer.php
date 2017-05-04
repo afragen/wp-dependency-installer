@@ -423,7 +423,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				unset( $actions['deactivate'] );
 			}
 
-			return $actions;
+			return array_merge( array( 'required-plugin' => __( 'Plugin dependency' ) ), $actions );
 		}
 
 	}
