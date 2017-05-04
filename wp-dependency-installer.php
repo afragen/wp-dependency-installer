@@ -289,7 +289,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 			wp_cache_flush();
 			if ( ! $this->config[ $slug ]['optional'] ) {
-				$result = $this->activate( $slug );
+				$this->activate( $slug );
 
 				return array(
 					'status'  => 'updated',
