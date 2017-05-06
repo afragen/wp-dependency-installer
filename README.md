@@ -42,6 +42,14 @@ This file must be named `wp-dependencies.json` and it must be in the root direct
 ```json
 [
   {
+    "name": "Query Monitor",
+    "host": "wordpress",
+    "slug": "query-monitor/query-monitor.php",
+    "uri": "https://wordpress.org/plugins/query-monitor/",
+    "branch": "trunk",
+    "optional": false
+  },
+  {
     "name": "GitHub Updater",
     "host": "github",
     "slug": "github-updater/github-updater.php",

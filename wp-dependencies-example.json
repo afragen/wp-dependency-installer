@@ -1,5 +1,13 @@
 [
   {
+    "name": "Query Monitor",
+    "host": "wordpress",
+    "slug": "query-monitor/query-monitor.php",
+    "uri": "https://wordpress.org/plugins/query-monitor/",
+    "branch": "trunk",
+    "optional": false
+  },
+  {
     "name": "GitHub Updater",
     "host": "github",
     "slug": "github-updater/github-updater.php",
