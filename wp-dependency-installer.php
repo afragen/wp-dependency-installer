@@ -12,7 +12,7 @@
  * @author    Matt Gibbs
  * @license   MIT
  * @link      https://github.com/afragen/wp-dependency-installer
- * @version   1.3.0
+ * @version   1.3.1
  */
 
 /**
