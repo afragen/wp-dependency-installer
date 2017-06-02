@@ -163,7 +163,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 			// Generate admin notices
 			foreach ( $this->config as $slug => $dependency ) {
-				$is_optional = isset( $dependency['optional'] ) && false === $dependency['optional']
+				$is_optional = ! ( isset( $dependency['optional'] ) && false === $dependency['optional'] )
 					? false
 					: true;
 
@@ -298,7 +298,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				);
 
 			}
-			if ( 'error' == $result['status'] ) {
+			if ( 'error' === $result['status'] ) {
 				return $result;
 			}
 
