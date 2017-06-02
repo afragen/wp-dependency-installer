@@ -80,6 +80,12 @@ This file must be named `wp-dependencies.json` and it must be in the root direct
 
 An example file is included, `wp-dependencies-example.json`. You may use a shorthand uri such as `<owner>/<repo>` but only if you include the `host` element in the JSON. If you have a full URI in the `uri` element then the `host` element is optional.
 
+If you want to programmatically add dependencies you can send an associative array directly to 
+```php
+WP_Dependency_Installer::instance()->register( $config )
+```
+where `$config` is an associative array as in identical format as `json_decode( wp-dependencies.json content )`
+
 ## Development
 
 PRs are welcome against the `develop` branch.
