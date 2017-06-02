@@ -32,28 +32,28 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Holds the singleton instance.
 		 *
-		 * @var
+		 * @var \WP_Dependency_Installer
 		 */
 		private static $instance;
 
 		/**
 		 * Holds the JSON file contents.
 		 *
-		 * @var
+		 * @var array $config
 		 */
 		protected $config = array();
 
 		/**
 		 * Holds the current dependency's slug.
 		 *
-		 * @var
+		 * @var string $current_slug
 		 */
 		protected $current_slug;
 
 		/**
 		 * Holds names of installed dependencies for admin notices.
 		 *
-		 * @var
+		 * @var array $notices
 		 */
 		protected $notices = array();
 
