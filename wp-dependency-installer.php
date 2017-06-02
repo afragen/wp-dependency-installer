@@ -12,7 +12,7 @@
  * @author    Matt Gibbs
  * @license   MIT
  * @link      https://github.com/afragen/wp-dependency-installer
- * @version   1.3.1
+ * @version   1.3.2
  */
 
 /**
@@ -87,6 +87,11 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		public function run( $plugin_path ) {
 			if ( file_exists( $plugin_path . '/wp-dependencies.json' ) ) {
 				$config = file_get_contents( $plugin_path . '/wp-dependencies.json' );
+				if ( empty( $config ) ||
+				     null === ( $config = json_decode( $config, true ) )
+				) {
+					return;
+				}
 				$this->register( $config );
 			}
 		}
@@ -94,18 +99,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Register dependencies (supports multiple instances).
 		 *
-		 * @param string $config JSON config as string.
+		 * @param array $config JSON config as string.
 		 */
 		public function register( $config ) {
-			if ( empty( $config ) ) {
-				return;
-			}
-
-			if ( null === ( $config = json_decode( $config, true ) ) ) {
-				return;
-			}
-
-			// Register dependency if new or required
 			foreach ( $config as $dependency ) {
 				$slug = $dependency['slug'];
 				if ( ! isset( $this->config[ $slug ] ) || ! $dependency['optional'] ) {
