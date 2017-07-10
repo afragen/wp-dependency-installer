@@ -143,6 +143,13 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 					case( 'wordpress' ):
 						$download_link = 'https://downloads.wordpress.org/plugin/' . basename( $owner_repo ) . '.zip';
 						break;
+					case( 'custom_gitlab' ):
+						$download_link = 'http://' $uri . '/' .  $owner_repo . '/repository/archive.zip';
+						$download_link = add_query_arg( 'ref', $dependency['branch'], $download_link );
+						if ( ! empty( $dependency['token'] ) ) {
+							$download_link = add_query_arg( 'private_token', $dependency['token'], $download_link );
+						}
+						break;
 				}
 
 				$this->config[ $slug ]['download_link'] = $download_link;
