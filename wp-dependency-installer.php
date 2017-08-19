@@ -153,11 +153,15 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * Determine if dependency is active or installed.
 		 */
 		public function admin_init() {
+			// Initialize Persist admin Notices Dismissal dependency.
+			if ( class_exists( 'PaND' ) ) {
+				PaND::init();
+			}
 
-			// Get the gears turning
+			// Get the gears turning.
 			$this->apply_config();
 
-			// Generate admin notices
+			// Generate admin notices.
 			foreach ( $this->config as $slug => $dependency ) {
 				$is_optional = ! ( isset( $dependency['optional'] ) && false === $dependency['optional'] )
 					? false
