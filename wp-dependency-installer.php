@@ -12,7 +12,7 @@
  * @author    Matt Gibbs
  * @license   MIT
  * @link      https://github.com/afragen/wp-dependency-installer
- * @version   1.3.1
+ * @version   1.3.2
  */
 
 /**
@@ -32,28 +32,28 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Holds the singleton instance.
 		 *
-		 * @var
+		 * @var \WP_Dependency_Installer
 		 */
 		private static $instance;
 
 		/**
 		 * Holds the JSON file contents.
 		 *
-		 * @var
+		 * @var array $config
 		 */
 		protected $config = array();
 
 		/**
 		 * Holds the current dependency's slug.
 		 *
-		 * @var
+		 * @var string $current_slug
 		 */
 		protected $current_slug;
 
 		/**
 		 * Holds names of installed dependencies for admin notices.
 		 *
-		 * @var
+		 * @var array $notices
 		 */
 		protected $notices = array();
 
@@ -72,7 +72,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * Singleton.
 		 */
 		public static function instance() {
-			if ( ! isset( self::$instance ) ) {
+			if ( null === self::$instance ) {
 				self::$instance = new self;
 			}
 
@@ -87,6 +87,11 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		public function run( $plugin_path ) {
 			if ( file_exists( $plugin_path . '/wp-dependencies.json' ) ) {
 				$config = file_get_contents( $plugin_path . '/wp-dependencies.json' );
+				if ( empty( $config ) ||
+				     null === ( $config = json_decode( $config, true ) )
+				) {
+					return;
+				}
 				$this->register( $config );
 			}
 		}
@@ -94,18 +99,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Register dependencies (supports multiple instances).
 		 *
-		 * @param string $config JSON config as string.
+		 * @param array $config JSON config as string.
 		 */
 		public function register( $config ) {
-			if ( empty( $config ) ) {
-				return;
-			}
-
-			if ( null === ( $config = json_decode( $config, true ) ) ) {
-				return;
-			}
-
-			// Register dependency if new or required
 			foreach ( $config as $dependency ) {
 				$slug = $dependency['slug'];
 				if ( ! isset( $this->config[ $slug ] ) || ! $dependency['optional'] ) {
@@ -157,15 +153,17 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * Determine if dependency is active or installed.
 		 */
 		public function admin_init() {
+			// Initialize Persist admin Notices Dismissal dependency.
+			if ( class_exists( 'PaND' ) ) {
+				PaND::init();
+			}
 
-			// Get the gears turning
+			// Get the gears turning.
 			$this->apply_config();
 
-			// Generate admin notices
+			// Generate admin notices.
 			foreach ( $this->config as $slug => $dependency ) {
-				$is_optional = isset( $dependency['optional'] ) && false === $dependency['optional']
-					? false
-					: true;
+				$is_optional = ! ( isset( $dependency['optional'] ) && false === $dependency['optional'] );
 
 				if ( ! $is_optional ) {
 					$this->hide_plugin_action_links( $slug );
@@ -241,7 +239,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			$slug      = isset( $_POST['slug'] ) ? $_POST['slug'] : '';
 			$whitelist = array( 'install', 'activate', 'dismiss' );
 
-			if ( in_array( $method, $whitelist ) ) {
+			if ( in_array( $method, $whitelist, true ) ) {
 				$response = $this->$method( $slug );
 				echo $response['message'];
 			}
@@ -298,7 +296,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				);
 
 			}
-			if ( 'error' == $result['status'] ) {
+			if ( 'error' === $result['status'] ) {
 				return $result;
 			}
 
