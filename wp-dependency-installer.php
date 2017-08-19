@@ -72,7 +72,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * Singleton.
 		 */
 		public static function instance() {
-			if ( ! isset( self::$instance ) ) {
+			if ( null === self::$instance ) {
 				self::$instance = new self;
 			}
 
@@ -237,7 +237,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			$slug      = isset( $_POST['slug'] ) ? $_POST['slug'] : '';
 			$whitelist = array( 'install', 'activate', 'dismiss' );
 
-			if ( in_array( $method, $whitelist ) ) {
+			if ( in_array( $method, $whitelist, true ) ) {
 				$response = $this->$method( $slug );
 				echo $response['message'];
 			}
