@@ -163,9 +163,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 			// Generate admin notices.
 			foreach ( $this->config as $slug => $dependency ) {
-				$is_optional = ! ( isset( $dependency['optional'] ) && false === $dependency['optional'] )
-					? false
-					: true;
+				$is_optional = ! ( isset( $dependency['optional'] ) && false === $dependency['optional'] );
 
 				if ( ! $is_optional ) {
 					$this->hide_plugin_action_links( $slug );
