@@ -12,7 +12,7 @@
  * @author    Matt Gibbs
  * @license   MIT
  * @link      https://github.com/afragen/wp-dependency-installer
- * @version   1.3.2
+ * @version   1.3.3
  */
 
 /**
@@ -58,17 +58,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		protected $notices = array();
 
 		/**
-		 * WP_Dependency_Installer constructor.
-		 */
-		public function __construct() {
-			add_action( 'admin_init', array( $this, 'admin_init' ) );
-			add_action( 'admin_footer', array( $this, 'admin_footer' ) );
-			add_action( 'admin_notices', array( $this, 'admin_notices' ) );
-			add_action( 'network_admin_notices', array( $this, 'admin_notices' ) );
-			add_action( 'wp_ajax_dependency_installer', array( $this, 'ajax_router' ) );
-		}
-
-		/**
 		 * Singleton.
 		 */
 		public static function instance() {
@@ -77,6 +66,19 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			}
 
 			return self::$instance;
+		}
+
+		/**
+		 * Load hooks.
+		 *
+		 * @return void
+		 */
+		public function load_hooks() {
+			add_action( 'admin_init', array( $this, 'admin_init' ) );
+			add_action( 'admin_footer', array( $this, 'admin_footer' ) );
+			add_action( 'admin_notices', array( $this, 'admin_notices' ) );
+			add_action( 'network_admin_notices', array( $this, 'admin_notices' ) );
+			add_action( 'wp_ajax_dependency_installer', array( $this, 'ajax_router' ) );
 		}
 
 		/**
@@ -92,6 +94,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				) {
 					return;
 				}
+				$this->load_hooks();
 				$this->register( $config );
 			}
 		}
