@@ -11,6 +11,6 @@
  * Requires PHP: 5.3
  */
 
-include_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
 WP_Dependency_Installer::instance()->run( __DIR__ );
