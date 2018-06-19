@@ -12,7 +12,7 @@
  * @author    Matt Gibbs
  * @license   MIT
  * @link      https://github.com/afragen/wp-dependency-installer
- * @version   1.3.2
+ * @version   1.3.3
  */
 
 /**
@@ -58,25 +58,27 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		protected $notices = array();
 
 		/**
-		 * WP_Dependency_Installer constructor.
+		 * Singleton.
 		 */
-		public function __construct() {
+		public static function instance() {
+			if ( null === self::$instance ) {
+				self::$instance = new self();
+			}
+
+			return self::$instance;
+		}
+
+		/**
+		 * Load hooks.
+		 *
+		 * @return void
+		 */
+		public function load_hooks() {
 			add_action( 'admin_init', array( $this, 'admin_init' ) );
 			add_action( 'admin_footer', array( $this, 'admin_footer' ) );
 			add_action( 'admin_notices', array( $this, 'admin_notices' ) );
 			add_action( 'network_admin_notices', array( $this, 'admin_notices' ) );
 			add_action( 'wp_ajax_dependency_installer', array( $this, 'ajax_router' ) );
-		}
-
-		/**
-		 * Singleton.
-		 */
-		public static function instance() {
-			if ( null === self::$instance ) {
-				self::$instance = new self;
-			}
-
-			return self::$instance;
 		}
 
 		/**
@@ -88,10 +90,11 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			if ( file_exists( $plugin_path . '/wp-dependencies.json' ) ) {
 				$config = file_get_contents( $plugin_path . '/wp-dependencies.json' );
 				if ( empty( $config ) ||
-				     null === ( $config = json_decode( $config, true ) )
+					null === ( $config = json_decode( $config, true ) )
 				) {
 					return;
 				}
+				$this->load_hooks();
 				$this->register( $config );
 			}
 		}
@@ -184,7 +187,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 					} else {
 						$this->notices[] = $this->activate( $slug );
 					}
-
 				} elseif ( $is_optional ) {
 					$this->notices[] = array(
 						'action' => 'install',
@@ -274,15 +276,20 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			$this->current_slug = $slug;
 			add_filter( 'upgrader_source_selection', array( $this, 'upgrader_source_selection' ), 10, 2 );
 
-			$skin     = new WPDI_Plugin_Installer_Skin( array(
-				'type'  => 'plugin',
-				'nonce' => wp_nonce_url( $this->config[ $slug ]['download_link'] ),
-			) );
+			$skin     = new WPDI_Plugin_Installer_Skin(
+				array(
+					'type'  => 'plugin',
+					'nonce' => wp_nonce_url( $this->config[ $slug ]['download_link'] ),
+				)
+			);
 			$upgrader = new Plugin_Upgrader( $skin );
 			$result   = $upgrader->install( $this->config[ $slug ]['download_link'] );
 
 			if ( is_wp_error( $result ) ) {
-				return array( 'status' => 'error', 'message' => $result->get_error_message() );
+				return array(
+					'status'  => 'error',
+					'message' => $result->get_error_message(),
+				);
 			}
 
 			wp_cache_flush();
@@ -319,7 +326,10 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			$result = is_network_admin() ? activate_plugin( $slug, null, true ) : activate_plugin( $slug );
 
 			if ( is_wp_error( $result ) ) {
-				return array( 'status' => 'error', 'message' => $result->get_error_message() );
+				return array(
+					'status'  => 'error',
+					'message' => $result->get_error_message(),
+				);
 			}
 
 			return array(
@@ -334,7 +344,10 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @return array Empty Message.
 		 */
 		public function dismiss() {
-			return array( 'status' => 'updated', 'message' => '' );
+			return array(
+				'status'  => 'updated',
+				'message' => '',
+			);
 		}
 
 		/**
@@ -367,8 +380,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				$status = empty( $notice['status'] ) ? 'updated' : $notice['status'];
 
 				if ( ! empty( $notice['action'] ) ) {
-					$action  = esc_attr( $notice['action'] );
-					$message = esc_html( $notice['text'] );
+					$action   = esc_attr( $notice['action'] );
+					$message  = esc_html( $notice['text'] );
 					$message .= ' <a href="javascript:;" class="wpdi-button" data-action="' . $action . '" data-slug="' . $notice['slug'] . '">' . ucfirst( $action ) . ' Now &raquo;</a>';
 				}
 				if ( ! empty( $notice['status'] ) ) {
@@ -381,7 +394,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 					continue;
 				}
 				?>
-				<div data-dismissible="<?php echo $dismissible ?>" class="<?php echo $status ?> notice is-dismissible dependency-installer">
+				<div data-dismissible="<?php echo $dismissible; ?>" class="<?php echo $status; ?> notice is-dismissible dependency-installer">
 					<p><?php echo '<strong>[' . __( 'Dependency' ) . ']</strong> ' . $message; ?></p>
 				</div>
 				<?php
@@ -396,11 +409,13 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		public function hide_plugin_action_links( $plugin_file ) {
 			add_filter( 'network_admin_plugin_action_links_' . $plugin_file, array( $this, 'unset_action_links' ) );
 			add_filter( 'plugin_action_links_' . $plugin_file, array( $this, 'unset_action_links' ) );
-			add_action( 'after_plugin_row_' . $plugin_file,
+			add_action(
+				'after_plugin_row_' . $plugin_file,
 				function( $plugin_file ) {
 					print( '<script>jQuery(".inactive[data-plugin=\'' . $plugin_file . '\']").attr("class", "active");</script>' );
 					print( '<script>jQuery(".active[data-plugin=\'' . $plugin_file . '\'] .check-column input").remove();</script>' );
-				} );
+				}
+			);
 		}
 
 		/**
