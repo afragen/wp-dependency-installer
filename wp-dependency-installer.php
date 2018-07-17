@@ -146,6 +146,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 					case( 'wordpress' ):
 						$download_link = 'https://downloads.wordpress.org/plugin/' . basename( $owner_repo ) . '.zip';
 						break;
+					case( 'direct' ):
+						$download_link = filter_var( $uri, FILTER_VALIDATE_URL ) ? $uri : null;
+						break;
 				}
 
 				$this->config[ $slug ]['download_link'] = $download_link;
