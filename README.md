@@ -74,6 +74,13 @@ This file must be named `wp-dependencies.json` and it must be in the root direct
     "branch": "develop",
     "optional": true,
     "token": null
+  },
+  {
+    "name": "Test Direct Plugin Download",
+    "host": "direct",
+    "slug": "test-direct-plugin/test-plugin.php",
+    "uri": "https://direct-download.com/path/to.zip",
+    "optional": true
   }
 ]
 ```
