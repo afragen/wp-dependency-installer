@@ -12,7 +12,7 @@ A lightweight class to add to WordPress plugins or themes to automatically insta
 
 ## Description
 
-This is a drop in class for developers to optionally or automatically install plugin dependencies for their own plugins or themes. It can install a plugin from w.org, GitHub, Bitbucket, or GitLab. You must include a JSON config file in the same directory as this class file.
+This is a drop in class for developers to optionally or automatically install plugin dependencies for their own plugins or themes. It can install a plugin from w.org, GitHub, Bitbucket, GitLab, Gitea, or a direct URL. You must include a JSON config file in the same directory as this class file.
 
 This contains an example plugin and an example JSON configuration file. Only required dependencies are installed automatically, optional dependencies are not. Required dependencies are always kept active.
 
@@ -60,6 +60,7 @@ This file must be named `wp-dependencies.json` and it must be in the root direct
   },
   {
     "name": "Test Plugin Notags",
+    "host": "bitbucket",
     "slug": "test-plugin-notags/test-plugin-notags.php",
     "uri": "https://bitbucket.org/afragen/test-plugin-notags",
     "branch": "master",
@@ -85,7 +86,7 @@ This file must be named `wp-dependencies.json` and it must be in the root direct
 ]
 ```
 
-An example file is included, `wp-dependencies-example.json`. You may use a shorthand uri such as `<owner>/<repo>` but only if you include the `host` element in the JSON. If you have a full URI in the `uri` element then the `host` element is optional.
+An example file is included, `wp-dependencies-example.json`. You may use a shorthand uri such as `<owner>/<repo>` in the JSON.
 
 If you want to programmatically add dependencies you can send an associative array directly to
 
