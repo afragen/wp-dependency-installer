@@ -5,7 +5,7 @@
 * Requires PHP: 5.3
 * Tested up to: 4.8
 * Stable tag: master
-* Donate link: http://thefragens.com/wp-dependency-installer-donate
+* Donate link: <http://thefragens.com/wp-dependency-installer-donate>
 * License: MIT
 
 A lightweight class to add to WordPress plugins or themes to automatically install required plugin dependencies. Uses a JSON config file to declare plugin dependencies.
@@ -80,10 +80,12 @@ This file must be named `wp-dependencies.json` and it must be in the root direct
 
 An example file is included, `wp-dependencies-example.json`. You may use a shorthand uri such as `<owner>/<repo>` but only if you include the `host` element in the JSON. If you have a full URI in the `uri` element then the `host` element is optional.
 
-If you want to programmatically add dependencies you can send an associative array directly to 
+If you want to programmatically add dependencies you can send an associative array directly to
+
 ```php
 WP_Dependency_Installer::instance()->register( $config )
 ```
+
 where `$config` is an associative array as in identical format as `json_decode( wp-dependencies.json content )`
 
 ## Development
