@@ -127,23 +127,23 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				$owner_repo    = str_replace( '.git', '', trim( $path, '/' ) );
 
 				switch ( $host ) {
-					case ( 'github' ):
+					case 'github':
 						$download_link = 'https://api.github.com/repos/' . $owner_repo . '/zipball/' . $dependency['branch'];
 						if ( ! empty( $dependency['token'] ) ) {
 							$download_link = add_query_arg( 'access_token', $dependency['token'], $download_link );
 						}
 						break;
-					case ( 'bitbucket' ):
+					case 'bitbucket':
 						$download_link = 'https://bitbucket.org/' . $owner_repo . '/get/' . $dependency['branch'] . '.zip';
 						break;
-					case ( 'gitlab' ):
+					case 'gitlab':
 						$download_link = 'https://gitlab.com/' . $owner_repo . '/repository/archive.zip';
 						$download_link = add_query_arg( 'ref', $dependency['branch'], $download_link );
 						if ( ! empty( $dependency['token'] ) ) {
 							$download_link = add_query_arg( 'private_token', $dependency['token'], $download_link );
 						}
 						break;
-					case( 'wordpress' ):
+					case 'wordpress':
 						$download_link = 'https://downloads.wordpress.org/plugin/' . basename( $owner_repo ) . '.zip';
 						break;
 				}
