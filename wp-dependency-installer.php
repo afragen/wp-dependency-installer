@@ -119,30 +119,43 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		public function apply_config() {
 			foreach ( $this->config as $dependency ) {
 				$download_link = null;
+				$base          = null;
 				$uri           = $dependency['uri'];
 				$slug          = $dependency['slug'];
-				$host          = explode( '.', parse_url( $uri, PHP_URL_HOST ) );
-				$host          = isset( $dependency['host'] ) ? $dependency['host'] : $host[0];
+				$api           = parse_url( $uri, PHP_URL_HOST );
+				$scheme        = parse_url( $uri, PHP_URL_SCHEME );
+				$scheme        = ! empty( $scheme ) ? $scheme . '://' : 'https://';
+				$host          = $dependency['host'];
 				$path          = parse_url( $uri, PHP_URL_PATH );
 				$owner_repo    = str_replace( '.git', '', trim( $path, '/' ) );
 
 				switch ( $host ) {
 					case 'github':
-						$download_link = 'https://api.github.com/repos/' . $owner_repo . '/zipball/' . $dependency['branch'];
+						$base          = null === $api || 'github.com' === $api ? 'api.github.com' : $api;
+						$download_link = "{$scheme}{$base}/repos/{$owner_repo}/zipball/{$dependency['branch']}";
 						if ( ! empty( $dependency['token'] ) ) {
 							$download_link = add_query_arg( 'access_token', $dependency['token'], $download_link );
 						}
 						break;
 					case 'bitbucket':
-						$download_link = 'https://bitbucket.org/' . $owner_repo . '/get/' . $dependency['branch'] . '.zip';
+						$hosted        = 'bitbucket.org';
+						$base          = null === $api || $hosted === $api ? $hosted : $api;
+						$download_link = "{$scheme}{$base}/{$owner_repo}/get/{$dependency['branch']}.zip";
 						break;
 					case 'gitlab':
-						$download_link = 'https://gitlab.com/' . $owner_repo . '/repository/archive.zip';
+						$hosted        = 'gitlab.com';
+						$base          = null === $api || $hosted === $api ? $hosted : $api;
+						$download_link = "{$scheme}{$base}/{$owner_repo}/repository/archive.zip";
 						$download_link = add_query_arg( 'ref', $dependency['branch'], $download_link );
 						if ( ! empty( $dependency['token'] ) ) {
 							$download_link = add_query_arg( 'private_token', $dependency['token'], $download_link );
 						}
 						break;
+					case 'gitea':
+						$download_link = "{$scheme}{$api}/repos/{$owner_repo}/archive/{$dependency['branch']}.zip";
+						if ( ! empty( $dependency['token'] ) ) {
+							$download_link = add_query_arg( 'access_token', $dependency['token'], $download_link );
+						}
 					case 'wordpress':
 						$download_link = 'https://downloads.wordpress.org/plugin/' . basename( $owner_repo ) . '.zip';
 						break;
