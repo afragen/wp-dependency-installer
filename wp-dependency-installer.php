@@ -181,7 +181,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 						$this->notices[] = array(
 							'action' => 'activate',
 							'slug'   => $slug,
-							'text'   => sprintf( __( 'Please activate the %s plugin.' ), $dependency['name'] ),
+							/* translators: %s: Plugin name */
+							'text'   => sprintf( esc_html__( 'Please activate the %s plugin.' ), $dependency['name'] ),
 						);
 
 					} else {
@@ -191,7 +192,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 					$this->notices[] = array(
 						'action' => 'install',
 						'slug'   => $slug,
-						'text'   => sprintf( __( 'The %s plugin is required.' ), $dependency['name'] ),
+						/* translators: %s: Plugin name */
+						'text'   => sprintf( esc_html__( 'The %s plugin is required.' ), $dependency['name'] ),
 					);
 				} else {
 					$this->notices[] = $this->install( $slug );
@@ -299,7 +301,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				return array(
 					'status'  => 'updated',
 					'slug'    => $slug,
-					'message' => sprintf( __( '%s has been installed and activated.' ), $this->config[ $slug ]['name'] ),
+					/* translators: %s: Plugin name */
+					'message' => sprintf( esc_html__( '%s has been installed and activated.' ), $this->config[ $slug ]['name'] ),
 				);
 
 			}
@@ -309,7 +312,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 			return array(
 				'status'  => 'updated',
-				'message' => sprintf( __( '%s has been installed.' ), $this->config[ $slug ]['name'] ),
+				/* translators: %s: Plugin name */
+				'message' => sprintf( esc_html__( '%s has been installed.' ), $this->config[ $slug ]['name'] ),
 			);
 		}
 
@@ -334,7 +338,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 			return array(
 				'status'  => 'updated',
-				'message' => sprintf( __( '%s has been activated.' ), $this->config[ $slug ]['name'] ),
+				/* translators: %s: Plugin name */
+				'message' => sprintf( esc_html__( '%s has been activated.' ), $this->config[ $slug ]['name'] ),
 			);
 		}
 
@@ -395,7 +400,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				}
 				?>
 				<div data-dismissible="<?php echo $dismissible; ?>" class="<?php echo $status; ?> notice is-dismissible dependency-installer">
-					<p><?php echo '<strong>[' . __( 'Dependency' ) . ']</strong> ' . $message; ?></p>
+					<p><?php echo '<strong>[' . esc_html__( 'Dependency' ) . ']</strong> ' . $message; ?></p>
 				</div>
 				<?php
 			}
@@ -436,7 +441,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				unset( $actions['deactivate'] );
 			}
 
-			return array_merge( array( 'required-plugin' => __( 'Plugin dependency' ) ), $actions );
+			/* translators: %s: opening and closing span tags */
+			return array_merge( array( 'required-plugin' => sprintf( esc_html__( '%1$sPlugin dependency%2$s' ), '<span class="network_active">', '</span>' ) ), $actions );
 		}
 
 	}
