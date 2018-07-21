@@ -458,7 +458,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			}
 
 			/* translators: %s: opening and closing span tags */
-			return array_merge( array( 'required-plugin' => sprintf( esc_html__( '%1$sPlugin dependency%2$s' ), '<span class="network_active">', '</span>' ) ), $actions );
+			$actions = array_merge( array( 'required-plugin' => sprintf( esc_html__( '%1$sPlugin dependency%2$s' ), '<span class="network_active">', '</span>' ) ), $actions );
+
+			return $actions;
 		}
 
 	}
