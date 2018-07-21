@@ -5,7 +5,7 @@
  *
  * A lightweight class to add to WordPress plugins or themes to automatically install
  * required plugin dependencies. Uses a JSON config file to declare plugin dependencies.
- * It can install a plugin from w.org, GitHub, Bitbucket, or GitLab.
+ * It can install a plugin from w.org, GitHub, Bitbucket, GitLab, Gitea or direct URL.
  *
  * @package   WP_Dependency_Installer
  * @author    Andy Fragen
