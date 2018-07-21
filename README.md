@@ -12,7 +12,7 @@ A lightweight class to add to WordPress plugins or themes to automatically insta
 
 ## Description
 
-This is a drop in class for developers to optionally or automatically install plugin dependencies for their own plugins or themes. It can install a plugin from w.org, GitHub, Bitbucket, GitLab, Gitea, or a direct URL. You must include a JSON config file in the same directory as this class file.
+This is a drop in class for developers to optionally or automatically install plugin dependencies for their own plugins or themes. It can install a plugin from w.org, GitHub, Bitbucket, GitLab, Gitea, or a direct URL. You must include a JSON config file in the root directory of the plugin/theme file.
 
 This contains an example plugin and an example JSON configuration file. Only required dependencies are installed automatically, optional dependencies are not. Required dependencies are always kept active.
 
