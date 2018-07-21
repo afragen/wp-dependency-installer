@@ -5,14 +5,14 @@
  *
  * A lightweight class to add to WordPress plugins or themes to automatically install
  * required plugin dependencies. Uses a JSON config file to declare plugin dependencies.
- * It can install a plugin from w.org, GitHub, Bitbucket, or GitLab.
+ * It can install a plugin from w.org, GitHub, Bitbucket, GitLab, Gitea or direct URL.
  *
  * @package   WP_Dependency_Installer
  * @author    Andy Fragen
  * @author    Matt Gibbs
  * @license   MIT
  * @link      https://github.com/afragen/wp-dependency-installer
- * @version   1.3.3
+ * @version   1.4.0
  */
 
 /**
@@ -119,32 +119,48 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		public function apply_config() {
 			foreach ( $this->config as $dependency ) {
 				$download_link = null;
+				$base          = null;
 				$uri           = $dependency['uri'];
 				$slug          = $dependency['slug'];
-				$host          = explode( '.', parse_url( $uri, PHP_URL_HOST ) );
-				$host          = isset( $dependency['host'] ) ? $dependency['host'] : $host[0];
+				$api           = parse_url( $uri, PHP_URL_HOST );
+				$scheme        = parse_url( $uri, PHP_URL_SCHEME );
+				$scheme        = ! empty( $scheme ) ? $scheme . '://' : 'https://';
+				$host          = $dependency['host'];
 				$path          = parse_url( $uri, PHP_URL_PATH );
 				$owner_repo    = str_replace( '.git', '', trim( $path, '/' ) );
 
 				switch ( $host ) {
-					case ( 'github' ):
-						$download_link = 'https://api.github.com/repos/' . $owner_repo . '/zipball/' . $dependency['branch'];
+					case 'github':
+						$base          = null === $api || 'github.com' === $api ? 'api.github.com' : $api;
+						$download_link = "{$scheme}{$base}/repos/{$owner_repo}/zipball/{$dependency['branch']}";
 						if ( ! empty( $dependency['token'] ) ) {
 							$download_link = add_query_arg( 'access_token', $dependency['token'], $download_link );
 						}
 						break;
-					case ( 'bitbucket' ):
-						$download_link = 'https://bitbucket.org/' . $owner_repo . '/get/' . $dependency['branch'] . '.zip';
+					case 'bitbucket':
+						$hosted        = 'bitbucket.org';
+						$base          = null === $api || $hosted === $api ? $hosted : $api;
+						$download_link = "{$scheme}{$base}/{$owner_repo}/get/{$dependency['branch']}.zip";
 						break;
-					case ( 'gitlab' ):
-						$download_link = 'https://gitlab.com/' . $owner_repo . '/repository/archive.zip';
+					case 'gitlab':
+						$hosted        = 'gitlab.com';
+						$base          = null === $api || $hosted === $api ? $hosted : $api;
+						$download_link = "{$scheme}{$base}/{$owner_repo}/repository/archive.zip";
 						$download_link = add_query_arg( 'ref', $dependency['branch'], $download_link );
 						if ( ! empty( $dependency['token'] ) ) {
 							$download_link = add_query_arg( 'private_token', $dependency['token'], $download_link );
 						}
 						break;
-					case( 'wordpress' ):
+					case 'gitea':
+						$download_link = "{$scheme}{$api}/repos/{$owner_repo}/archive/{$dependency['branch']}.zip";
+						if ( ! empty( $dependency['token'] ) ) {
+							$download_link = add_query_arg( 'access_token', $dependency['token'], $download_link );
+						}
+					case 'wordpress':
 						$download_link = 'https://downloads.wordpress.org/plugin/' . basename( $owner_repo ) . '.zip';
+						break;
+					case 'direct':
+						$download_link = filter_var( $uri, FILTER_VALIDATE_URL );
 						break;
 				}
 
@@ -181,7 +197,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 						$this->notices[] = array(
 							'action' => 'activate',
 							'slug'   => $slug,
-							'text'   => sprintf( __( 'Please activate the %s plugin.' ), $dependency['name'] ),
+							/* translators: %s: Plugin name */
+							'text'   => sprintf( esc_html__( 'Please activate the %s plugin.' ), $dependency['name'] ),
 						);
 
 					} else {
@@ -191,7 +208,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 					$this->notices[] = array(
 						'action' => 'install',
 						'slug'   => $slug,
-						'text'   => sprintf( __( 'The %s plugin is required.' ), $dependency['name'] ),
+						/* translators: %s: Plugin name */
+						'text'   => sprintf( esc_html__( 'The %s plugin is required.' ), $dependency['name'] ),
 					);
 				} else {
 					$this->notices[] = $this->install( $slug );
@@ -299,7 +317,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				return array(
 					'status'  => 'updated',
 					'slug'    => $slug,
-					'message' => sprintf( __( '%s has been installed and activated.' ), $this->config[ $slug ]['name'] ),
+					/* translators: %s: Plugin name */
+					'message' => sprintf( esc_html__( '%s has been installed and activated.' ), $this->config[ $slug ]['name'] ),
 				);
 
 			}
@@ -309,7 +328,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 			return array(
 				'status'  => 'updated',
-				'message' => sprintf( __( '%s has been installed.' ), $this->config[ $slug ]['name'] ),
+				/* translators: %s: Plugin name */
+				'message' => sprintf( esc_html__( '%s has been installed.' ), $this->config[ $slug ]['name'] ),
 			);
 		}
 
@@ -334,7 +354,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 			return array(
 				'status'  => 'updated',
-				'message' => sprintf( __( '%s has been activated.' ), $this->config[ $slug ]['name'] ),
+				/* translators: %s: Plugin name */
+				'message' => sprintf( esc_html__( '%s has been activated.' ), $this->config[ $slug ]['name'] ),
 			);
 		}
 
@@ -395,7 +416,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				}
 				?>
 				<div data-dismissible="<?php echo $dismissible; ?>" class="<?php echo $status; ?> notice is-dismissible dependency-installer">
-					<p><?php echo '<strong>[' . __( 'Dependency' ) . ']</strong> ' . $message; ?></p>
+					<p><?php echo '<strong>[' . esc_html__( 'Dependency' ) . ']</strong> ' . $message; ?></p>
 				</div>
 				<?php
 			}
@@ -436,7 +457,10 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				unset( $actions['deactivate'] );
 			}
 
-			return array_merge( array( 'required-plugin' => __( 'Plugin dependency' ) ), $actions );
+			/* translators: %s: opening and closing span tags */
+			$actions = array_merge( array( 'required-plugin' => sprintf( esc_html__( '%1$sPlugin dependency%2$s' ), '<span class="network_active">', '</span>' ) ), $actions );
+
+			return $actions;
 		}
 
 	}
