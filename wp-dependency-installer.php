@@ -12,7 +12,7 @@
  * @author    Matt Gibbs
  * @license   MIT
  * @link      https://github.com/afragen/wp-dependency-installer
- * @version   1.4.0
+ * @version   1.4.1
  */
 
 /**
@@ -94,6 +94,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				) {
 					return;
 				}
+				$this->config['source'] = basename( $plugin_path );
 				$this->load_hooks();
 				$this->register( $config );
 			}
@@ -117,6 +118,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * Process the registered dependencies.
 		 */
 		public function apply_config() {
+			$source = $this->config['source'];
+			unset( $this->config['source'] );
+
 			foreach ( $this->config as $dependency ) {
 				$download_link = null;
 				$base          = null;
@@ -165,6 +169,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				}
 
 				$this->config[ $slug ]['download_link'] = $download_link;
+				$this->config[ $slug ]['source']        = $source;
 			}
 		}
 
@@ -199,6 +204,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 							'slug'   => $slug,
 							/* translators: %s: Plugin name */
 							'text'   => sprintf( esc_html__( 'Please activate the %s plugin.' ), $dependency['name'] ),
+							'source' => $dependency['source'],
 						);
 
 					} else {
@@ -210,6 +216,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 						'slug'   => $slug,
 						/* translators: %s: Plugin name */
 						'text'   => sprintf( esc_html__( 'The %s plugin is required.' ), $dependency['name'] ),
+						'source' => $dependency['source'],
 					);
 				} else {
 					$this->notices[] = $this->install( $slug );
@@ -408,8 +415,19 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				if ( ! empty( $notice['status'] ) ) {
 					$message = esc_html( $notice['message'] );
 				}
+
+				/**
+				 * Filters the dismissal timeout.
+				 *
+				 * @since 1.4.1
+				 *
+				 * @param string|int '7'           Default dismissal in days.
+				 * @param string $notice['source'] Plugin slug of calling plugin.
+				 * @return string|int              Dismissal timeout in days.
+				 */
+				$timeout     = '-' . apply_filters( 'wp_dependency_timeout', '7', $notice['source'] );
 				$dismissible = isset( $notice['slug'] )
-					? 'dependency-installer-' . dirname( $notice['slug'] ) . '-7'
+					? 'dependency-installer-' . dirname( $notice['slug'] ) . $timeout
 					: null;
 				if ( class_exists( '\PAnd' ) && ! \PAnD::is_admin_notice_active( $dismissible ) ) {
 					continue;

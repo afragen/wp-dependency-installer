@@ -96,6 +96,17 @@ WP_Dependency_Installer::instance()->register( $config )
 
 where `$config` is an associative array as in identical format as `json_decode( wp-dependencies.json content )`
 
+The default timeout for dismissal of a notification is 7 days. There is a filter `wp_dependency_timeout` to adjust this on a per project basis.
+
+```php
+add_filter(
+  'wp_dependency_timeout', function( $timeout, $source ) {
+    $timeout = $source !== basename( __DIR__ ) ? $timeout : 14;
+    return $timeout;
+  }, 10, 2
+);
+```
+
 ## Development
 
 PRs are welcome against the `develop` branch.
