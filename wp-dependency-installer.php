@@ -12,7 +12,7 @@
  * @author    Matt Gibbs
  * @license   MIT
  * @link      https://github.com/afragen/wp-dependency-installer
- * @version   1.4.1
+ * @version   1.4.2
  */
 
 /**
@@ -106,8 +106,11 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @param array $config JSON config as string.
 		 */
 		public function register( $config ) {
+			$source = isset( $this->config['source'] ) ? $this->config['source'] : null;
+			unset( $this->config['source'] );
 			foreach ( $config as $dependency ) {
-				$slug = $dependency['slug'];
+				$dependency['source'] = $source;
+				$slug                 = $dependency['slug'];
 				if ( ! isset( $this->config[ $slug ] ) || ! $dependency['optional'] ) {
 					$this->config[ $slug ] = $dependency;
 				}
@@ -118,9 +121,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * Process the registered dependencies.
 		 */
 		public function apply_config() {
-			$source = $this->config['source'];
-			unset( $this->config['source'] );
-
 			foreach ( $this->config as $dependency ) {
 				$download_link = null;
 				$base          = null;
@@ -169,7 +169,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				}
 
 				$this->config[ $slug ]['download_link'] = $download_link;
-				$this->config[ $slug ]['source']        = $source;
 			}
 		}
 
