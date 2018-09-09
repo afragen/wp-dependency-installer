@@ -16,7 +16,6 @@
   ],
   "prefer-stable": true,
   "require": {
-    "composer/installers": "^1.0",
     "php": ">=5.3",
     "collizo4sky/persist-admin-notices-dismissal": ">=1.3"
   },
