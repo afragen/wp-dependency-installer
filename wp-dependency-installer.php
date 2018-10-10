@@ -424,8 +424,10 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				 * @param string $notice['source'] Plugin slug of calling plugin.
 				 * @return string|int              Dismissal timeout in days.
 				 */
-				$timeout     = '-' . apply_filters( 'wp_dependency_timeout', '7', $notice['source'] );
-				$dismissible = isset( $notice['slug'] )
+				$default_timeout = '7';
+				$timeout         = '-' . apply_filters( 'wp_dependency_timeout', '7', $notice['source'] );
+				$timeout         = $timeout ? $timeout : $default_timeout;
+				$dismissible     = isset( $notice['slug'] )
 					? 'dependency-installer-' . dirname( $notice['slug'] ) . $timeout
 					: null;
 				if ( class_exists( '\PAnd' ) && ! \PAnD::is_admin_notice_active( $dismissible ) ) {
