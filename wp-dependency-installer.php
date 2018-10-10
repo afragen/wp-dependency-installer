@@ -425,8 +425,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				 * @return string|int              Dismissal timeout in days.
 				 */
 				$default_timeout = '7';
-				$timeout         = '-' . apply_filters( 'wp_dependency_timeout', '7', $notice['source'] );
+				$timeout         = apply_filters( 'wp_dependency_timeout', $default_timeout, $notice['source'] );
 				$timeout         = $timeout ? $timeout : $default_timeout;
+				$timeout         = '-' . (string) absint( $timeout );
 				$dismissible     = isset( $notice['slug'] )
 					? 'dependency-installer-' . dirname( $notice['slug'] ) . $timeout
 					: null;
