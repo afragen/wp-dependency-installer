@@ -15,8 +15,11 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 WP_Dependency_Installer::instance()->run( __DIR__ );
 add_filter(
-	'wp_dependency_timeout', function( $timeout, $source ) {
+	'wp_dependency_timeout',
+	function( $timeout, $source ) {
 		$timeout = $source !== basename( __DIR__ ) ? $timeout : 14;
 		return $timeout;
-	}, 10, 2
+	},
+	10,
+	2
 );
