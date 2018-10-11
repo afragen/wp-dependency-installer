@@ -12,7 +12,7 @@
  * @author    Matt Gibbs
  * @license   MIT
  * @link      https://github.com/afragen/wp-dependency-installer
- * @version   1.4.3
+ * @version   1.4.4
  */
 
 /**
@@ -49,6 +49,13 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @var string $current_slug
 		 */
 		protected $current_slug;
+
+		/**
+		 * Holds the calling plugin/theme slug.
+		 *
+		 * @var string $source
+		 */
+		protected $source;
 
 		/**
 		 * Holds names of installed dependencies for admin notices.
@@ -94,7 +101,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				) {
 					return;
 				}
-				$this->config['source'] = basename( $plugin_path );
+				$this->source = basename( $plugin_path );
 				$this->load_hooks();
 				$this->register( $config );
 			}
@@ -106,10 +113,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @param array $config JSON config as string.
 		 */
 		public function register( $config ) {
-			$source = isset( $this->config['source'] ) ? $this->config['source'] : null;
-			unset( $this->config['source'] );
 			foreach ( $config as $dependency ) {
-				$dependency['source'] = $source;
+				$dependency['source'] = $this->source;
 				$slug                 = $dependency['slug'];
 				if ( ! isset( $this->config[ $slug ] ) || ! $dependency['optional'] ) {
 					$this->config[ $slug ] = $dependency;
@@ -325,6 +330,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 					'slug'    => $slug,
 					/* translators: %s: Plugin name */
 					'message' => sprintf( esc_html__( '%s has been installed and activated.' ), $this->config[ $slug ]['name'] ),
+					'source'  => $this->config[ $slug ]['source'],
 				);
 
 			}
@@ -336,6 +342,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				'status'  => 'updated',
 				/* translators: %s: Plugin name */
 				'message' => sprintf( esc_html__( '%s has been installed.' ), $this->config[ $slug ]['name'] ),
+				'source'  => $this->config[ $slug ]['source'],
 			);
 		}
 
@@ -362,6 +369,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				'status'  => 'updated',
 				/* translators: %s: Plugin name */
 				'message' => sprintf( esc_html__( '%s has been activated.' ), $this->config[ $slug ]['name'] ),
+				'source'  => $this->config[ $slug ]['source'],
 			);
 		}
 
