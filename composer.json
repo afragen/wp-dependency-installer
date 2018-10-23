@@ -17,7 +17,7 @@
   "prefer-stable": true,
   "require": {
     "php": ">=5.3",
-    "collizo4sky/persist-admin-notices-dismissal": ">=1.3"
+    "collizo4sky/persist-admin-notices-dismissal": "^1"
   },
   "support": {
     "issues": "https://github.com/afragen/wp-dependency-installer/issues"
