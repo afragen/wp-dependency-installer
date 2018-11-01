@@ -195,10 +195,15 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @return string
 		 */
 		protected function getWpPluginLatestDownloadUrl( $slug ) {
-			include_once( ABSPATH.'wp-admin/includes/plugin-install.php' );
-			$pinfo = plugins_api( 'plugin_information', array( 'slug' => $slug ) );
-			return ( is_object( $pinfo ) && isset( $pinfo->download_link )
-					 && filter_var( $pinfo->download_link, FILTER_VALIDATE_URL ) ) ? $pinfo->download_link : '';
+			$url = get_transient( 'wp-dependency-installer-url-'.$slug );
+			if ( $url === false ) {
+				include_once( ABSPATH.'wp-admin/includes/plugin-install.php' );
+				$pinfo = plugins_api( 'plugin_information', array( 'slug' => $slug ) );
+				$url = ( is_object( $pinfo ) && isset( $pinfo->download_link )
+						 && filter_var( $pinfo->download_link, FILTER_VALIDATE_URL ) ) ? $pinfo->download_link : '';
+				set_transient( 'wp-dependency-installer-url-'.$slug, $url, DAY_IN_SECONDS );
+			}
+			return $url;
 		}
 
 		/**
