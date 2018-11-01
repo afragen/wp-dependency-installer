@@ -166,7 +166,13 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 							$download_link = add_query_arg( 'access_token', $dependency['token'], $download_link );
 						}
 					case 'wordpress':
-						$download_link = 'https://downloads.wordpress.org/plugin/' . basename( $owner_repo ) . '.zip';
+						$wp_slug = basename( $owner_repo );
+						if ( $dependency[ 'branch' ] == 'latest' ) {
+							$download_link = $this->getWpPluginLatestDownloadUrl( $wp_slug );
+						}
+						if ( empty( $download_link ) ) {
+							$download_link = 'https://downloads.wordpress.org/plugin/'.$wp_slug.'.zip';
+						}
 						break;
 					case 'direct':
 						$download_link = filter_var( $uri, FILTER_VALIDATE_URL );
@@ -175,6 +181,17 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 				$this->config[ $slug ]['download_link'] = $download_link;
 			}
+		}
+
+		/**
+		 * @param string $slug
+		 * @return string
+		 */
+		protected function getWpPluginLatestDownloadUrl( $slug ) {
+			include_once( ABSPATH.'wp-admin/includes/plugin-install.php' );
+			$pinfo = plugins_api( 'plugin_information', array( 'slug' => $slug ) );
+			return ( is_object( $pinfo ) && isset( $pinfo->download_link )
+					 && filter_var( $pinfo->download_link, FILTER_VALIDATE_URL ) ) ? $pinfo->download_link : '';
 		}
 
 		/**
