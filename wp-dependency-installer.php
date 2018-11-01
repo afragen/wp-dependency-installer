@@ -170,6 +170,13 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 						if ( $dependency[ 'branch' ] == 'latest' ) {
 							$download_link = $this->getWpPluginLatestDownloadUrl( $wp_slug );
 						}
+						else if ( strpos( $dependency[ 'branch' ], '.' ) > 0 ) {
+							$download_link = sprintf(
+								'https://downloads.wordpress.org/plugin/%s.%s.zip',
+								$wp_slug,
+								$dependency[ 'branch' ]
+							);
+						}
 						if ( empty( $download_link ) ) {
 							$download_link = 'https://downloads.wordpress.org/plugin/'.$wp_slug.'.zip';
 						}
