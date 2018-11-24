@@ -23,7 +23,7 @@
     "issues": "https://github.com/afragen/wp-dependency-installer/issues"
   },
   "autoload": {
-    "files": [
+    "classmap": [
       "wp-dependency-installer.php"
     ]
   }
