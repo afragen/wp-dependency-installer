@@ -23,8 +23,8 @@
     "issues": "https://github.com/afragen/wp-dependency-installer/issues"
   },
   "autoload": {
-    "files": [
-      "wp-dependency-installer.php"
-    ]
+    "psr-0": {
+      "WP_Dependency_Installer": ""
+    }
   }
 }
