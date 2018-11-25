@@ -1,6 +1,7 @@
 {
   "name": "afragen/wp-dependency-installer",
   "description": "Library that helps WordPress plugin dependency management.",
+  "version": "1.4.7",
   "license": "MIT",
   "authors": [
     {
@@ -20,7 +21,8 @@
     "collizo4sky/persist-admin-notices-dismissal": "^1"
   },
   "support": {
-    "issues": "https://github.com/afragen/wp-dependency-installer/issues"
+    "issues": "https://github.com/afragen/wp-dependency-installer/issues",
+    "source": "https://github.com/afragen/wp-dependency-installer"
   },
   "autoload": {
     "classmap": [
