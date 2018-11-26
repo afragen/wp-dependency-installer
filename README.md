@@ -3,7 +3,7 @@
 * Tags: plugin, dependency, install
 * Requires at least: 3.8
 * Requires PHP: 5.3
-* Tested up to: 4.8
+* Tested up to: 5.0
 * Stable tag: master
 * Donate link: <http://thefragens.com/wp-dependency-installer-donate>
 * License: MIT
