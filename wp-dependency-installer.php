@@ -79,6 +79,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			add_action( 'admin_notices', array( $this, 'admin_notices' ) );
 			add_action( 'network_admin_notices', array( $this, 'admin_notices' ) );
 			add_action( 'wp_ajax_dependency_installer', array( $this, 'ajax_router' ) );
+
+			// Initialize Persist admin Notices Dismissal dependency.
+			add_action( 'admin_init', array( 'PAnD', 'init' ) );
 		}
 
 		/**
@@ -203,11 +206,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * Determine if dependency is active or installed.
 		 */
 		public function admin_init() {
-			// Initialize Persist admin Notices Dismissal dependency.
-			if ( class_exists( 'PaND' ) ) {
-				PaND::init();
-			}
-
 			// Get the gears turning.
 			$this->apply_config();
 
