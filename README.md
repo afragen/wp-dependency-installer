@@ -3,9 +3,8 @@
 * Tags: plugin, dependency, install
 * Requires at least: 3.8
 * Requires PHP: 5.3
-* Tested up to: 5.0
 * Stable tag: master
-* Donate link: <http://thefragens.com/wp-dependency-installer-donate>
+* Donate link: <https://thefragens.com/wp-dependency-installer-donate>
 * License: MIT
 
 A lightweight class to add to WordPress plugins or themes to automatically install required plugin dependencies. Uses a JSON config file to declare plugin dependencies.

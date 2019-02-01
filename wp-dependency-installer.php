@@ -12,7 +12,6 @@
  * @author    Matt Gibbs
  * @license   MIT
  * @link      https://github.com/afragen/wp-dependency-installer
- * @version   1.4.6
  */
 
 /**
@@ -28,13 +27,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 	 * Class WP_Dependency_Installer
 	 */
 	class WP_Dependency_Installer {
-
-		/**
-		 * Holds the singleton instance.
-		 *
-		 * @var \WP_Dependency_Installer
-		 */
-		private static $instance;
 
 		/**
 		 * Holds the JSON file contents.
@@ -68,11 +60,12 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * Singleton.
 		 */
 		public static function instance() {
-			if ( null === self::$instance ) {
-				self::$instance = new self();
+			static $instance = null;
+			if ( null === $instance ) {
+				$instance = new self();
 			}
 
-			return self::$instance;
+			return $instance;
 		}
 
 		/**
