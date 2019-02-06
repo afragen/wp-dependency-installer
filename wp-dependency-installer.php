@@ -184,10 +184,10 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			if ( ! $download_link ) {
 				$url           = 'https://api.wordpress.org/plugins/info/1.1/';
 				$url           = add_query_arg(
-					[
+					array(
 						'action'                     => 'plugin_information',
 						urlencode( 'request[slug]' ) => $slug,
-					],
+					),
 					$url
 				);
 				$response      = wp_remote_get( $url );
