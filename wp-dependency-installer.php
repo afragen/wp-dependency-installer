@@ -352,6 +352,13 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				);
 			}
 
+			if ( null === $result ) {
+				return array(
+					'status'  => 'error',
+					'message' => esc_html__( 'Plugin download failed' ),
+				);
+			}
+
 			wp_cache_flush();
 			if ( ! $this->config[ $slug ]['optional'] ) {
 				$this->activate( $slug );
