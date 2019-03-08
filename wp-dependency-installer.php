@@ -350,7 +350,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 					'status'  => 'error',
 					'message' => $result->get_error_message(),
 				);
-			} elseif ( null === $result ) {
+			}
+
+			if ( null === $result ) {
 				return array(
 					'status'  => 'error',
 					'message' => esc_html__( 'Plugin download failed' ),
