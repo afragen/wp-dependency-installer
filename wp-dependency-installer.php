@@ -350,6 +350,11 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 					'status'  => 'error',
 					'message' => $result->get_error_message(),
 				);
+			} elseif ( null === $result ) ) {
+				return array(
+					'status'  => 'error',
+					'message' => esc_html__( 'Plugin download failed' ),
+				);
 			}
 
 			wp_cache_flush();
