@@ -105,6 +105,8 @@ add_filter(
 );
 ```
 
+The download link can be filtered using the filter hook `wp_dependency_download_link`. The `$download_link` and the `$dependency` are passed as parameters.
+
 ## Development
 
 PRs are welcome against the `develop` branch.
