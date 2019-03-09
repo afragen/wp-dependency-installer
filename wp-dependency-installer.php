@@ -169,6 +169,16 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 						break;
 				}
 
+				/**
+				 * Allow filtering of download link for dependency configuration.
+				 *
+				 * @since 1.4.11
+				 *
+				 * @param string $download_link Download link.
+				 * @param array  $dependency    Dependency configuration.
+				 */
+				$download_link = apply_filters( 'wp_dependency_download_link', $download_link, $dependency );
+
 				$this->config[ $slug ]['download_link'] = $download_link;
 			}
 		}
@@ -181,12 +191,13 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 */
 		private function get_dot_org_latest_download( $slug ) {
 			$download_link = get_site_transient( 'wpdi-' . md5( $slug ) );
+
 			if ( ! $download_link ) {
 				$url           = 'https://api.wordpress.org/plugins/info/1.1/';
 				$url           = add_query_arg(
 					array(
-						'action'                     => 'plugin_information',
-						urlencode( 'request[slug]' ) => $slug,
+						'action'                        => 'plugin_information',
+						rawurlencode( 'request[slug]' ) => $slug,
 					),
 					$url
 				);
@@ -338,6 +349,13 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				return array(
 					'status'  => 'error',
 					'message' => $result->get_error_message(),
+				);
+			}
+
+			if ( null === $result ) {
+				return array(
+					'status'  => 'error',
+					'message' => esc_html__( 'Plugin download failed' ),
 				);
 			}
 
@@ -506,6 +524,17 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			$actions = array_merge( array( 'required-plugin' => sprintf( esc_html__( '%1$sPlugin dependency%2$s' ), '<span class="network_active">', '</span>' ) ), $actions );
 
 			return $actions;
+		}
+
+		/**
+		 * Get the configuration.
+		 *
+		 * @since 1.4.11
+		 *
+		 * @return array The configuration.
+		 */
+		public function get_config() {
+			return $this->config;
 		}
 	}
 
