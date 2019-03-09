@@ -196,8 +196,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				$url           = 'https://api.wordpress.org/plugins/info/1.1/';
 				$url           = add_query_arg(
 					array(
-						'action'                     => 'plugin_information',
-						urlencode( 'request[slug]' ) => $slug,
+						'action'                        => 'plugin_information',
+						rawurlencode( 'request[slug]' ) => $slug,
 					),
 					$url
 				);
