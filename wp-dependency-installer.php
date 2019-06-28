@@ -146,7 +146,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 						break;
 					case 'gitlab':
 						$base          = null === $api || 'gitlab.com' === $api ? 'gitlab.com' : $api;
-						$project_id    = urlencode( $owner_repo );
+						$project_id    = rawurlencode( $owner_repo );
 						$download_link = "{$scheme}{$base}/api/v4/projects/{$project_id}/repository/archive.zip";
 						$download_link = add_query_arg( 'sha', $dependency['branch'], $download_link );
 						if ( ! empty( $dependency['token'] ) ) {
