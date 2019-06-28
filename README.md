@@ -62,8 +62,7 @@ This file must be named `wp-dependencies.json` and it must be in the root direct
     "slug": "test-plugin-notags/test-plugin-notags.php",
     "uri": "https://bitbucket.org/afragen/test-plugin-notags",
     "branch": "master",
-    "optional": true,
-    "token": null
+    "optional": true
   },
   {
     "name": "Test Gitlab Plugin2",
