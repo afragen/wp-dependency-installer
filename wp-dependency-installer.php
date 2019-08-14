@@ -159,7 +159,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 							$download_link = add_query_arg( 'access_token', $dependency['token'], $download_link );
 						}
 						break;
-					case strtolower( 'WordPress' ):
+					case 'wordpress':  // phpcs:ignore WordPress.WP.CapitalPDangit.Misspelled
 						$download_link = $this->get_dot_org_latest_download( basename( $owner_repo ) );
 						break;
 					case 'direct':
