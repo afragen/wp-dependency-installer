@@ -545,7 +545,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		public function header() {}
 		public function footer() {}
 		public function error( $errors ) {}
-		public function feedback( $string ) {}
+		public function feedback( $string, ...$args ) {}
 	}
 
 }
