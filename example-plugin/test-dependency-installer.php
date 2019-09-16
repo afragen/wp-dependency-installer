@@ -7,8 +7,8 @@
  * Version: 1.0
  * Author: Andy Fragen, Matt Gibbs
  * License: MIT
- * Requires WP: 4.0
- * Requires PHP: 5.3
+ * Requires WP: 5.1
+ * Requires PHP: 5.6
  */
 
 require_once __DIR__ . '/vendor/autoload.php';

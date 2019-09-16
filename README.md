@@ -1,8 +1,8 @@
 # WP Dependency Installer
 * Contributors: [Andy Fragen](https://github.com/afragen), [Matt Gibbs](https://github.com/mgibbs189), [contributors](https://github.com/afragen/wp-dependency-installer/graphs/contributors)
 * Tags: plugin, dependency, install
-* Requires at least: 3.8
-* Requires PHP: 5.3
+* Requires at least: 5.1
+* Requires PHP: 5.6
 * Stable tag: master
 * Donate link: <https://thefragens.com/wp-dependency-installer-donate>
 * License: MIT
@@ -16,6 +16,8 @@ This is a drop in class for developers to optionally or automatically install pl
 This contains an example plugin and an example JSON configuration file. Only required dependencies are installed automatically, optional dependencies are not. Required dependencies are always kept active.
 
 ## Installation
+
+WP Dependency Installer v2.0.0 or greater now requires PHP 5.6 or greater and WordPress 5.1 or greater.
 
 Install the package via composer.
 
