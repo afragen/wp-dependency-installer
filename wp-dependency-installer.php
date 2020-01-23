@@ -366,8 +366,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				];
 			}
 
-			}
-			if ( 'error' === $result['status'] ) {
+			if ( true !== $result && 'error' === $result['status'] ) {
 				return $result;
 			}
 
