@@ -32,7 +32,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @var array $config
 		 */
-		protected $config = array();
+		protected $config;
 
 		/**
 		 * Holds the current dependency's slug.
@@ -53,7 +53,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @var array $notices
 		 */
-		protected $notices = array();
+		protected $notices;
 
 		/**
 		 * Array of required plugins' slugs.
@@ -66,6 +66,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * WP_Dependency_Installer constructor.
 		 */
 		public function __construct() {
+			$this->config           = [];
+			$this->notices          = [];
 			self::$required_plugins = [];
 		}
 
@@ -87,14 +89,14 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @return void
 		 */
 		public function load_hooks() {
-			add_action( 'admin_init', array( $this, 'admin_init' ) );
-			add_action( 'admin_footer', array( $this, 'admin_footer' ) );
-			add_action( 'admin_notices', array( $this, 'admin_notices' ) );
-			add_action( 'network_admin_notices', array( $this, 'admin_notices' ) );
-			add_action( 'wp_ajax_dependency_installer', array( $this, 'ajax_router' ) );
+			add_action( 'admin_init', [ $this, 'admin_init' ] );
+			add_action( 'admin_footer', [ $this, 'admin_footer' ] );
+			add_action( 'admin_notices', [ $this, 'admin_notices' ] );
+			add_action( 'network_admin_notices', [ $this, 'admin_notices' ] );
+			add_action( 'wp_ajax_dependency_installer', [ $this, 'ajax_router' ] );
 
 			// Initialize Persist admin Notices Dismissal dependency.
-			add_action( 'admin_init', array( 'PAnD', 'init' ) );
+			add_action( 'admin_init', [ 'PAnD', 'init' ] );
 
 			add_filter( 'plugin_row_meta', [ &$this, 'row_meta' ], 15, 2 );
 		}
@@ -209,10 +211,10 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			if ( ! $download_link ) {
 				$url           = 'https://api.wordpress.org/plugins/info/1.1/';
 				$url           = add_query_arg(
-					array(
+					[
 						'action'                        => 'plugin_information',
 						rawurlencode( 'request[slug]' ) => $slug,
-					),
+					],
 					$url
 				);
 				$response      = wp_remote_get( $url );
@@ -249,25 +251,25 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 				if ( $this->is_installed( $slug ) ) {
 					if ( $is_optional ) {
-						$this->notices[] = array(
+						$this->notices[] = [
 							'action' => 'activate',
 							'slug'   => $slug,
 							/* translators: %s: Plugin name */
 							'text'   => sprintf( esc_html__( 'Please activate the %s plugin.' ), $dependency['name'] ),
 							'source' => $dependency['source'],
-						);
+						];
 
 					} else {
 						$this->notices[] = $this->activate( $slug );
 					}
 				} elseif ( $is_optional ) {
-					$this->notices[] = array(
+					$this->notices[] = [
 						'action' => 'install',
 						'slug'   => $slug,
 						/* translators: %s: Plugin name */
 						'text'   => sprintf( esc_html__( 'The %s plugin is required.' ), $dependency['name'] ),
 						'source' => $dependency['source'],
-					);
+					];
 				} else {
 					$this->notices[] = $this->install( $slug );
 				}
@@ -314,7 +316,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		public function ajax_router() {
 			$method    = isset( $_POST['method'] ) ? $_POST['method'] : '';
 			$slug      = isset( $_POST['slug'] ) ? $_POST['slug'] : '';
-			$whitelist = array( 'install', 'activate', 'dismiss' );
+			$whitelist = [ 'install', 'activate', 'dismiss' ];
 
 			if ( in_array( $method, $whitelist, true ) ) {
 				$response = $this->$method( $slug );
@@ -349,54 +351,54 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			}
 
 			$this->current_slug = $slug;
-			add_filter( 'upgrader_source_selection', array( $this, 'upgrader_source_selection' ), 10, 2 );
+			add_filter( 'upgrader_source_selection', [ $this, 'upgrader_source_selection' ], 10, 2 );
 
 			$skin     = new WPDI_Plugin_Installer_Skin(
-				array(
+				[
 					'type'  => 'plugin',
 					'nonce' => wp_nonce_url( $this->config[ $slug ]['download_link'] ),
-				)
+				]
 			);
 			$upgrader = new Plugin_Upgrader( $skin );
 			$result   = $upgrader->install( $this->config[ $slug ]['download_link'] );
 
 			if ( is_wp_error( $result ) ) {
-				return array(
+				return [
 					'status'  => 'error',
 					'message' => $result->get_error_message(),
-				);
+				];
 			}
 
 			if ( null === $result ) {
-				return array(
+				return [
 					'status'  => 'error',
 					'message' => esc_html__( 'Plugin download failed' ),
-				);
+				];
 			}
 
 			wp_cache_flush();
 			if ( ! $this->config[ $slug ]['optional'] ) {
 				$this->activate( $slug );
 
-				return array(
+				return [
 					'status'  => 'updated',
 					'slug'    => $slug,
 					/* translators: %s: Plugin name */
 					'message' => sprintf( esc_html__( '%s has been installed and activated.' ), $this->config[ $slug ]['name'] ),
 					'source'  => $this->config[ $slug ]['source'],
-				);
+				];
 
 			}
 			if ( 'error' === $result['status'] ) {
 				return $result;
 			}
 
-			return array(
+			return [
 				'status'  => 'updated',
 				/* translators: %s: Plugin name */
 				'message' => sprintf( esc_html__( '%s has been installed.' ), $this->config[ $slug ]['name'] ),
 				'source'  => $this->config[ $slug ]['source'],
-			);
+			];
 		}
 
 		/**
@@ -412,18 +414,18 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			$result = is_network_admin() ? activate_plugin( $slug, null, true ) : activate_plugin( $slug );
 
 			if ( is_wp_error( $result ) ) {
-				return array(
+				return [
 					'status'  => 'error',
 					'message' => $result->get_error_message(),
-				);
+				];
 			}
 
-			return array(
+			return [
 				'status'  => 'updated',
 				/* translators: %s: Plugin name */
 				'message' => sprintf( esc_html__( '%s has been activated.' ), $this->config[ $slug ]['name'] ),
 				'source'  => $this->config[ $slug ]['source'],
-			);
+			];
 		}
 
 		/**
@@ -432,10 +434,10 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @return array Empty Message.
 		 */
 		public function dismiss() {
-			return array(
+			return [
 				'status'  => 'updated',
 				'message' => '',
-			);
+			];
 		}
 
 		/**
@@ -506,8 +508,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @param $plugin_file
 		 */
 		public function hide_plugin_action_links( $plugin_file ) {
-			add_filter( 'network_admin_plugin_action_links_' . $plugin_file, array( $this, 'unset_action_links' ) );
-			add_filter( 'plugin_action_links_' . $plugin_file, array( $this, 'unset_action_links' ) );
+			add_filter( 'network_admin_plugin_action_links_' . $plugin_file, [ $this, 'unset_action_links' ] );
+			add_filter( 'plugin_action_links_' . $plugin_file, [ $this, 'unset_action_links' ] );
 			add_action(
 				'after_plugin_row_' . $plugin_file,
 				function( $plugin_file ) {
