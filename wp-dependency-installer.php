@@ -419,17 +419,51 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Correctly rename dependency for activation.
 		 *
-		 * @param string $source
-		 * @param string $remote_source
+		 * @param string $source        Path fo $source.
+		 * @param string $remote_source Path of $remote_source.
 		 *
 		 * @return string $new_source
 		 */
 		public function upgrader_source_selection( $source, $remote_source ) {
-			global $wp_filesystem;
 			$new_source = trailingslashit( $remote_source ) . dirname( $this->current_slug );
-			$wp_filesystem->move( $source, $new_source );
+			$this->move( $source, $new_source );
 
 			return trailingslashit( $new_source );
+		}
+
+		/**
+		 * Rename or recursive file copy and delete.
+		 *
+		 * This is more versatile than `$wp_filesystem->move()`.
+		 * It moves/renames directories as well as files.
+		 * Fix for https://github.com/afragen/github-updater/issues/826,
+		 * strange failure of `rename()`.
+		 *
+		 * @param string $source      File path of source.
+		 * @param string $destination File path of destination.
+		 *
+		 * @return bool|void
+		 */
+		public function move( $source, $destination ) {
+			if ( @rename( $source, $destination ) ) {
+				return true;
+			}
+			$dir = opendir( $source );
+			mkdir( $destination );
+			$source = untrailingslashit( $source );
+			// phpcs:ignore WordPress.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition
+			while ( false !== ( $file = readdir( $dir ) ) ) {
+				if ( ( '.' !== $file ) && ( '..' !== $file ) && "$source/$file" !== $destination ) {
+					if ( is_dir( "$source/$file" ) ) {
+						$this->move( "$source/$file", "$destination/$file" );
+					} else {
+						copy( "$source/$file", "$destination/$file" );
+						unlink( "$source/$file" );
+					}
+				}
+			}
+			@rmdir( $source );
+			closedir( $dir );
 		}
 
 		/**
