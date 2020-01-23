@@ -56,6 +56,20 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		protected $notices = array();
 
 		/**
+		 * Array of required plugins' slugs.
+		 *
+		 * @var array $required_plugins
+		 */
+		protected static $required_plugins;
+
+		/**
+		 * WP_Dependency_Installer constructor.
+		 */
+		public function __construct() {
+			self::$required_plugins = [];
+		}
+
+		/**
 		 * Singleton.
 		 */
 		public static function instance() {
@@ -81,6 +95,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 			// Initialize Persist admin Notices Dismissal dependency.
 			add_action( 'admin_init', array( 'PAnD', 'init' ) );
+
+			add_filter( 'plugin_row_meta', [ &$this, 'row_meta' ], 15, 2 );
 		}
 
 		/**
@@ -223,6 +239,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				$is_optional = ! ( isset( $dependency['optional'] ) && false === $dependency['optional'] );
 
 				if ( ! $is_optional ) {
+					self::$required_plugins[] = $slug;
 					$this->hide_plugin_action_links( $slug );
 				}
 
@@ -517,10 +534,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			if ( isset( $actions['deactivate'] ) ) {
 				unset( $actions['deactivate'] );
 			}
-
-			/* translators: %s: opening and closing span tags */
-			$actions = array_merge( array( 'required-plugin' => sprintf( esc_html__( '%1$sPlugin dependency%2$s' ), '<span class="network_active">', '</span>' ) ), $actions );
-
 			return $actions;
 		}
 
@@ -533,6 +546,22 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 */
 		public function get_config() {
 			return $this->config;
+		}
+
+		/**
+		 * Add an additional element to the row meta links.
+		 *
+		 * @param array  $links Row meta links.
+		 * @param string $slug  Row meta file name.
+		 *
+		 * @return array $links
+		 */
+		public function row_meta( $links, $slug ) {
+			if ( in_array( $slug, self::$required_plugins, true ) ) {
+				/* translators: %s: opening and closing span tags */
+				array_unshift( $links, sprintf( esc_html__( '%1$sPlugin dependency%2$s' ), '<strong style=" font-weight: 700; padding: 2px 5px; background: #fff; border: 2px solid #000; border-radius: 3px;">', '</strong>' ) );
+			}
+			return $links;
 		}
 	}
 
