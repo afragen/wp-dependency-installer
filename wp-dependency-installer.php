@@ -561,7 +561,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		public function row_meta( $links, $slug ) {
 			if ( in_array( $slug, self::$required_plugins, true ) ) {
 				/* translators: %s: opening and closing span tags */
-				array_unshift( $links, sprintf( esc_html__( '%1$sPlugin dependency%2$s' ), '<strong style=" font-weight: 700; padding: 2px 5px; background: #fff; border: 2px solid #000; border-radius: 3px;">', '</strong>' ) );
+				array_unshift( $links, sprintf( esc_html__( '%1$sPlugin dependency%2$s' ), '<strong style=" font-weight: 700; padding: 2px 5px; background: #ff0; border: 2px solid #000; border-radius: 3px;">', '</strong>' ) );
 			}
 			return $links;
 		}
