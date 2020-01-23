@@ -17,7 +17,7 @@ WP_Dependency_Installer::instance()->run( __DIR__ );
 add_filter(
 	'wp_dependency_timeout',
 	function( $timeout, $source ) {
-		$timeout = $source !== basename( __DIR__ ) ? $timeout : 14;
+		$timeout = basename( __DIR__ ) !== $source ? $timeout : 14;
 		return $timeout;
 	},
 	10,
