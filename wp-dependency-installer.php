@@ -1,5 +1,4 @@
 <?php
-
 /**
  * WP Dependency Installer
  *
@@ -21,12 +20,10 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
-
 	/**
 	 * Class WP_Dependency_Installer
 	 */
 	class WP_Dependency_Installer {
-
 		/**
 		 * Holds the JSON file contents.
 		 *
@@ -202,7 +199,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Get lastest download link from WordPress API.
 		 *
-		 * @param string $slug Plugin slug.
+		 * @param  string $slug Plugin slug.
 		 * @return string $download_link
 		 */
 		private function get_dot_org_latest_download( $slug ) {
@@ -258,7 +255,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 							'text'   => sprintf( esc_html__( 'Please activate the %s plugin.' ), $dependency['name'] ),
 							'source' => $dependency['source'],
 						];
-
 					} else {
 						$this->notices[] = $this->activate( $slug );
 					}
@@ -387,9 +383,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 					'message' => sprintf( esc_html__( '%s has been installed and activated.' ), $this->config[ $slug ]['name'] ),
 					'source'  => $this->config[ $slug ]['source'],
 				];
-
 			}
-			if ( 'error' === $result['status'] ) {
+
+			if ( true !== $result && 'error' === $result['status'] ) {
 				return $result;
 			}
 
@@ -409,7 +405,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @return array Message.
 		 */
 		public function activate( $slug ) {
-
 			// network activate only if on network admin pages.
 			$result = is_network_admin() ? activate_plugin( $slug, null, true ) : activate_plugin( $slug );
 
@@ -443,17 +438,51 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Correctly rename dependency for activation.
 		 *
-		 * @param string $source
-		 * @param string $remote_source
+		 * @param string $source        Path fo $source.
+		 * @param string $remote_source Path of $remote_source.
 		 *
 		 * @return string $new_source
 		 */
 		public function upgrader_source_selection( $source, $remote_source ) {
-			global $wp_filesystem;
 			$new_source = trailingslashit( $remote_source ) . dirname( $this->current_slug );
-			$wp_filesystem->move( $source, $new_source );
+			$this->move( $source, $new_source );
 
 			return trailingslashit( $new_source );
+		}
+
+		/**
+		 * Rename or recursive file copy and delete.
+		 *
+		 * This is more versatile than `$wp_filesystem->move()`.
+		 * It moves/renames directories as well as files.
+		 * Fix for https://github.com/afragen/github-updater/issues/826,
+		 * strange failure of `rename()`.
+		 *
+		 * @param string $source      File path of source.
+		 * @param string $destination File path of destination.
+		 *
+		 * @return bool|void
+		 */
+		public function move( $source, $destination ) {
+			if ( @rename( $source, $destination ) ) {
+				return true;
+			}
+			$dir = opendir( $source );
+			mkdir( $destination );
+			$source = untrailingslashit( $source );
+			// phpcs:ignore WordPress.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition
+			while ( false !== ( $file = readdir( $dir ) ) ) {
+				if ( ( '.' !== $file ) && ( '..' !== $file ) && "$source/$file" !== $destination ) {
+					if ( is_dir( "$source/$file" ) ) {
+						$this->move( "$source/$file", "$destination/$file" );
+					} else {
+						copy( "$source/$file", "$destination/$file" );
+						unlink( "$source/$file" );
+					}
+				}
+			}
+			@rmdir( $source );
+			closedir( $dir );
 		}
 
 		/**
@@ -484,13 +513,13 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				 * @since 1.4.1
 				 *
 				 * @param string|int '7'           Default dismissal in days.
-				 * @param string $notice['source'] Plugin slug of calling plugin.
-				 * @return string|int              Dismissal timeout in days.
+				 * @param  string     $notice['source'] Plugin slug of calling plugin.
+				 * @return string|int Dismissal timeout in days.
 				 */
 				$timeout     = '-' . apply_filters( 'wp_dependency_timeout', '7', $notice['source'] );
 				$dismissible = isset( $notice['slug'] )
-					? 'dependency-installer-' . dirname( $notice['slug'] ) . $timeout
-					: null;
+				? 'dependency-installer-' . dirname( $notice['slug'] ) . $timeout
+				: null;
 				if ( class_exists( '\PAnd' ) && ! \PAnD::is_admin_notice_active( $dismissible ) ) {
 					continue;
 				}
@@ -505,16 +534,16 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Hide links from plugin row.
 		 *
-		 * @param $plugin_file
+		 * @param $plugin_file Plugin file.
 		 */
 		public function hide_plugin_action_links( $plugin_file ) {
 			add_filter( 'network_admin_plugin_action_links_' . $plugin_file, [ $this, 'unset_action_links' ] );
 			add_filter( 'plugin_action_links_' . $plugin_file, [ $this, 'unset_action_links' ] );
 			add_action(
 				'after_plugin_row_' . $plugin_file,
-				function( $plugin_file ) {
-					print( '<script>jQuery(".inactive[data-plugin=\'' . $plugin_file . '\']").attr("class", "active");</script>' );
-					print( '<script>jQuery(".active[data-plugin=\'' . $plugin_file . '\'] .check-column input").remove();</script>' );
+				function ( $plugin_file ) {
+					print '<script>jQuery(".inactive[data-plugin=\'' . $plugin_file . '\']").attr("class", "active");</script>';
+					print '<script>jQuery(".active[data-plugin=\'' . $plugin_file . '\'] .check-column input").remove();</script>';
 				}
 			);
 		}
@@ -522,7 +551,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Unset plugin action links so mandatory plugins can't be modified.
 		 *
-		 * @param $actions
+		 * @param array $actions Action links.
 		 *
 		 * @return mixed
 		 */
@@ -573,10 +602,16 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 	 * Class WPDI_Plugin_Installer_Skin
 	 */
 	class WPDI_Plugin_Installer_Skin extends Plugin_Installer_Skin {
-		public function header() {}
-		public function footer() {}
-		public function error( $errors ) {}
-		public function feedback( $string, ...$args ) {}
-	}
+		public function header() {
+		}
 
+		public function footer() {
+		}
+
+		public function error( $errors ) {
+		}
+
+		public function feedback( $string, ...$args ) {
+		}
+	}
 }
