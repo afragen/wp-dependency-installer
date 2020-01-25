@@ -507,13 +507,13 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				/**
 				 * Filters the dismissal notice label
 				 *
-				 * @since
+				 * @since 2.1.1
 				 *
 				 * @param  string Default dismissal notice string.
-				 * @param  array  $notice notice info of calling plugin.
+				 * @param  string $notice['source'] Plugin slug of calling plugin.
 				 * @return string Dismissal notice string.
 				 */
-				$label = apply_filters( 'wp_dependency_dismiss_label', __( 'Dependency' ), $notice );
+				$label = apply_filters( 'wp_dependency_dismiss_label', __( 'Dependency' ), $notice['source'] );
 				?>
 				<div data-dismissible="<?php echo $dismissible; ?>" class="<?php echo $status; ?> notice is-dismissible dependency-installer">
 					<p><?php echo '<strong>[' . esc_html( $label ) . ']</strong> ' . $message; ?></p>
