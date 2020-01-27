@@ -217,14 +217,12 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 			// Generate admin notices.
 			foreach ( $this->config as $slug => $dependency ) {
-				$is_required   = $this->is_required( $dependency );
-
-				if ( $is_required ) {
+				if ( $this->is_required( $dependency ) ) {
 					$this->hide_plugin_action_links( $slug );
 				}
 
 				if ( is_plugin_active( $slug ) ) {
-					if ( isset( $_REQUEST['wpdi_required'] ) && $slug === $_REQUEST['wpdi_required'] ) {
+					if ( $this->is_prevent_deactivation( $slug ) ) {
 							$this->notices[] = [
 								'status'  => 'error',
 								/* translators: %s: Plugin name */
@@ -359,6 +357,17 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			$plugins = get_plugins();
 
 			return isset( $plugins[ $slug ] );
+		}
+
+		/**
+		 * Check if we were trying to deactivate this manadatory plugin.
+		 *
+		 * @param string $slug Plugin slug.
+		 *
+		 * @return boolean True if current plugin slug is within $_REQUEST uri
+		 */
+		public function is_prevent_deactivation( &$slug ) {
+			return isset( $_REQUEST['wpdi_required'] ) && $slug === $_REQUEST['wpdi_required'];
 		}
 
 		/**
