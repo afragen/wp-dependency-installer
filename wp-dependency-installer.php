@@ -220,7 +220,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 			// Generate admin notices.
 			foreach ( $this->config as $slug => $dependency ) {
-				if ( $this->is_required( $dependency ) ) {
+				$is_required = $this->is_required( $dependency );
+
+				if ( $is_required ) {
 					$this->hide_plugin_action_links( $slug );
 				}
 
@@ -234,7 +236,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 							];
 					}
 				} elseif ( $this->is_installed( $slug ) ) {
-					if ( ! $this->is_automatic_activate( $dependency ) ) {
+					if ( ! $is_required ) {
 						$this->notices[] = [
 							'action'  => 'activate',
 							'slug'    => $slug,
@@ -245,7 +247,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 					} else {
 						$this->notices[] = $this->activate( $slug );
 					}
-				} elseif ( ! $this->is_automatic_install( $dependency ) ) {
+				} elseif ( ! $is_required ) {
 					$this->notices[] = [
 						'action'  => 'install',
 						'slug'    => $slug,
@@ -323,30 +325,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				return ( false === $dependency['optional'] || 'false' === $dependency['optional'] );
 			}
 			return false;
-		}
-
-		/**
-		 * Check if a dependency should be automatically activated.
-		 *
-		 * @param array $dependency Plugin dependency config.
-		 *
-		 * @return boolean
-		 */
-		public function is_automatic_activate( &$dependency ) {
-			$is_automatic_activate = $this->is_required( $dependency );
-			return apply_filters( 'wp_dependency_automatic_activate', $is_automatic_activate, $dependency );
-		}
-
-		/**
-		 * Check if a dependency should be automatically installed.
-		 *
-		 * @param array $dependency Plugin dependency config.
-		 *
-		 * @return boolean
-		 */
-		public function is_automatic_install( &$dependency ) {
-			$is_automatic_install = $this->is_required( $dependency );
-			return apply_filters( 'wp_dependency_automatic_install', $is_automatic_install, $dependency );
 		}
 
 		/**
