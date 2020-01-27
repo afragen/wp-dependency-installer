@@ -78,6 +78,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 			// Initialize Persist admin Notices Dismissal dependency.
 			add_action( 'admin_init', [ 'PAnD', 'init' ] );
+
+			// Prevent single deactivation of required plugins.
+			add_action( 'admin_action_deactivate', [ $this, 'before_deactivate_plugin' ] );
 		}
 
 		/**
@@ -222,7 +225,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				}
 
 				if ( is_plugin_active( $slug ) ) {
-					if ( $this->is_prevent_deactivation( $slug ) ) {
+					if ( $this->is_mandatory_notice( $slug ) ) {
 							$this->notices[] = [
 								'status'  => 'error',
 								/* translators: %s: Plugin name */
@@ -310,7 +313,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @param array $dependency Plugin dependency config.
 		 *
-		 * @return boolean True if is required. Default: False
+		 * @return boolean True if required. Default: False
 		 */
 		public function is_required( &$dependency ) {
 			if ( isset( $dependency['required'] ) ) {
@@ -366,7 +369,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return boolean True if current plugin slug is within $_REQUEST uri
 		 */
-		public function is_prevent_deactivation( &$slug ) {
+		public function is_mandatory_notice( &$slug ) {
 			return isset( $_REQUEST['wpdi_required'] ) && $slug === $_REQUEST['wpdi_required'];
 		}
 
@@ -589,8 +592,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 					print '<script>jQuery(".active[data-plugin=\'' . $plugin_file . '\'] .check-column input").remove();</script>';
 				}
 			);
-			// Prevent single deactivation of required plugins.
-			add_action( 'admin_action_deactivate', [ $this, 'before_deactivate_plugin' ] );
 		}
 
 		/**
@@ -622,7 +623,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				isset( $this->config[ $_REQUEST['plugin'] ] ) &&
 				$this->is_required( $this->config[ $_REQUEST['plugin'] ] )
 			) {
-				wp_redirect( add_query_arg( 'wpdi_required', $_REQUEST['plugin'], $_SERVER['HTTP_REFERER'] ) );
+				wp_safe_redirect( add_query_arg( 'wpdi_required', $_REQUEST['plugin'], $_SERVER['HTTP_REFERER'] ) );
 				exit();
 			}
 		}
