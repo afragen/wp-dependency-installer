@@ -78,6 +78,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 			// Initialize Persist admin Notices Dismissal dependency.
 			add_action( 'admin_init', [ 'PAnD', 'init' ] );
+
+			add_action( 'admin_action_deactivate', [ $this, 'admin_action_deactivate' ] );
 		}
 
 		/**
@@ -108,7 +110,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			foreach ( $config as $dependency ) {
 				$dependency['source'] = $this->source;
 				$slug                 = $dependency['slug'];
-				if ( ! isset( $this->config[ $slug ] ) || ! $dependency['optional'] ) {
+				if ( ! isset( $this->config[ $slug ] ) || $this->is_required( $dependency ) ) {
 					$this->config[ $slug ] = $dependency;
 				}
 			}
@@ -217,18 +219,25 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 			// Generate admin notices.
 			foreach ( $this->config as $slug => $dependency ) {
-				$is_optional = ! ( isset( $dependency['optional'] ) && false === $dependency['optional'] );
+				$is_required   = $this->is_required( $dependency );
+				$wpdi_required = isset( $_REQUEST['wpdi_required'] ) && $_REQUEST['wpdi_required'] === $slug ? $_REQUEST['wpdi_required'] : false;
 
-				if ( ! $is_optional ) {
+				if ( $is_required ) {
 					$this->hide_plugin_action_links( $slug );
 				}
 
 				if ( is_plugin_active( $slug ) ) {
-					continue;
-				}
-
-				if ( $this->is_installed( $slug ) ) {
-					if ( $is_optional ) {
+					if ( $wpdi_required ) {
+							$this->notices[] = [
+								'status' => 'error',
+								'slug'   => $slug,
+								/* translators: %s: Plugin name */
+								'message'   => sprintf( esc_html__( 'The %s plugin is required.' ), $dependency['name'] ),
+								'source' => $dependency['source'],
+							];
+					}
+				} elseif ( $this->is_installed( $slug ) ) {
+					if ( ! $is_required /*$this->is_automatic_activate( $dependency )*/ ) {
 						$this->notices[] = [
 							'action' => 'activate',
 							'slug'   => $slug,
@@ -239,7 +248,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 					} else {
 						$this->notices[] = $this->activate( $slug );
 					}
-				} elseif ( $is_optional ) {
+				} elseif ( ! $is_required /*$this->is_automatic_install( $dependency )*/ ) {
 					$this->notices[] = [
 						'action' => 'install',
 						'slug'   => $slug,
@@ -303,6 +312,47 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		}
 
 		/**
+		 * Check if a dependency is currently required.
+		 *
+		 * @param array $dependency Plugin dependency config.
+		 *
+		 * @return boolean True if is required. Default: False
+		 */
+		public function is_required( &$dependency ) {
+			if ( isset( $dependency['required'] ) ) {
+				return ( true === $dependency['required'] || 'true' === $dependency['required'] );
+			}
+			if ( isset( $dependency['optional'] ) ) {
+				return ( false === $dependency['optional'] || 'false' === $dependency['optional'] );
+			}
+			return false;
+		}
+
+		/**
+		 * Check if a dependency should be automatically activated.
+		 *
+		 * @param array $dependency Plugin dependency config.
+		 *
+		 * @return boolean
+		 */
+		public function is_automatic_activate( &$dependency ) {
+			$automatic_activate_required = $this->is_required( $dependency );
+			return apply_filters( 'wp_dependency_automatic_activate', $automatic_activate_required, $dependency );
+		}
+
+		/**
+		 * Check if a dependency should be automatically installed.
+		 *
+		 * @param array $dependency Plugin dependency config.
+		 *
+		 * @return boolean
+		 */
+		public function is_automatic_install( &$dependency ) {
+			$automatic_install_required = $this->is_required( $dependency );
+			return apply_filters( 'wp_dependency_automatic_install', $automatic_install_required, $dependency );
+		}
+
+		/**
 		 * Is dependency installed?
 		 *
 		 * @param string $slug Plugin slug.
@@ -354,7 +404,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			}
 
 			wp_cache_flush();
-			if ( ! $this->config[ $slug ]['optional'] ) {
+			if ( $this->is_required( $this->config[ $slug ] ) ) {
 				$this->activate( $slug );
 
 				return [
@@ -547,20 +597,37 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @return mixed
 		 */
 		public function unset_action_links( $actions ) {
-			if ( isset( $actions['edit'] ) ) {
-				unset( $actions['edit'] );
-			}
-			if ( isset( $actions['delete'] ) ) {
-				unset( $actions['delete'] );
-			}
-			if ( isset( $actions['deactivate'] ) ) {
-				unset( $actions['deactivate'] );
-			}
+			// if ( isset( $actions['edit'] ) ) {
+			// 	unset( $actions['edit'] );
+			// }
+			// if ( isset( $actions['delete'] ) ) {
+			// 	unset( $actions['delete'] );
+			// }
+
+			// if ( isset( $actions['deactivate'] ) ) {
+			// 	unset( $actions['deactivate'] );
+			// }
 
 			/* translators: %s: opening and closing span tags */
-			$actions = array_merge( [ 'required-plugin' => sprintf( esc_html__( '%1$sPlugin dependency%2$s' ), '<span class="network_active">', '</span>' ) ], $actions );
+			$actions = array_merge( [ 'required-plugin' => sprintf( esc_html__( '%1$sRequired Plugin%2$s' ), '<span class="network_active" style="font-variant-caps: small-caps;">', '</span>' ) ], $actions );
 
 			return $actions;
+		}
+
+		/**
+		 * Prevent admin ‘?action=deactive’ for required plugins.
+		 *
+		 * @return void
+		 */
+		public function admin_action_deactivate() {
+			if (
+				isset( $_REQUEST['plugin'] ) &&
+				isset( $this->config[ $_REQUEST['plugin'] ] ) &&
+				$this->is_required( $this->config[ $_REQUEST['plugin'] ] )
+			) {
+				wp_redirect( add_query_arg( 'wpdi_required', $_REQUEST['plugin'], $_SERVER['HTTP_REFERER'] ) );
+				exit();
+			}
 		}
 
 		/**
