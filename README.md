@@ -111,7 +111,7 @@ To help the end user before installation, you can also display your plugin name 
 ```php
 add_filter(
   'wp_dependency_dismiss_label', function( $label, $source ) {
-    $label = basename(__DIR__) !== $source ? $label : __( 'My Plugin Name', 'my-plugin-domain' );
+    $label = basename( __DIR__ ) !== $source ? $label : __( 'My Plugin Name', 'my-plugin-domain' );
     return $label;
   },
   10,
