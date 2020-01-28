@@ -100,9 +100,22 @@ The default timeout for dismissal of a notification is 7 days. There is a filter
 ```php
 add_filter(
   'wp_dependency_timeout', function( $timeout, $source ) {
-    $timeout = $source !== basename( __DIR__ ) ? $timeout : 14;
+    $timeout = basename( __DIR__ ) !== $source ? $timeout : 14;
     return $timeout;
   }, 10, 2
+);
+```
+
+To help the end user before installation, you can also display your plugin name within dismissable notifications through the `wp_dependency_dismiss_label` filter:
+
+```php
+add_filter(
+  'wp_dependency_dismiss_label', function( $label, $source ) {
+    $label = basename(__DIR__) !== $source ? $label : __( 'My Plugin Name', 'my-plugin-domain' );
+    return $label;
+  },
+  10,
+  2
 );
 ```
 

@@ -504,9 +504,19 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				if ( class_exists( '\PAnd' ) && ! \PAnD::is_admin_notice_active( $dismissible ) ) {
 					continue;
 				}
+				/**
+				 * Filters the dismissal notice label
+				 *
+				 * @since 2.1.1
+				 *
+				 * @param  string Default dismissal notice string.
+				 * @param  string $notice['source'] Plugin slug of calling plugin.
+				 * @return string Dismissal notice string.
+				 */
+				$label = apply_filters( 'wp_dependency_dismiss_label', __( 'Dependency' ), $notice['source'] );
 				?>
 				<div data-dismissible="<?php echo $dismissible; ?>" class="<?php echo $status; ?> notice is-dismissible dependency-installer">
-					<p><?php echo '<strong>[' . esc_html__( 'Dependency' ) . ']</strong> ' . $message; ?></p>
+					<p><?php echo '<strong>[' . esc_html( $label ) . ']</strong> ' . $message; ?></p>
 				</div>
 				<?php
 			}
