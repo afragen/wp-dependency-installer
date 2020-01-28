@@ -40,6 +40,8 @@ WP_Dependency_Installer::instance()->run( __DIR__ );
 
 This file must be named `wp-dependencies.json` and it must be in the root directory of your plugin or theme.
 
+You may use `required` or `optional` as interchangable opposites. If a plugin is required then it is not optional, and the reverse is true.
+
 ```json
 [
   {
@@ -47,7 +49,7 @@ This file must be named `wp-dependencies.json` and it must be in the root direct
     "host": "wordpress",
     "slug": "query-monitor/query-monitor.php",
     "uri": "https://wordpress.org/plugins/query-monitor/",
-    "optional": false
+    "required": true
   },
   {
     "name": "GitHub Updater",
@@ -80,7 +82,7 @@ This file must be named `wp-dependencies.json` and it must be in the root direct
     "host": "direct",
     "slug": "test-direct-plugin/test-plugin.php",
     "uri": "https://direct-download.com/path/to.zip",
-    "optional": true
+    "required": false
   }
 ]
 ```
