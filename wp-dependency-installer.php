@@ -69,7 +69,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return void
 		 */
-		public function load_hooks() {
+		private function load_hooks() {
 			add_action( 'admin_init', [ $this, 'admin_init' ] );
 			add_action( 'admin_footer', [ $this, 'admin_footer' ] );
 			add_action( 'admin_notices', [ $this, 'admin_notices' ] );
@@ -118,7 +118,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Process the registered dependencies.
 		 */
-		public function apply_config() {
+		private function apply_config() {
 			foreach ( $this->config as $dependency ) {
 				$download_link = null;
 				$base          = null;
@@ -255,7 +255,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Register jQuery AJAX.
 		 */
-		public function admin_footer() {
+		private function admin_footer() {
 			?>
 			<script>
 				(function ($) {
@@ -289,7 +289,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * AJAX router.
 		 */
-		public function ajax_router() {
+		private function ajax_router() {
 			$method    = isset( $_POST['method'] ) ? $_POST['method'] : '';
 			$slug      = isset( $_POST['slug'] ) ? $_POST['slug'] : '';
 			$whitelist = [ 'install', 'activate', 'dismiss' ];
@@ -308,7 +308,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return boolean
 		 */
-		public function is_installed( $slug ) {
+		private function is_installed( $slug ) {
 			$plugins = get_plugins();
 
 			return isset( $plugins[ $slug ] );
@@ -321,7 +321,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return bool|array false or Message.
 		 */
-		public function install( $slug ) {
+		private function install( $slug ) {
 			if ( $this->is_installed( $slug ) || ! current_user_can( 'update_plugins' ) ) {
 				return false;
 			}
@@ -384,7 +384,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return array Message.
 		 */
-		public function activate( $slug ) {
+		private function activate( $slug ) {
 			// network activate only if on network admin pages.
 			$result = is_network_admin() ? activate_plugin( $slug, null, true ) : activate_plugin( $slug );
 
@@ -408,7 +408,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return array Empty Message.
 		 */
-		public function dismiss() {
+		private function dismiss() {
 			return [
 				'status'  => 'updated',
 				'message' => '',
@@ -423,7 +423,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return string $new_source
 		 */
-		public function upgrader_source_selection( $source, $remote_source ) {
+		private function upgrader_source_selection( $source, $remote_source ) {
 			$new_source = trailingslashit( $remote_source ) . dirname( $this->current_slug );
 			$this->move( $source, $new_source );
 
@@ -443,7 +443,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return bool|void
 		 */
-		public function move( $source, $destination ) {
+		private function move( $source, $destination ) {
 			if ( @rename( $source, $destination ) ) {
 				return true;
 			}
@@ -470,7 +470,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return bool/string false or Admin notice.
 		 */
-		public function admin_notices() {
+		private function admin_notices() {
 			if ( ! current_user_can( 'update_plugins' ) ) {
 				return false;
 			}
@@ -526,7 +526,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @param $plugin_file Plugin file.
 		 */
-		public function hide_plugin_action_links( $plugin_file ) {
+		private function hide_plugin_action_links( $plugin_file ) {
 			add_filter( 'network_admin_plugin_action_links_' . $plugin_file, [ $this, 'unset_action_links' ] );
 			add_filter( 'plugin_action_links_' . $plugin_file, [ $this, 'unset_action_links' ] );
 			add_action(
@@ -545,7 +545,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return mixed
 		 */
-		public function unset_action_links( $actions ) {
+		private function unset_action_links( $actions ) {
 			if ( isset( $actions['edit'] ) ) {
 				unset( $actions['edit'] );
 			}
