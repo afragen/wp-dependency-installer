@@ -255,7 +255,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Register jQuery AJAX.
 		 */
-		private function admin_footer() {
+		public function admin_footer() {
 			?>
 			<script>
 				(function ($) {
@@ -289,7 +289,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * AJAX router.
 		 */
-		private function ajax_router() {
+		public function ajax_router() {
 			$method    = isset( $_POST['method'] ) ? $_POST['method'] : '';
 			$slug      = isset( $_POST['slug'] ) ? $_POST['slug'] : '';
 			$whitelist = [ 'install', 'activate', 'dismiss' ];
@@ -423,7 +423,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return string $new_source
 		 */
-		private function upgrader_source_selection( $source, $remote_source ) {
+		public function upgrader_source_selection( $source, $remote_source ) {
 			$new_source = trailingslashit( $remote_source ) . dirname( $this->current_slug );
 			$this->move( $source, $new_source );
 
@@ -470,7 +470,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return bool/string false or Admin notice.
 		 */
-		private function admin_notices() {
+		public function admin_notices() {
 			if ( ! current_user_can( 'update_plugins' ) ) {
 				return false;
 			}
@@ -545,7 +545,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return mixed
 		 */
-		private function unset_action_links( $actions ) {
+		public function unset_action_links( $actions ) {
 			if ( isset( $actions['edit'] ) ) {
 				unset( $actions['edit'] );
 			}
