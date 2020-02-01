@@ -69,7 +69,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return void
 		 */
-		public function load_hooks() {
+		private function load_hooks() {
 			add_action( 'admin_init', [ $this, 'admin_init' ] );
 			add_action( 'admin_footer', [ $this, 'admin_footer' ] );
 			add_action( 'admin_notices', [ $this, 'admin_notices' ] );
@@ -106,9 +106,10 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 */
 		public function register( $config ) {
 			foreach ( $config as $dependency ) {
-				$dependency['source'] = $this->source;
-				$slug                 = $dependency['slug'];
-				if ( ! isset( $this->config[ $slug ] ) || ! $dependency['optional'] ) {
+				$dependency['required'] = isset( $dependency['optional'] ) ? false === $dependency['optional'] : $dependency['required'];
+				$dependency['source']   = $this->source;
+				$slug                   = $dependency['slug'];
+				if ( ! isset( $this->config[ $slug ] ) || $dependency['required'] ) {
 					$this->config[ $slug ] = $dependency;
 				}
 			}
@@ -117,7 +118,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Process the registered dependencies.
 		 */
-		public function apply_config() {
+		private function apply_config() {
 			foreach ( $this->config as $dependency ) {
 				$download_link = null;
 				$base          = null;
@@ -217,9 +218,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 			// Generate admin notices.
 			foreach ( $this->config as $slug => $dependency ) {
-				$is_optional = ! ( isset( $dependency['optional'] ) && false === $dependency['optional'] );
-
-				if ( ! $is_optional ) {
+				if ( $dependency['required'] ) {
 					$this->hide_plugin_action_links( $slug );
 				}
 
@@ -228,7 +227,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				}
 
 				if ( $this->is_installed( $slug ) ) {
-					if ( $is_optional ) {
+					if ( ! $dependency['required'] ) {
 						$this->notices[] = [
 							'action' => 'activate',
 							'slug'   => $slug,
@@ -239,7 +238,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 					} else {
 						$this->notices[] = $this->activate( $slug );
 					}
-				} elseif ( $is_optional ) {
+				} elseif ( ! $dependency['required'] ) {
 					$this->notices[] = [
 						'action' => 'install',
 						'slug'   => $slug,
@@ -309,7 +308,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return boolean
 		 */
-		public function is_installed( $slug ) {
+		private function is_installed( $slug ) {
 			$plugins = get_plugins();
 
 			return isset( $plugins[ $slug ] );
@@ -322,7 +321,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return bool|array false or Message.
 		 */
-		public function install( $slug ) {
+		private function install( $slug ) {
 			if ( $this->is_installed( $slug ) || ! current_user_can( 'update_plugins' ) ) {
 				return false;
 			}
@@ -354,7 +353,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			}
 
 			wp_cache_flush();
-			if ( ! $this->config[ $slug ]['optional'] ) {
+			if ( $this->config[ $slug ]['required'] ) {
 				$this->activate( $slug );
 
 				return [
@@ -385,7 +384,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return array Message.
 		 */
-		public function activate( $slug ) {
+		private function activate( $slug ) {
 			// network activate only if on network admin pages.
 			$result = is_network_admin() ? activate_plugin( $slug, null, true ) : activate_plugin( $slug );
 
@@ -409,7 +408,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return array Empty Message.
 		 */
-		public function dismiss() {
+		private function dismiss() {
 			return [
 				'status'  => 'updated',
 				'message' => '',
@@ -444,7 +443,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return bool|void
 		 */
-		public function move( $source, $destination ) {
+		private function move( $source, $destination ) {
 			if ( @rename( $source, $destination ) ) {
 				return true;
 			}
@@ -504,9 +503,19 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				if ( class_exists( '\PAnd' ) && ! \PAnD::is_admin_notice_active( $dismissible ) ) {
 					continue;
 				}
+				/**
+				 * Filters the dismissal notice label
+				 *
+				 * @since 2.1.1
+				 *
+				 * @param  string Default dismissal notice string.
+				 * @param  string $notice['source'] Plugin slug of calling plugin.
+				 * @return string Dismissal notice string.
+				 */
+				$label = apply_filters( 'wp_dependency_dismiss_label', __( 'Dependency' ), $notice['source'] );
 				?>
 				<div data-dismissible="<?php echo $dismissible; ?>" class="<?php echo $status; ?> notice is-dismissible dependency-installer">
-					<p><?php echo '<strong>[' . esc_html__( 'Dependency' ) . ']</strong> ' . $message; ?></p>
+					<p><?php echo '<strong>[' . esc_html( $label ) . ']</strong> ' . $message; ?></p>
 				</div>
 				<?php
 			}
@@ -517,7 +526,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @param $plugin_file Plugin file.
 		 */
-		public function hide_plugin_action_links( $plugin_file ) {
+		private function hide_plugin_action_links( $plugin_file ) {
 			add_filter( 'network_admin_plugin_action_links_' . $plugin_file, [ $this, 'unset_action_links' ] );
 			add_filter( 'plugin_action_links_' . $plugin_file, [ $this, 'unset_action_links' ] );
 			add_action(

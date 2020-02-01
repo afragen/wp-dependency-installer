@@ -40,6 +40,8 @@ WP_Dependency_Installer::instance()->run( __DIR__ );
 
 This file must be named `wp-dependencies.json` and it must be in the root directory of your plugin or theme.
 
+You may use `required` or `optional` as interchangable opposites. If a plugin is required then it is not optional, and the reverse is true.
+
 ```json
 [
   {
@@ -47,7 +49,7 @@ This file must be named `wp-dependencies.json` and it must be in the root direct
     "host": "wordpress",
     "slug": "query-monitor/query-monitor.php",
     "uri": "https://wordpress.org/plugins/query-monitor/",
-    "optional": false
+    "required": true
   },
   {
     "name": "GitHub Updater",
@@ -80,7 +82,7 @@ This file must be named `wp-dependencies.json` and it must be in the root direct
     "host": "direct",
     "slug": "test-direct-plugin/test-plugin.php",
     "uri": "https://direct-download.com/path/to.zip",
-    "optional": true
+    "required": false
   }
 ]
 ```
@@ -100,9 +102,22 @@ The default timeout for dismissal of a notification is 7 days. There is a filter
 ```php
 add_filter(
   'wp_dependency_timeout', function( $timeout, $source ) {
-    $timeout = $source !== basename( __DIR__ ) ? $timeout : 14;
+    $timeout = basename( __DIR__ ) !== $source ? $timeout : 14;
     return $timeout;
   }, 10, 2
+);
+```
+
+To help the end user before installation, you can also display your plugin name within dismissable notifications through the `wp_dependency_dismiss_label` filter:
+
+```php
+add_filter(
+  'wp_dependency_dismiss_label', function( $label, $source ) {
+    $label = basename( __DIR__ ) !== $source ? $label : __( 'My Plugin Name', 'my-plugin-domain' );
+    return $label;
+  },
+  10,
+  2
 );
 ```
 
