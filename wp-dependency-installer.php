@@ -313,11 +313,16 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Check if a dependency is currently required.
 		 *
-		 * @param array $dependency Plugin dependency config.
+		 * @param string|array $plugin Plugin dependency slug or config.
 		 *
 		 * @return boolean True if required. Default: False
 		 */
-		public function is_required( &$dependency ) {
+		public function is_required( &$plugin ) {
+			if ( is_string( $plugin ) && isset( $this->config[ $plugin ] ) ) {
+				$dependency = &$this->config[ $plugin ];
+			} else {
+				$dependency = &$plugin;
+			}
 			if ( isset( $dependency['required'] ) ) {
 				return ( true === $dependency['required'] || 'true' === $dependency['required'] );
 			}
