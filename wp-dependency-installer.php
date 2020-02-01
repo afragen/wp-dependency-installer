@@ -600,12 +600,15 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * Get the configuration.
 		 *
 		 * @since 1.4.11
+		 * 
+		 * @param string $slug Plugin slug.
 		 *
 		 * @return array The configuration.
 		 */
-		public function get_config() {
-			return $this->config;
+		public function get_config( $slug = '' ) {
+			return isset( $this->config[ $slug ] ) ? $this->config[ $slug ] : $this->config;
 		}
+
 	}
 
 	require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
