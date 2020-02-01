@@ -187,7 +187,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @param  string $slug Plugin slug.
 		 * @return string $download_link
 		 */
-		private function get_dot_org_latest_download( $slug ) {
+		public function get_dot_org_latest_download( $slug ) {
 			$download_link = get_site_transient( 'wpdi-' . md5( $slug ) );
 
 			if ( ! $download_link ) {
