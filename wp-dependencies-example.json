@@ -4,7 +4,7 @@
     "host": "wordpress",
     "slug": "query-monitor/query-monitor.php",
     "uri": "https://wordpress.org/plugins/query-monitor/",
-    "optional": false
+    "required": true
   },
   {
     "name": "GitHub Updater",
@@ -37,6 +37,6 @@
     "host": "direct",
     "slug": "test-direct-plugin/test-plugin.php",
     "uri": "https://direct-download.com/path/to.zip",
-    "optional": true
+    "required": false
   }
 ]

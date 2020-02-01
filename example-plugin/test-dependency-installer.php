@@ -35,7 +35,7 @@ add_filter(
 add_filter(
 	'wp_dependency_dismiss_label',
 	function( $label, $source ) {
-		$label = basename(__DIR__) !== $source ? $label : __( 'Test Dependency Installer', 'test-dependency-installer' );
+		$label = basename( __DIR__ ) !== $source ? $label : __( 'Test Dependency Installer', 'test-dependency-installer' );
 		return $label;
 	},
 	10,
