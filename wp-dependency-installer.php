@@ -69,7 +69,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return void
 		 */
-		private function load_hooks() {
+		public function load_hooks() {
 			add_action( 'admin_init', [ $this, 'admin_init' ] );
 			add_action( 'admin_footer', [ $this, 'admin_footer' ] );
 			add_action( 'admin_notices', [ $this, 'admin_notices' ] );
@@ -118,7 +118,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Process the registered dependencies.
 		 */
-		private function apply_config() {
+		public function apply_config() {
 			foreach ( $this->config as $dependency ) {
 				$download_link = null;
 				$base          = null;
@@ -185,7 +185,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @param  string $slug Plugin slug.
 		 * @return string $download_link
 		 */
-		private function get_dot_org_latest_download( $slug ) {
+		public function get_dot_org_latest_download( $slug ) {
 			$download_link = get_site_transient( 'wpdi-' . md5( $slug ) );
 
 			if ( ! $download_link ) {
@@ -308,7 +308,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return boolean
 		 */
-		private function is_installed( $slug ) {
+		public function is_installed( $slug ) {
 			$plugins = get_plugins();
 
 			return isset( $plugins[ $slug ] );
@@ -321,7 +321,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return bool|array false or Message.
 		 */
-		private function install( $slug ) {
+		public function install( $slug ) {
 			if ( $this->is_installed( $slug ) || ! current_user_can( 'update_plugins' ) ) {
 				return false;
 			}
@@ -384,7 +384,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return array Message.
 		 */
-		private function activate( $slug ) {
+		public function activate( $slug ) {
 			// network activate only if on network admin pages.
 			$result = is_network_admin() ? activate_plugin( $slug, null, true ) : activate_plugin( $slug );
 
@@ -408,7 +408,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return array Empty Message.
 		 */
-		private function dismiss() {
+		public function dismiss() {
 			return [
 				'status'  => 'updated',
 				'message' => '',
@@ -443,7 +443,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return bool|void
 		 */
-		private function move( $source, $destination ) {
+		public function move( $source, $destination ) {
 			if ( @rename( $source, $destination ) ) {
 				return true;
 			}
@@ -526,7 +526,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @param $plugin_file Plugin file.
 		 */
-		private function hide_plugin_action_links( $plugin_file ) {
+		public function hide_plugin_action_links( $plugin_file ) {
 			add_filter( 'network_admin_plugin_action_links_' . $plugin_file, [ $this, 'unset_action_links' ] );
 			add_filter( 'plugin_action_links_' . $plugin_file, [ $this, 'unset_action_links' ] );
 			add_action(
