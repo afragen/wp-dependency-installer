@@ -230,22 +230,22 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				if ( $this->is_installed( $slug ) ) {
 					if ( ! $is_required ) {
 						$this->notices[] = [
-							'action'  => 'activate',
-							'slug'    => $slug,
+							'action' => 'activate',
+							'slug'   => $slug,
 							/* translators: %s: Plugin name */
-							'text'    => sprintf( esc_html__( 'Please activate the %s plugin.' ), $dependency['name'] ),
-							'source'  => $dependency['source'],
+							'text'   => sprintf( esc_html__( 'Please activate the %s plugin.' ), $dependency['name'] ),
+							'source' => $dependency['source'],
 						];
 					} else {
 						$this->notices[] = $this->activate( $slug );
 					}
 				} elseif ( ! $is_required ) {
 					$this->notices[] = [
-						'action'  => 'install',
-						'slug'    => $slug,
+						'action' => 'install',
+						'slug'   => $slug,
 						/* translators: %s: Plugin name */
-						'text'    => sprintf( esc_html__( 'The %s plugin is required.' ), $dependency['name'] ),
-						'source'  => $dependency['source'],
+						'text'   => sprintf( esc_html__( 'The %s plugin is required.' ), $dependency['name'] ),
+						'source' => $dependency['source'],
 					];
 				} else {
 					$this->notices[] = $this->install( $slug );
@@ -558,7 +558,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Hide links from plugin row.
 		 *
-		 * @param $plugin_file Plugin file.
+		 * @param string $plugin_file Plugin file.
 		 */
 		public function hide_plugin_action_links( $plugin_file ) {
 			add_filter( 'network_admin_plugin_action_links_' . $plugin_file, [ $this, 'unset_action_links' ] );
@@ -600,7 +600,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * Get the configuration.
 		 *
 		 * @since 1.4.11
-		 * 
+		 *
 		 * @param string $slug Plugin slug.
 		 *
 		 * @return array The configuration.
