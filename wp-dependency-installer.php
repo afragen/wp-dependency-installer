@@ -106,10 +106,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 */
 		public function register( $config ) {
 			foreach ( $config as $dependency ) {
-				$dependency['required'] = isset( $dependency['optional'] ) ? false === $dependency['optional'] : $dependency['required'];
-				$dependency['source']   = $this->source;
-				$slug                   = $dependency['slug'];
-				if ( ! isset( $this->config[ $slug ] ) || $dependency['required'] ) {
+				$dependency['source'] = $this->source;
+				$slug                 = $dependency['slug'];
+				if ( ! isset( $this->config[ $slug ] ) || $this->is_required( $dependency ) ) {
 					$this->config[ $slug ] = $dependency;
 				}
 			}
@@ -218,7 +217,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 			// Generate admin notices.
 			foreach ( $this->config as $slug => $dependency ) {
-				if ( $dependency['required'] ) {
+				$is_required = $this->is_required( $dependency );
+
+				if ( $is_required ) {
 					$this->hide_plugin_action_links( $slug );
 				}
 
@@ -227,24 +228,24 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				}
 
 				if ( $this->is_installed( $slug ) ) {
-					if ( ! $dependency['required'] ) {
+					if ( ! $is_required ) {
 						$this->notices[] = [
-							'action' => 'activate',
-							'slug'   => $slug,
+							'action'  => 'activate',
+							'slug'    => $slug,
 							/* translators: %s: Plugin name */
-							'text'   => sprintf( esc_html__( 'Please activate the %s plugin.' ), $dependency['name'] ),
-							'source' => $dependency['source'],
+							'text'    => sprintf( esc_html__( 'Please activate the %s plugin.' ), $dependency['name'] ),
+							'source'  => $dependency['source'],
 						];
 					} else {
 						$this->notices[] = $this->activate( $slug );
 					}
-				} elseif ( ! $dependency['required'] ) {
+				} elseif ( ! $is_required ) {
 					$this->notices[] = [
-						'action' => 'install',
-						'slug'   => $slug,
+						'action'  => 'install',
+						'slug'    => $slug,
 						/* translators: %s: Plugin name */
-						'text'   => sprintf( esc_html__( 'The %s plugin is required.' ), $dependency['name'] ),
-						'source' => $dependency['source'],
+						'text'    => sprintf( esc_html__( 'The %s plugin is required.' ), $dependency['name'] ),
+						'source'  => $dependency['source'],
 					];
 				} else {
 					$this->notices[] = $this->install( $slug );
@@ -302,6 +303,28 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		}
 
 		/**
+		 * Check if a dependency is currently required.
+		 *
+		 * @param string|array $plugin Plugin dependency slug or config.
+		 *
+		 * @return boolean True if required. Default: False
+		 */
+		public function is_required( &$plugin ) {
+			if ( is_string( $plugin ) && isset( $this->config[ $plugin ] ) ) {
+				$dependency = &$this->config[ $plugin ];
+			} else {
+				$dependency = &$plugin;
+			}
+			if ( isset( $dependency['required'] ) ) {
+				return ( true === $dependency['required'] || 'true' === $dependency['required'] );
+			}
+			if ( isset( $dependency['optional'] ) ) {
+				return ( false === $dependency['optional'] || 'false' === $dependency['optional'] );
+			}
+			return false;
+		}
+
+		/**
 		 * Is dependency installed?
 		 *
 		 * @param string $slug Plugin slug.
@@ -353,7 +376,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			}
 
 			wp_cache_flush();
-			if ( $this->config[ $slug ]['required'] ) {
+			if ( $this->is_required( $this->config[ $slug ] ) ) {
 				$this->activate( $slug );
 
 				return [
