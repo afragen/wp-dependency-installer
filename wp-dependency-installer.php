@@ -223,7 +223,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 					$this->hide_plugin_action_links( $slug );
 				}
 
-				if ( is_plugin_active( $slug ) ) {
+				if ( $this->is_active( $slug ) ) {
 					continue;
 				}
 
@@ -335,6 +335,17 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			$plugins = get_plugins();
 
 			return isset( $plugins[ $slug ] );
+		}
+
+		/**
+		 * Is dependency active?
+		 *
+		 * @param string $slug Plugin slug.
+		 *
+		 * @return boolean
+		 */
+		public function is_active( $slug ) {
+			return is_plugin_active( $slug );
 		}
 
 		/**
