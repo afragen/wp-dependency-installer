@@ -2,6 +2,7 @@
   "name": "afragen/wp-dependency-installer",
   "description": "Library that helps WordPress plugin dependency management.",
   "version": "2.1.0",
+  "type": "library",
   "license": "MIT",
   "authors": [
     {
