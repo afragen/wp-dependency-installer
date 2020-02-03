@@ -69,7 +69,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return void
 		 */
-		private function load_hooks() {
+		public function load_hooks() {
 			add_action( 'admin_init', [ $this, 'admin_init' ] );
 			add_action( 'admin_footer', [ $this, 'admin_footer' ] );
 			add_action( 'admin_notices', [ $this, 'admin_notices' ] );
@@ -106,10 +106,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 */
 		public function register( $config ) {
 			foreach ( $config as $dependency ) {
-				$dependency['required'] = isset( $dependency['optional'] ) ? false === $dependency['optional'] : $dependency['required'];
-				$dependency['source']   = $this->source;
-				$slug                   = $dependency['slug'];
-				if ( ! isset( $this->config[ $slug ] ) || $dependency['required'] ) {
+				$dependency['source'] = $this->source;
+				$slug                 = $dependency['slug'];
+				if ( ! isset( $this->config[ $slug ] ) || $this->is_required( $dependency ) ) {
 					$this->config[ $slug ] = $dependency;
 				}
 			}
@@ -118,7 +117,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Process the registered dependencies.
 		 */
-		private function apply_config() {
+		public function apply_config() {
 			foreach ( $this->config as $dependency ) {
 				$download_link = null;
 				$base          = null;
@@ -185,7 +184,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @param  string $slug Plugin slug.
 		 * @return string $download_link
 		 */
-		private function get_dot_org_latest_download( $slug ) {
+		public function get_dot_org_latest_download( $slug ) {
 			$download_link = get_site_transient( 'wpdi-' . md5( $slug ) );
 
 			if ( ! $download_link ) {
@@ -218,16 +217,18 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 			// Generate admin notices.
 			foreach ( $this->config as $slug => $dependency ) {
-				if ( $dependency['required'] ) {
+				$is_required = $this->is_required( $dependency );
+
+				if ( $is_required ) {
 					$this->hide_plugin_action_links( $slug );
 				}
 
-				if ( is_plugin_active( $slug ) ) {
+				if ( $this->is_active( $slug ) ) {
 					continue;
 				}
 
 				if ( $this->is_installed( $slug ) ) {
-					if ( ! $dependency['required'] ) {
+					if ( ! $is_required ) {
 						$this->notices[] = [
 							'action' => 'activate',
 							'slug'   => $slug,
@@ -238,7 +239,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 					} else {
 						$this->notices[] = $this->activate( $slug );
 					}
-				} elseif ( ! $dependency['required'] ) {
+				} elseif ( ! $is_required ) {
 					$this->notices[] = [
 						'action' => 'install',
 						'slug'   => $slug,
@@ -302,16 +303,49 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		}
 
 		/**
+		 * Check if a dependency is currently required.
+		 *
+		 * @param string|array $plugin Plugin dependency slug or config.
+		 *
+		 * @return boolean True if required. Default: False
+		 */
+		public function is_required( &$plugin ) {
+			if ( is_string( $plugin ) && isset( $this->config[ $plugin ] ) ) {
+				$dependency = &$this->config[ $plugin ];
+			} else {
+				$dependency = &$plugin;
+			}
+			if ( isset( $dependency['required'] ) ) {
+				return ( true === $dependency['required'] || 'true' === $dependency['required'] );
+			}
+			if ( isset( $dependency['optional'] ) ) {
+				return ( false === $dependency['optional'] || 'false' === $dependency['optional'] );
+			}
+			return false;
+		}
+
+		/**
 		 * Is dependency installed?
 		 *
 		 * @param string $slug Plugin slug.
 		 *
 		 * @return boolean
 		 */
-		private function is_installed( $slug ) {
+		public function is_installed( $slug ) {
 			$plugins = get_plugins();
 
 			return isset( $plugins[ $slug ] );
+		}
+
+		/**
+		 * Is dependency active?
+		 *
+		 * @param string $slug Plugin slug.
+		 *
+		 * @return boolean
+		 */
+		public function is_active( $slug ) {
+			return is_plugin_active( $slug );
 		}
 
 		/**
@@ -321,7 +355,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return bool|array false or Message.
 		 */
-		private function install( $slug ) {
+		public function install( $slug ) {
 			if ( $this->is_installed( $slug ) || ! current_user_can( 'update_plugins' ) ) {
 				return false;
 			}
@@ -353,7 +387,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			}
 
 			wp_cache_flush();
-			if ( $this->config[ $slug ]['required'] ) {
+			if ( $this->is_required( $this->config[ $slug ] ) ) {
 				$this->activate( $slug );
 
 				return [
@@ -384,7 +418,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return array Message.
 		 */
-		private function activate( $slug ) {
+		public function activate( $slug ) {
 			// network activate only if on network admin pages.
 			$result = is_network_admin() ? activate_plugin( $slug, null, true ) : activate_plugin( $slug );
 
@@ -408,7 +442,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return array Empty Message.
 		 */
-		private function dismiss() {
+		public function dismiss() {
 			return [
 				'status'  => 'updated',
 				'message' => '',
@@ -443,7 +477,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return bool|void
 		 */
-		private function move( $source, $destination ) {
+		public function move( $source, $destination ) {
 			if ( @rename( $source, $destination ) ) {
 				return true;
 			}
@@ -524,9 +558,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Hide links from plugin row.
 		 *
-		 * @param $plugin_file Plugin file.
+		 * @param string $plugin_file Plugin file.
 		 */
-		private function hide_plugin_action_links( $plugin_file ) {
+		public function hide_plugin_action_links( $plugin_file ) {
 			add_filter( 'network_admin_plugin_action_links_' . $plugin_file, [ $this, 'unset_action_links' ] );
 			add_filter( 'plugin_action_links_' . $plugin_file, [ $this, 'unset_action_links' ] );
 			add_action(
@@ -567,11 +601,14 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @since 1.4.11
 		 *
+		 * @param string $slug Plugin slug.
+		 *
 		 * @return array The configuration.
 		 */
-		public function get_config() {
-			return $this->config;
+		public function get_config( $slug = '' ) {
+			return isset( $this->config[ $slug ] ) ? $this->config[ $slug ] : $this->config;
 		}
+
 	}
 
 	require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
