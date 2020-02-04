@@ -226,7 +226,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 					$this->hide_plugin_action_links( $slug );
 				}
 
-				if ( is_plugin_active( $slug ) ) {
+				if ( $this->is_active( $slug ) ) {
 					if ( $this->is_mandatory_notice( $slug ) ) {
 							$this->notices[] = [
 								'status'  => 'error',
