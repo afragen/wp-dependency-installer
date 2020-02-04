@@ -357,6 +357,17 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		}
 
 		/**
+		 * Is dependency active?
+		 *
+		 * @param string $slug Plugin slug.
+		 *
+		 * @return boolean
+		 */
+		public function is_active( $slug ) {
+			return is_plugin_active( $slug );
+		}
+
+		/**
 		 * Install and activate dependency.
 		 *
 		 * @param string $slug Plugin slug.
@@ -563,7 +574,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Hide links from plugin row.
 		 *
-		 * @param $plugin_file Plugin file.
+		 * @param string $plugin_file Plugin file.
 		 */
 		public function hide_plugin_action_links( $plugin_file ) {
 			add_filter( 'network_admin_plugin_action_links_' . $plugin_file, [ $this, 'unset_action_links' ] );
@@ -616,10 +627,12 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @since 1.4.11
 		 *
+		 * @param string $slug Plugin slug.
+		 *
 		 * @return array The configuration.
 		 */
-		public function get_config() {
-			return $this->config;
+		public function get_config( $slug = '' ) {
+			return isset( $this->config[ $slug ] ) ? $this->config[ $slug ] : $this->config;
 		}
 	}
 
