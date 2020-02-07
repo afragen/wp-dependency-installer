@@ -225,27 +225,25 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 				if ( $this->is_active( $slug ) ) {
 					continue;
-				}
-
-				if ( $this->is_installed( $slug ) ) {
+				} elseif ( $this->is_installed( $slug ) ) {
 					if ( ! $is_required ) {
 						$this->notices[] = [
-							'action' => 'activate',
-							'slug'   => $slug,
+							'action'  => 'activate',
+							'slug'    => $slug,
 							/* translators: %s: Plugin name */
-							'text'   => sprintf( esc_html__( 'Please activate the %s plugin.' ), $dependency['name'] ),
-							'source' => $dependency['source'],
+							'message' => sprintf( esc_html__( 'Please activate the %s plugin.' ), $dependency['name'] ),
+							'source'  => $dependency['source'],
 						];
 					} else {
 						$this->notices[] = $this->activate( $slug );
 					}
 				} elseif ( ! $is_required ) {
 					$this->notices[] = [
-						'action' => 'install',
-						'slug'   => $slug,
+						'action'  => 'install',
+						'slug'    => $slug,
 						/* translators: %s: Plugin name */
-						'text'   => sprintf( esc_html__( 'The %s plugin is required.' ), $dependency['name'] ),
-						'source' => $dependency['source'],
+						'message' => sprintf( esc_html__( 'The %s plugin is required.' ), $dependency['name'] ),
+						'source'  => $dependency['source'],
 					];
 				} else {
 					$this->notices[] = $this->install( $slug );
@@ -510,15 +508,12 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			}
 			$message = null;
 			foreach ( $this->notices as $notice ) {
-				$status = empty( $notice['status'] ) ? 'updated' : $notice['status'];
+				$status  = empty( $notice['status'] ) ? 'updated' : $notice['status'];
+				$message = empty( $notice['message'] ) ? '' : esc_html( $notice['message'] );
 
 				if ( ! empty( $notice['action'] ) ) {
 					$action   = esc_attr( $notice['action'] );
-					$message  = esc_html( $notice['text'] );
 					$message .= ' <a href="javascript:;" class="wpdi-button" data-action="' . $action . '" data-slug="' . $notice['slug'] . '">' . ucfirst( $action ) . ' Now &raquo;</a>';
-				}
-				if ( ! empty( $notice['status'] ) ) {
-					$message = esc_html( $notice['message'] );
 				}
 
 				/**
