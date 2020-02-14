@@ -75,6 +75,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			add_action( 'admin_notices', [ $this, 'admin_notices' ] );
 			add_action( 'network_admin_notices', [ $this, 'admin_notices' ] );
 			add_action( 'wp_ajax_dependency_installer', [ $this, 'ajax_router' ] );
+			add_filter( 'http_request_args', [ $this, 'add_basic_auth_headers' ], 15, 2 );
 
 			// Initialize Persist admin Notices Dismissal dependency.
 			add_action( 'admin_init', [ 'PAnD', 'init' ] );
@@ -133,9 +134,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 					case 'github':
 						$base          = null === $api || 'github.com' === $api ? 'api.github.com' : $api;
 						$download_link = "{$scheme}{$base}/repos/{$owner_repo}/zipball/{$dependency['branch']}";
-						if ( ! empty( $dependency['token'] ) ) {
-							$download_link = add_query_arg( 'access_token', $dependency['token'], $download_link );
-						}
 						break;
 					case 'bitbucket':
 						$base          = null === $api || 'bitbucket.org' === $api ? 'bitbucket.org' : $api;
@@ -146,15 +144,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 						$project_id    = rawurlencode( $owner_repo );
 						$download_link = "{$scheme}{$base}/api/v4/projects/{$project_id}/repository/archive.zip";
 						$download_link = add_query_arg( 'sha', $dependency['branch'], $download_link );
-						if ( ! empty( $dependency['token'] ) ) {
-							$download_link = add_query_arg( 'private_token', $dependency['token'], $download_link );
-						}
 						break;
 					case 'gitea':
 						$download_link = "{$scheme}{$api}/repos/{$owner_repo}/archive/{$dependency['branch']}.zip";
-						if ( ! empty( $dependency['token'] ) ) {
-							$download_link = add_query_arg( 'access_token', $dependency['token'], $download_link );
-						}
 						break;
 					case 'wordpress':  // phpcs:ignore WordPress.WP.CapitalPDangit.Misspelled
 						$download_link = $this->get_dot_org_latest_download( basename( $owner_repo ) );
@@ -314,11 +306,12 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				$dependency = &$plugin;
 			}
 			if ( isset( $dependency['required'] ) ) {
-				return ( true === $dependency['required'] || 'true' === $dependency['required'] );
+				return true === $dependency['required'] || 'true' === $dependency['required'];
 			}
 			if ( isset( $dependency['optional'] ) ) {
-				return ( false === $dependency['optional'] || 'false' === $dependency['optional'] );
+				return false === $dependency['optional'] || 'false' === $dependency['optional'];
 			}
+
 			return false;
 		}
 
@@ -604,6 +597,36 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			return isset( $this->config[ $slug ] ) ? $this->config[ $slug ] : $this->config;
 		}
 
+		/**
+		 * Add Basic Auth headers for authentication.
+		 *
+		 * @param array  $args HTTP header args.
+		 * @param string $url  URL.
+		 *
+		 * @return array $args
+		 */
+		public function add_basic_auth_headers( $args, $url ) {
+			if ( null === $this->current_slug ) {
+				return $args;
+			}
+			$package = $this->config[ $this->current_slug ];
+			if ( $url !== $package['download_link'] ) {
+				return $args;
+			}
+			$host = $package['host'];
+			if ( ! empty( $package['token'] ) ) {
+				$token = $package['token'];
+				if ( 'github' === $host || 'gitea' === $host ) {
+					$args['headers']['Authorization'] = 'token ' . $token;
+				}
+				if ( 'gitlab' === $host ) {
+					$args['headers']['Authorization'] = 'Bearer ' . $token;
+				}
+			}
+			remove_filter( 'http_request_args', [ $this, 'add_basic_auth_headers' ] );
+
+			return $args;
+		}
 	}
 
 	require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
