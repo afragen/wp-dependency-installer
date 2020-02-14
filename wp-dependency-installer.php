@@ -610,10 +610,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				return $args;
 			}
 			$package = $this->config[ $this->current_slug ];
-			if ( $url !== $package['download_link'] ) {
-				return $args;
-			}
-			$host = $package['host'];
+			$host    = $package['host'];
+
 			if ( ! empty( $package['token'] ) ) {
 				$token = $package['token'];
 				if ( 'github' === $host || 'gitea' === $host ) {
@@ -622,6 +620,12 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				if ( 'gitlab' === $host ) {
 					$args['headers']['Authorization'] = 'Bearer ' . $token;
 				}
+			}
+
+			// dot org should not have auth header.
+			// phpcs:ignore WordPress.WP.CapitalPDangit.Misspelled
+			if ( 'wordpress' === $host || $url !== $package['download_link'] ) {
+				unset( $args['headers']['Authorization'] );
 			}
 			remove_filter( 'http_request_args', [ $this, 'add_basic_auth_headers' ] );
 
