@@ -87,8 +87,6 @@ You may use `required` or `optional` as interchangable opposites. If a plugin is
 ]
 ```
 
-An example file is included, `wp-dependencies-example.json`. You may use a shorthand uri such as `<owner>/<repo>` in the JSON.
-
 If you want to programmatically add dependencies you can send an associative array directly to
 
 ```php
@@ -122,6 +120,10 @@ add_filter(
 ```
 
 The download link can be filtered using the filter hook `wp_dependency_download_link`. The `$download_link` and the `$dependency` are passed as parameters.
+
+## Examples
+
+There are examples in https://github.com/afragen/wp-dependency-installer-examples.
 
 ## Development
 
