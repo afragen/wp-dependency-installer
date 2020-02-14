@@ -100,7 +100,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @param string $plugin_path (optional) Path to plugin or theme calling the framework.
 		 */
 		public function run( $plugin_path = false ) {
-			$plugin_path = empty( $plugin_path ) ? $this->plugin_path : $plugin_path;
+			$plugin_path = empty( $plugin_path ) ? $this->plugin_path : $plugin_path; // TODO: deprecate parameter in future releases?
 			if ( file_exists( $plugin_path . '/wp-dependencies.json' ) ) {
 				$config = file_get_contents( $plugin_path . '/wp-dependencies.json' );
 				$config = json_decode( $config, true );
@@ -118,10 +118,10 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @param string $plugin_path (optional) Path to plugin or theme calling the framework.
 		 */
 		public function register( $config, $plugin_path = false ) {
-			$plugin_path = empty( $plugin_path ) ? $this->plugin_path : $plugin_path;
-			$source      = basename( $plugin_path );
+			$plugin_path  = empty( $plugin_path ) ? $this->plugin_path : $plugin_path; // TODO: deprecate parameter in future releases?
+			$this->source = basename( $plugin_path );
 			foreach ( $config as $dependency ) {
-				$dependency['source'] = $source;
+				$dependency['source'] = $this->source;
 				$slug                 = $dependency['slug'];
 				if ( ! isset( $this->config[ $slug ] ) || $this->is_required( $dependency ) ) {
 					$this->config[ $slug ] = $dependency;
