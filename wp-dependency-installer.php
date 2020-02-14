@@ -94,6 +94,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 					return;
 				}
 				$this->source = basename( $plugin_path );
+				$this->load_hooks();
 				$this->register( $config );
 			}
 		}
@@ -104,7 +105,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @param array $config JSON config as string.
 		 */
 		public function register( $config ) {
-			$this->load_hooks();
 			foreach ( $config as $dependency ) {
 				$dependency['source'] = $this->source;
 				$slug                 = $dependency['slug'];
