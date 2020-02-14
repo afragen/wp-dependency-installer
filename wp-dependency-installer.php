@@ -55,13 +55,20 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Singleton.
 		 */
-		public static function instance() {
+		public static function instance( $plugin_path = false ) {
 			static $instance = null;
 			if ( null === $instance ) {
-				$instance = new self();
+				$instance = new self( $plugin_path );
 			}
 
 			return $instance;
+		}
+
+		/**
+		 * Private constructor.
+		 */
+		protected function __construct( $plugin_path ) {
+			$this->plugin_path = $plugin_path;
 		}
 
 		/**
@@ -83,29 +90,31 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Register wp-dependencies.json
 		 *
-		 * @param string $plugin_path Path to plugin or theme calling the framework.
-		 * @param array  $config (optional) JSON config as array.
+		 * @param string $plugin_path (optional) Path to plugin or theme calling the framework.
 		 */
-		public function run( $plugin_path, $config = [] ) {
+		public function run( $plugin_path = false ) {
+			$plugin_path = empty( $plugin_path ) ? $this->plugin_path : $plugin_path;
 			if ( file_exists( $plugin_path . '/wp-dependencies.json' ) ) {
 				$config = file_get_contents( $plugin_path . '/wp-dependencies.json' );
 				$config = json_decode( $config, true );
 			}
 			if ( ! empty( $config ) ) {
-				$this->source = basename( $plugin_path );
-				$this->load_hooks();
-				$this->register( $config );
+				$this->register( $config, $plugin_path );
 			}
+			$this->load_hooks();
 		}
 
 		/**
 		 * Register dependencies (supports multiple instances).
 		 *
 		 * @param array $config JSON config as array.
+		 * @param string $plugin_path (optional) Path to plugin or theme calling the framework.
 		 */
-		public function register( $config ) {
+		public function register( $config, $plugin_path = false ) {
+			$plugin_path = empty( $plugin_path ) ? $this->plugin_path : $plugin_path;
+			$source      = basename( $plugin_path );
 			foreach ( $config as $dependency ) {
-				$dependency['source'] = $this->source;
+				$dependency['source'] = $source;
 				$slug                 = $dependency['slug'];
 				if ( ! isset( $this->config[ $slug ] ) || $this->is_required( $dependency ) ) {
 					$this->config[ $slug ] = $dependency;
