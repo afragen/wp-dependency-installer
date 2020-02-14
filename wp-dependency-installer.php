@@ -39,6 +39,13 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		protected $current_slug;
 
 		/**
+		 * Holds the calling plugin/theme path.
+		 *
+		 * @var string $source
+		 */
+		protected $plugin_path;
+
+		/**
 		 * Holds the calling plugin/theme slug.
 		 *
 		 * @var string $source
