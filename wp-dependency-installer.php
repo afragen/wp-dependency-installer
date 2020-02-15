@@ -100,7 +100,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @param string $plugin_path (optional) Path to plugin or theme calling the framework.
 		 */
 		public function run( $plugin_path = false ) {
-			$plugin_path = empty( $plugin_path ) ? $this->plugin_path : $plugin_path; // TODO: deprecate parameter in future releases?
+			if ( ! $plugin_path ) { // TODO: deprecate parameter in future releases?
+				$plugin_path = $this->plugin_path;
+			}
 			if ( file_exists( $plugin_path . '/wp-dependencies.json' ) ) {
 				$config = file_get_contents( $plugin_path . '/wp-dependencies.json' );
 				$config = json_decode( $config, true );
@@ -114,11 +116,13 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Register dependencies (supports multiple instances).
 		 *
-		 * @param array $config JSON config as array.
+		 * @param array  $config JSON config as array.
 		 * @param string $plugin_path (optional) Path to plugin or theme calling the framework.
 		 */
 		public function register( $config, $plugin_path = false ) {
-			$plugin_path  = empty( $plugin_path ) ? $this->plugin_path : $plugin_path; // TODO: deprecate parameter in future releases?
+			if ( ! $plugin_path ) { // TODO: deprecate parameter in future releases?
+				$plugin_path = $this->plugin_path;
+			}
 			$this->source = basename( $plugin_path );
 			foreach ( $config as $dependency ) {
 				$dependency['source'] = $this->source;
