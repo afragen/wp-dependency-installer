@@ -26,11 +26,11 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 	class WP_Dependency_Installer {
 
 		/**
-		 * Holds multiple singleton instances.
+		 * Holds singleton instance.
 		 *
-		 * @var array $instances
+		 * @var WP_Dependency_Installer $instance
 		 */
-		protected static $instances = [];
+		protected static $instance;
 
 		/**
 		 * Holds the JSON file contents.
@@ -68,27 +68,21 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		protected $notices;
 
 		/**
-		 * Multiton.
-		 *
-		 * @param string $plugin_path (optional) Path to plugin or theme calling the framework.
+		 * Singleton.
 		 */
-		public static function instance( $plugin_path = '' ) {
-			if ( ! array_key_exists( $plugin_path, self::$instances ) ) {
-				self::$instances[ $plugin_path ] = new self( $plugin_path );
+		public static function instance() {
+			if ( ! self::$instance ) {
+				self::$instance = new self();
 			}
-			return self::$instances[ $plugin_path ];
+			return self::$instance;
 		}
 
 		/**
 		 * Private constructor.
-		 *
-		 * @param string $plugin_path Path to plugin or theme calling the framework.
 		 */
-		protected function __construct( $plugin_path ) {
-			$this->plugin_path = $plugin_path;
-			$this->source      = basename( $plugin_path );
-			$this->config      = [];
-			$this->notices     = [];
+		protected function __construct() {
+			$this->config  = [];
+			$this->notices = [];
 		}
 
 		/**
@@ -110,12 +104,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Register wp-dependencies.json
 		 *
-		 * @param string $plugin_path (optional) Path to plugin or theme calling the framework.
+		 * @param string $plugin_path Path to plugin or theme calling the framework.
 		 */
-		public function run( $plugin_path = false ) {
-			if ( ! $plugin_path ) { // TODO: deprecate parameter in future releases?
-				$plugin_path = $this->plugin_path;
-			}
+		public function run( $plugin_path ) {
 			if ( file_exists( $plugin_path . '/wp-dependencies.json' ) ) {
 				$config = file_get_contents( $plugin_path . '/wp-dependencies.json' );
 				$config = json_decode( $config, true );
@@ -130,15 +121,10 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * Register dependencies (supports multiple instances).
 		 *
 		 * @param array  $config JSON config as array.
-		 * @param string $plugin_path (optional) Path to plugin or theme calling the framework.
+		 * @param string $plugin_path Path to plugin or theme calling the framework.
 		 */
-		public function register( $config, $plugin_path = false ) {
-			if ( ! $plugin_path ) { // TODO: deprecate parameter in future releases?
-				$plugin_path = $this->plugin_path;
-				$source      = $this->source;
-			} else {
-				$source = basename( $plugin_path );
-			}
+		public function register( $config, $plugin_path ) {
+			$source = basename( $plugin_path );
 			foreach ( $config as $dependency ) {
 				$dependency['source'] = $source;
 				$slug                 = $dependency['slug'];
