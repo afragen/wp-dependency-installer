@@ -25,11 +25,18 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 	 */
 	class WP_Dependency_Installer {
 		/**
+		 * Holds singleton instance.
+		 *
+		 * @var WP_Dependency_Installer $instance
+		 */
+		protected static $instance;
+
+		/**
 		 * Holds the JSON file contents.
 		 *
 		 * @var array $config
 		 */
-		protected $config = [];
+		protected $config;
 
 		/**
 		 * Holds the current dependency's slug.
@@ -37,6 +44,13 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @var string $current_slug
 		 */
 		protected $current_slug;
+
+		/**
+		 * Holds the calling plugin/theme path.
+		 *
+		 * @var string $source
+		 */
+		protected $plugin_path;
 
 		/**
 		 * Holds the calling plugin/theme slug.
@@ -50,18 +64,25 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @var array $notices
 		 */
-		protected $notices = [];
+		protected $notices;
 
 		/**
 		 * Singleton.
 		 */
 		public static function instance() {
-			static $instance = null;
-			if ( null === $instance ) {
-				$instance = new self();
+			if ( ! self::$instance ) {
+				self::$instance = new self();
 			}
 
-			return $instance;
+			return self::$instance;
+		}
+
+		/**
+		 * Private constructor.
+		 */
+		protected function __construct() {
+			$this->config  = [];
+			$this->notices = [];
 		}
 
 		/**
@@ -75,6 +96,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			add_action( 'admin_notices', [ $this, 'admin_notices' ] );
 			add_action( 'network_admin_notices', [ $this, 'admin_notices' ] );
 			add_action( 'wp_ajax_dependency_installer', [ $this, 'ajax_router' ] );
+			add_filter( 'http_request_args', [ $this, 'add_basic_auth_headers' ], 15, 2 );
 
 			// Initialize Persist admin Notices Dismissal dependency.
 			add_action( 'admin_init', [ 'PAnD', 'init' ] );
@@ -91,25 +113,26 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		public function run( $plugin_path ) {
 			if ( file_exists( $plugin_path . '/wp-dependencies.json' ) ) {
 				$config = file_get_contents( $plugin_path . '/wp-dependencies.json' );
-				if ( empty( $config ) ||
-					null === ( $config = json_decode( $config, true ) )
-				) {
-					return;
-				}
-				$this->source = basename( $plugin_path );
+				$config = json_decode( $config, true );
+			}
+			if ( ! empty( $config ) ) {
+				$this->register( $config, $plugin_path );
+			}
+			if ( ! empty( $this->config ) ) {
 				$this->load_hooks();
-				$this->register( $config );
 			}
 		}
 
 		/**
 		 * Register dependencies (supports multiple instances).
 		 *
-		 * @param array $config JSON config as string.
+		 * @param array  $config      JSON config as array.
+		 * @param string $plugin_path Path to plugin or theme calling the framework.
 		 */
-		public function register( $config ) {
+		public function register( $config, $plugin_path ) {
+			$source = basename( $plugin_path );
 			foreach ( $config as $dependency ) {
-				$dependency['source'] = $this->source;
+				$dependency['source'] = $source;
 				$slug                 = $dependency['slug'];
 				if ( ! isset( $this->config[ $slug ] ) || $this->is_required( $dependency ) ) {
 					$this->config[ $slug ] = $dependency;
@@ -136,9 +159,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 					case 'github':
 						$base          = null === $api || 'github.com' === $api ? 'api.github.com' : $api;
 						$download_link = "{$scheme}{$base}/repos/{$owner_repo}/zipball/{$dependency['branch']}";
-						if ( ! empty( $dependency['token'] ) ) {
-							$download_link = add_query_arg( 'access_token', $dependency['token'], $download_link );
-						}
 						break;
 					case 'bitbucket':
 						$base          = null === $api || 'bitbucket.org' === $api ? 'bitbucket.org' : $api;
@@ -149,15 +169,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 						$project_id    = rawurlencode( $owner_repo );
 						$download_link = "{$scheme}{$base}/api/v4/projects/{$project_id}/repository/archive.zip";
 						$download_link = add_query_arg( 'sha', $dependency['branch'], $download_link );
-						if ( ! empty( $dependency['token'] ) ) {
-							$download_link = add_query_arg( 'private_token', $dependency['token'], $download_link );
-						}
 						break;
 					case 'gitea':
 						$download_link = "{$scheme}{$api}/repos/{$owner_repo}/archive/{$dependency['branch']}.zip";
-						if ( ! empty( $dependency['token'] ) ) {
-							$download_link = add_query_arg( 'access_token', $dependency['token'], $download_link );
-						}
 						break;
 					case 'wordpress':  // phpcs:ignore WordPress.WP.CapitalPDangit.Misspelled
 						$download_link = $this->get_dot_org_latest_download( basename( $owner_repo ) );
@@ -236,27 +250,17 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 							];
 					}
 				} elseif ( $this->is_installed( $slug ) ) {
-					if ( ! $is_required ) {
-						$this->notices[] = [
-							'action'  => 'activate',
-							'slug'    => $slug,
-							/* translators: %s: Plugin name */
-							'message' => sprintf( esc_html__( 'Please activate the %s plugin.' ), $dependency['name'] ),
-							'source'  => $dependency['source'],
-						];
-					} else {
+					if ( $is_required ) {
 						$this->notices[] = $this->activate( $slug );
+					} else {
+						$this->notices[] = $this->activate_notice( $slug );
 					}
-				} elseif ( ! $is_required ) {
-					$this->notices[] = [
-						'action'  => 'install',
-						'slug'    => $slug,
-						/* translators: %s: Plugin name */
-						'message' => sprintf( esc_html__( 'The %s plugin is required.' ), $dependency['name'] ),
-						'source'  => $dependency['source'],
-					];
 				} else {
-					$this->notices[] = $this->install( $slug );
+					if ( $is_required ) {
+						$this->notices[] = $this->install( $slug );
+					} else {
+						$this->notices[] = $this->install_notice( $slug );
+					}
 				}
 			}
 		}
@@ -324,11 +328,12 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				$dependency = &$plugin;
 			}
 			if ( isset( $dependency['required'] ) ) {
-				return ( true === $dependency['required'] || 'true' === $dependency['required'] );
+				return true === $dependency['required'] || 'true' === $dependency['required'];
 			}
 			if ( isset( $dependency['optional'] ) ) {
-				return ( false === $dependency['optional'] || 'false' === $dependency['optional'] );
+				return false === $dependency['optional'] || 'false' === $dependency['optional'];
 			}
+
 			return false;
 		}
 
@@ -431,6 +436,24 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		}
 
 		/**
+		 * Get install plugin notice.
+		 *
+		 * @param string $slug Plugin slug.
+		 *
+		 * @return array Admin notice.
+		 */
+		public function install_notice( $slug ) {
+			$dependency = $this->config[ $slug ];
+			return [
+				'action'  => 'install',
+				'slug'    => $slug,
+				/* translators: %s: Plugin name */
+				'message' => sprintf( esc_html__( 'The %s plugin is required.' ), $dependency['name'] ),
+				'source'  => $dependency['source'],
+			];
+		}
+
+		/**
 		 * Activate dependency.
 		 *
 		 * @param string $slug Plugin slug.
@@ -453,6 +476,24 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				/* translators: %s: Plugin name */
 				'message' => sprintf( esc_html__( '%s has been activated.' ), $this->config[ $slug ]['name'] ),
 				'source'  => $this->config[ $slug ]['source'],
+			];
+		}
+
+		/**
+		 * Get activate plugin notice.
+		 *
+		 * @param string $slug Plugin slug.
+		 *
+		 * @return array Admin notice.
+		 */
+		public function activate_notice( $slug ) {
+			$dependency = $this->config[ $slug ];
+			return [
+				'action'  => 'activate',
+				'slug'    => $slug,
+				/* translators: %s: Plugin name */
+				'message' => sprintf( esc_html__( 'Please activate the %s plugin.' ), $dependency['name'] ),
+				'source'  => $dependency['source'],
 			];
 		}
 
@@ -633,6 +674,41 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 */
 		public function get_config( $slug = '' ) {
 			return isset( $this->config[ $slug ] ) ? $this->config[ $slug ] : $this->config;
+		}
+
+		/**
+		 * Add Basic Auth headers for authentication.
+		 *
+		 * @param array  $args HTTP header args.
+		 * @param string $url  URL.
+		 *
+		 * @return array $args
+		 */
+		public function add_basic_auth_headers( $args, $url ) {
+			if ( null === $this->current_slug ) {
+				return $args;
+			}
+			$package = $this->config[ $this->current_slug ];
+			$host    = $package['host'];
+			$token   = empty( $package['token'] ) ? false : $package['token'];
+
+			if ( $token && $url === $package['download_link'] ) {
+				if ( 'github' === $host || 'gitea' === $host ) {
+					$args['headers']['Authorization'] = 'token ' . $token;
+				}
+				if ( 'gitlab' === $host ) {
+					$args['headers']['Authorization'] = 'Bearer ' . $token;
+				}
+			}
+
+			// dot org should not have auth header.
+			// phpcs:ignore WordPress.WP.CapitalPDangit.Misspelled
+			if ( 'wordpress' === $host ) {
+				unset( $args['headers']['Authorization'] );
+			}
+			remove_filter( 'http_request_args', [ $this, 'add_basic_auth_headers' ] );
+
+			return $args;
 		}
 	}
 
