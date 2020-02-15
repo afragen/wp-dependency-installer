@@ -84,14 +84,15 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * Register wp-dependencies.json
 		 *
 		 * @param string $plugin_path Path to plugin or theme calling the framework.
-		 * @param array  $config (optional) JSON config as array.
 		 */
-		public function run( $plugin_path, $config = [] ) {
+		public function run( $plugin_path ) {
 			if ( file_exists( $plugin_path . '/wp-dependencies.json' ) ) {
 				$config = file_get_contents( $plugin_path . '/wp-dependencies.json' );
-				$config = json_decode( $config, true );
-			}
-			if ( ! empty( $config ) ) {
+				if ( empty( $config ) ||
+					null === ( $config = json_decode( $config, true ) )
+				) {
+					return;
+				}
 				$this->source = basename( $plugin_path );
 				$this->load_hooks();
 				$this->register( $config );
@@ -101,7 +102,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Register dependencies (supports multiple instances).
 		 *
-		 * @param array $config JSON config as array.
+		 * @param array $config JSON config as string.
 		 */
 		public function register( $config ) {
 			foreach ( $config as $dependency ) {
