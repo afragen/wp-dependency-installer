@@ -240,27 +240,17 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				if ( $this->is_active( $slug ) ) {
 					continue;
 				} elseif ( $this->is_installed( $slug ) ) {
-					if ( ! $is_required ) {
-						$this->notices[] = [
-							'action'  => 'activate',
-							'slug'    => $slug,
-							/* translators: %s: Plugin name */
-							'message' => sprintf( esc_html__( 'Please activate the %s plugin.' ), $dependency['name'] ),
-							'source'  => $dependency['source'],
-						];
-					} else {
+					if ( $is_required ) {
 						$this->notices[] = $this->activate( $slug );
+					} else {
+						$this->notices[] = $this->activate_notice( $slug );
 					}
-				} elseif ( ! $is_required ) {
-					$this->notices[] = [
-						'action'  => 'install',
-						'slug'    => $slug,
-						/* translators: %s: Plugin name */
-						'message' => sprintf( esc_html__( 'The %s plugin is required.' ), $dependency['name'] ),
-						'source'  => $dependency['source'],
-					];
 				} else {
-					$this->notices[] = $this->install( $slug );
+					if ( $is_required ) {
+						$this->notices[] = $this->install( $slug );
+					} else {
+						$this->notices[] = $this->install_notice( $slug );
+					}
 				}
 			}
 		}
@@ -425,6 +415,24 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		}
 
 		/**
+		 * Get install plugin notice.
+		 *
+		 * @param string $slug Plugin slug.
+		 *
+		 * @return array Admin notice.
+		 */
+		public function install_notice( $slug ) {
+			$dependency = $this->config[ $slug ];
+			return [
+				'action' => 'install',
+				'slug'   => $slug,
+				/* translators: %s: Plugin name */
+				'message'   => sprintf( esc_html__( 'The %s plugin is required.' ), $dependency['name'] ),
+				'source' => $dependency['source'],
+			];
+		}
+
+		/**
 		 * Activate dependency.
 		 *
 		 * @param string $slug Plugin slug.
@@ -447,6 +455,24 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				/* translators: %s: Plugin name */
 				'message' => sprintf( esc_html__( '%s has been activated.' ), $this->config[ $slug ]['name'] ),
 				'source'  => $this->config[ $slug ]['source'],
+			];
+		}
+
+		/**
+		 * Get activate plugin notice.
+		 *
+		 * @param string $slug Plugin slug.
+		 *
+		 * @return array Admin notice.
+		 */
+		public function activate_notice( $slug ) {
+			$dependency = $this->config[ $slug ];
+			return [
+				'action' => 'activate',
+				'slug'   => $slug,
+				/* translators: %s: Plugin name */
+				'message'   => sprintf( esc_html__( 'Please activate the %s plugin.' ), $dependency['name'] ),
+				'source' => $dependency['source'],
 			];
 		}
 
