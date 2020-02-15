@@ -25,11 +25,18 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 	 */
 	class WP_Dependency_Installer {
 		/**
+		 * Holds singleton instance.
+		 *
+		 * @var WP_Dependency_Installer $instance
+		 */
+		protected static $instance;
+
+		/**
 		 * Holds the JSON file contents.
 		 *
 		 * @var array $config
 		 */
-		protected $config = [];
+		protected $config;
 
 		/**
 		 * Holds the current dependency's slug.
@@ -37,6 +44,13 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @var string $current_slug
 		 */
 		protected $current_slug;
+
+		/**
+		 * Holds the calling plugin/theme path.
+		 *
+		 * @var string $source
+		 */
+		protected $plugin_path;
 
 		/**
 		 * Holds the calling plugin/theme slug.
@@ -50,18 +64,25 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @var array $notices
 		 */
-		protected $notices = [];
+		protected $notices;
 
 		/**
 		 * Singleton.
 		 */
 		public static function instance() {
-			static $instance = null;
-			if ( null === $instance ) {
-				$instance = new self();
+			if ( ! self::$instance ) {
+				self::$instance = new self();
 			}
 
-			return $instance;
+			return self::$instance;
+		}
+
+		/**
+		 * Private constructor.
+		 */
+		protected function __construct() {
+			$this->config  = [];
+			$this->notices = [];
 		}
 
 		/**
@@ -89,25 +110,26 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		public function run( $plugin_path ) {
 			if ( file_exists( $plugin_path . '/wp-dependencies.json' ) ) {
 				$config = file_get_contents( $plugin_path . '/wp-dependencies.json' );
-				if ( empty( $config ) ||
-					null === ( $config = json_decode( $config, true ) )
-				) {
-					return;
-				}
-				$this->source = basename( $plugin_path );
-				$this->register( $config );
+				$config = json_decode( $config, true );
+			}
+			if ( ! empty( $config ) ) {
+				$this->register( $config, $plugin_path );
+			}
+			if ( ! empty( $this->config ) ) {
+				$this->load_hooks();
 			}
 		}
 
 		/**
 		 * Register dependencies (supports multiple instances).
 		 *
-		 * @param array $config JSON config as string.
+		 * @param array  $config      JSON config as array.
+		 * @param string $plugin_path Path to plugin or theme calling the framework.
 		 */
-		public function register( $config ) {
-			$this->load_hooks();
+		public function register( $config, $plugin_path ) {
+			$source = basename( $plugin_path );
 			foreach ( $config as $dependency ) {
-				$dependency['source'] = $this->source;
+				$dependency['source'] = $source;
 				$slug                 = $dependency['slug'];
 				if ( ! isset( $this->config[ $slug ] ) || $this->is_required( $dependency ) ) {
 					$this->config[ $slug ] = $dependency;
