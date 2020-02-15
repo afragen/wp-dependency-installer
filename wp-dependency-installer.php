@@ -424,11 +424,11 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		public function install_notice( $slug ) {
 			$dependency = $this->config[ $slug ];
 			return [
-				'action' => 'install',
-				'slug'   => $slug,
+				'action'  => 'install',
+				'slug'    => $slug,
 				/* translators: %s: Plugin name */
-				'message'   => sprintf( esc_html__( 'The %s plugin is required.' ), $dependency['name'] ),
-				'source' => $dependency['source'],
+				'message' => sprintf( esc_html__( 'The %s plugin is required.' ), $dependency['name'] ),
+				'source'  => $dependency['source'],
 			];
 		}
 
@@ -468,11 +468,11 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		public function activate_notice( $slug ) {
 			$dependency = $this->config[ $slug ];
 			return [
-				'action' => 'activate',
-				'slug'   => $slug,
+				'action'  => 'activate',
+				'slug'    => $slug,
 				/* translators: %s: Plugin name */
-				'message'   => sprintf( esc_html__( 'Please activate the %s plugin.' ), $dependency['name'] ),
-				'source' => $dependency['source'],
+				'message' => sprintf( esc_html__( 'Please activate the %s plugin.' ), $dependency['name'] ),
+				'source'  => $dependency['source'],
 			];
 		}
 
