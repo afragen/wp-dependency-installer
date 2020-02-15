@@ -122,10 +122,12 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		public function register( $config, $plugin_path = false ) {
 			if ( ! $plugin_path ) { // TODO: deprecate parameter in future releases?
 				$plugin_path = $this->plugin_path;
+				$source      = $this->source;
+			} else {
+				$source = basename( $plugin_path );
 			}
-			$this->source = basename( $plugin_path );
 			foreach ( $config as $dependency ) {
-				$dependency['source'] = $this->source;
+				$dependency['source'] = $source;
 				$slug                 = $dependency['slug'];
 				if ( ! isset( $this->config[ $slug ] ) || $this->is_required( $dependency ) ) {
 					$this->config[ $slug ] = $dependency;
