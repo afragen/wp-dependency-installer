@@ -14,6 +14,10 @@
     {
       "name": "Matt Gibbs",
       "role": "Developer"
+    },
+    {
+      "name": "Raruto",
+      "role": "Developer"
     }
   ],
   "prefer-stable": true,
