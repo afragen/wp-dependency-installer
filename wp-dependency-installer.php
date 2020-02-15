@@ -24,7 +24,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 	 * Class WP_Dependency_Installer
 	 */
 	class WP_Dependency_Installer {
-
 		/**
 		 * Holds singleton instance.
 		 *
@@ -74,6 +73,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			if ( ! self::$instance ) {
 				self::$instance = new self();
 			}
+
 			return self::$instance;
 		}
 
@@ -120,7 +120,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Register dependencies (supports multiple instances).
 		 *
-		 * @param array  $config JSON config as array.
+		 * @param array  $config      JSON config as array.
 		 * @param string $plugin_path Path to plugin or theme calling the framework.
 		 */
 		public function register( $config, $plugin_path ) {
@@ -334,11 +334,12 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				$dependency = &$plugin;
 			}
 			if ( isset( $dependency['required'] ) ) {
-				return ( true === $dependency['required'] || 'true' === $dependency['required'] );
+				return true === $dependency['required'] || 'true' === $dependency['required'];
 			}
 			if ( isset( $dependency['optional'] ) ) {
-				return ( false === $dependency['optional'] || 'false' === $dependency['optional'] );
+				return false === $dependency['optional'] || 'false' === $dependency['optional'];
 			}
+
 			return false;
 		}
 
@@ -623,7 +624,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		public function get_config( $slug = '' ) {
 			return isset( $this->config[ $slug ] ) ? $this->config[ $slug ] : $this->config;
 		}
-
 	}
 
 	require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
