@@ -24,12 +24,20 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 	 * Class WP_Dependency_Installer
 	 */
 	class WP_Dependency_Installer {
+
+		/**
+		 * Holds multiple singleton instances.
+		 *
+		 * @var array $instances
+		 */
+		protected static $instances = [];
+
 		/**
 		 * Holds the JSON file contents.
 		 *
 		 * @var array $config
 		 */
-		protected $config = [];
+		protected $config;
 
 		/**
 		 * Holds the current dependency's slug.
@@ -57,25 +65,30 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @var array $notices
 		 */
-		protected $notices = [];
+		protected $notices;
 
 		/**
-		 * Singleton.
+		 * Multiton.
+		 *
+		 * @param string $plugin_path (optional) Path to plugin or theme calling the framework.
 		 */
-		public static function instance( $plugin_path = false ) {
-			static $instance = null;
-			if ( null === $instance ) {
-				$instance = new self( $plugin_path );
+		public static function instance( $plugin_path = '' ) {
+			if ( ! array_key_exists( $plugin_path, self::$instances ) ) {
+				self::$instances[ $plugin_path ] = new self( $plugin_path );
 			}
-
-			return $instance;
+			return self::$instances[ $plugin_path ];
 		}
 
 		/**
 		 * Private constructor.
+		 *
+		 * @param string $plugin_path Path to plugin or theme calling the framework.
 		 */
 		protected function __construct( $plugin_path ) {
 			$this->plugin_path = $plugin_path;
+			$this->source      = basename( $plugin_path );
+			$this->config      = [];
+			$this->notices     = [];
 		}
 
 		/**
