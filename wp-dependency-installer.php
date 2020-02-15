@@ -114,7 +114,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			if ( ! empty( $config ) ) {
 				$this->register( $config, $plugin_path );
 			}
-			$this->load_hooks();
+			if ( ! empty( $this->config ) ) {
+				$this->load_hooks();
+			}
 		}
 
 		/**
