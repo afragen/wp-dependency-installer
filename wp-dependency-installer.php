@@ -317,6 +317,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @return boolean True if required. Default: False
 		 */
 		public function is_required( &$plugin ) {
+			if ( empty( $this->config ) ) {
+				return false;
+			}
 			if ( is_string( $plugin ) && isset( $this->config[ $plugin ] ) ) {
 				$dependency = &$this->config[ $plugin ];
 			} else {
@@ -665,11 +668,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @return void
 		 */
 		public function before_deactivate_plugin() {
-			if (
-				isset( $_REQUEST['plugin'] ) &&
-				isset( $this->config[ $_REQUEST['plugin'] ] ) &&
-				$this->is_required( $this->config[ $_REQUEST['plugin'] ] )
-			) {
+			if ( isset( $_REQUEST['plugin'] ) && $this->is_required( $_REQUEST['plugin'] ) ) {
 				wp_safe_redirect( add_query_arg( 'wpdi_required', $_REQUEST['plugin'], $_SERVER['HTTP_REFERER'] ) );
 				exit();
 			}
