@@ -242,12 +242,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 				if ( $this->is_active( $slug ) ) {
 					if ( $this->is_mandatory_notice( $slug ) ) {
-							$this->notices[] = [
-								'status'  => 'error',
-								/* translators: %s: Plugin name */
-								'message' => sprintf( esc_html__( 'The %s plugin is a mandatory plugin.' ), $dependency['name'] ),
-								'source'  => $dependency['source'],
-							];
+						$this->notices[] = $this->mandatory_notice( $slug );
 					}
 				} elseif ( $this->is_installed( $slug ) ) {
 					if ( $is_required ) {
@@ -506,6 +501,23 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			return [
 				'status'  => 'updated',
 				'message' => '',
+			];
+		}
+
+		/**
+		 * Get mandatory plugin notice.
+		 *
+		 * @param string $slug Plugin slug.
+		 *
+		 * @return array Admin notice.
+		 */
+		public function mandatory_notice( $slug ) {
+			$dependency = $this->config[ $slug ];
+			return [
+				'status'  => 'error',
+				/* translators: %s: Plugin name */
+				'message' => sprintf( esc_html__( 'The %s plugin is a mandatory plugin.' ), $dependency['name'] ),
+				'source'  => $dependency['source'],
 			];
 		}
 
