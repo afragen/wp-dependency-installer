@@ -62,7 +62,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 WP_Dependency_Installer::instance()->run( __DIR__ );
 ```
 
-4. (optional) Take a look at some of built in [Functions](https://github.com/afragen/wp-dependency-installer/wiki/Helper-Functions) and [Hooks](https://github.com/afragen/wp-dependency-installer/wiki/Actions-and-Hooks) to further customize your plugin look and behaviour:
+4. (optional) Take a look at some of built in [Hooks](https://github.com/afragen/wp-dependency-installer/wiki/Actions-and-Hooks) and [Functions](https://github.com/afragen/wp-dependency-installer/wiki/Helper-Functions) to further customize your plugin look and behaviour:
 
 ```php
 /**
