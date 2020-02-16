@@ -124,7 +124,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return bool|array $config
 		 */
-		public function register_json_file( $plugin_path ) {
+		private function register_json_file( $plugin_path ) {
 			$config = [];
 			if ( file_exists( $plugin_path . '/wp-dependencies.json' ) ) {
 				$config = file_get_contents( $plugin_path . '/wp-dependencies.json' );
