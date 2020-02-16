@@ -671,6 +671,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			global $current_screen;
 			if (
 				isset( $_REQUEST['plugin'] ) &&
+				isset( $current_screen ) &&
 				in_array( $current_screen->id, [ 'plugins' ], true ) &&
 				$this->is_required( $_REQUEST['plugin'] )
 			) {
