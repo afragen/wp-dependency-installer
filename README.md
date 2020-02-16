@@ -90,7 +90,8 @@ You may use `required` or `optional` as interchangable opposites. If a plugin is
 If you want to programmatically add dependencies you can send an associative array directly to
 
 ```php
-WP_Dependency_Installer::instance()->register( $config )
+WP_Dependency_Installer::instance()->register( $config, __DIR__ );
+WP_Dependency_Installer::instance()->run( __DIR__ );
 ```
 
 where `$config` is an associative array as in identical format as `json_decode( wp-dependencies.json content )`
