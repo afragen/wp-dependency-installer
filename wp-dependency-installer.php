@@ -7,7 +7,7 @@
  * It can install a plugin from w.org, GitHub, Bitbucket, GitLab, Gitea or direct URL.
  *
  * @package   WP_Dependency_Installer
- * @author    Andy Fragen, Matt Gibbs
+ * @author    Andy Fragen, Matt Gibbs, Raruto
  * @license   MIT
  * @link      https://github.com/afragen/wp-dependency-installer
  */
