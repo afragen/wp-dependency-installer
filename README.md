@@ -66,7 +66,7 @@ WP_Dependency_Installer::instance()->run( __DIR__ );
 
 ```php
 /**
- * Display your plugin name in dismissable notices.
+ * Display your plugin or theme name in dismissable notices.
  */
 add_filter(
   'wp_dependency_dismiss_label',
