@@ -668,7 +668,12 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @return void
 		 */
 		public function before_deactivate_plugin() {
-			if ( isset( $_REQUEST['plugin'] ) && $this->is_required( $_REQUEST['plugin'] ) ) {
+			global $current_screen;
+			if (
+				isset( $_REQUEST['plugin'] ) &&
+				in_array( $current_screen->id, [ 'plugins' ], true ) &&
+				$this->is_required( $_REQUEST['plugin'] )
+			) {
 				wp_safe_redirect( add_query_arg( 'wpdi_required', $_REQUEST['plugin'], $_SERVER['HTTP_REFERER'] ) );
 				exit();
 			}
