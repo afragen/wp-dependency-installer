@@ -623,16 +623,13 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		}
 
 		/**
-		 * Unset plugin action links so mandatory plugins can't be modified.
+		 * Unset plugin action links so required plugins can't be removed or deactivated.
 		 *
 		 * @param array $actions Action links.
 		 *
 		 * @return mixed
 		 */
 		public function unset_action_links( $actions ) {
-			if ( isset( $actions['edit'] ) ) {
-				unset( $actions['edit'] );
-			}
 			if ( isset( $actions['delete'] ) ) {
 				unset( $actions['delete'] );
 			}
