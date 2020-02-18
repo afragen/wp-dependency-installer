@@ -143,9 +143,13 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		public function register( $config, $plugin_path ) {
 			$source = basename( $plugin_path );
 			foreach ( $config as $dependency ) {
-				$dependency['source'] = $source;
-				$slug                 = $dependency['slug'];
+				$dependency['source']    = $source;
+				$slug                    = $dependency['slug'];
+				$dependency['tooltip'][] = $source;
 				if ( ! isset( $this->config[ $slug ] ) || $this->is_required( $dependency ) ) {
+					if ( isset( $this->config[ $dependency['slug'] ] ) ) {
+						$dependency['tooltip'] = array_merge( $this->config[ $dependency['slug'] ]['tooltip'], $dependency['tooltip'] );
+					}
 					$this->config[ $slug ] = $dependency;
 				}
 			}
@@ -437,6 +441,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 */
 		public function install_notice( $slug ) {
 			$dependency = $this->config[ $slug ];
+
 			return [
 				'action'  => 'install',
 				'slug'    => $slug,
@@ -481,6 +486,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 */
 		public function activate_notice( $slug ) {
 			$dependency = $this->config[ $slug ];
+
 			return [
 				'action'  => 'activate',
 				'slug'    => $slug,
@@ -611,8 +617,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @param string $plugin_file Plugin file.
 		 */
 		public function hide_plugin_action_links( $plugin_file ) {
-			add_filter( 'network_admin_plugin_action_links_' . $plugin_file, [ $this, 'unset_action_links' ] );
-			add_filter( 'plugin_action_links_' . $plugin_file, [ $this, 'unset_action_links' ] );
+			add_filter( 'network_admin_plugin_action_links_' . $plugin_file, [ $this, 'unset_action_links' ], 10, 2 );
+			add_filter( 'plugin_action_links_' . $plugin_file, [ $this, 'unset_action_links' ], 10, 2 );
 			add_action(
 				'after_plugin_row_' . $plugin_file,
 				function ( $plugin_file ) {
@@ -625,11 +631,12 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Unset plugin action links so required plugins can't be removed or deactivated.
 		 *
-		 * @param array $actions Action links.
+		 * @param array  $actions     Action links.
+		 * @param string $plugin_file Plugin file.
 		 *
 		 * @return mixed
 		 */
-		public function unset_action_links( $actions ) {
+		public function unset_action_links( $actions, $plugin_file ) {
 			if ( isset( $actions['delete'] ) ) {
 				unset( $actions['delete'] );
 			}
@@ -638,9 +645,25 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			}
 
 			/* translators: %s: opening and closing span tags */
-			$actions = array_merge( [ 'required-plugin' => sprintf( esc_html__( '%1$sRequired Plugin%2$s' ), '<span class="network_active" style="font-variant-caps: small-caps;">', '</span>' ) ], $actions );
+			$actions = array_merge( [ 'required-plugin' => sprintf( esc_html__( '%1$sRequired Plugin%2$s' ), '<span class="network_active" style="font-variant-caps: small-caps;" title="' . $this->get_tooltip( $plugin_file ) . '">', '</span>' ) ], $actions );
 
 			return $actions;
+		}
+
+		/**
+		 * Get formatted string for tooltip.
+		 *
+		 * @param string $plugin_file Plugin file.
+		 *
+		 * @return string $tooltip
+		 */
+		private function get_tooltip( $plugin_file ) {
+			$tooltip = implode( ', ', $this->config[ $plugin_file ]['tooltip'] );
+			$tooltip = str_replace( '-', ' ', $tooltip );
+			$tooltip = ucwords( $tooltip );
+			$tooltip = str_ireplace( ' wp ', ' WP ', $tooltip );
+
+			return $tooltip;
 		}
 
 		/**
