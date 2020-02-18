@@ -378,6 +378,19 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		}
 
 		/**
+		 * Check current admin screen id.
+		 *
+		 * @param  string $screen_id screen to check.
+		 *
+		 * @return boolean check we are displaying selected screen.
+		 */
+		private function is_admin_screen( $screen_id ) {
+			global $current_screen;
+
+			return isset( $current_screen ) && isset( $current_screen->id ) && $screen_id === $current_screen->id;
+		}
+
+		/**
 		 * Install and activate dependency.
 		 *
 		 * @param string $slug Plugin slug.
@@ -677,12 +690,10 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @return void
 		 */
 		public function before_deactivate_plugin() {
-			global $current_screen;
 			if (
 				isset( $_REQUEST['plugin'] ) &&
-				isset( $current_screen ) &&
-				in_array( $current_screen->id, [ 'plugins' ], true ) &&
-				$this->is_required( $_REQUEST['plugin'] )
+				$this->is_required( $_REQUEST['plugin'] ) &&
+				$this->is_admin_screen( 'plugins' )
 			) {
 				wp_safe_redirect( add_query_arg( 'wpdi_required', $_REQUEST['plugin'], $_SERVER['HTTP_REFERER'] ) );
 				exit();
@@ -707,6 +718,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * Get formatted source string for text usage.
 		 *
 		 * @param  string $source plugin source.
+		 *
 		 * @return string friendly plugin name.
 		 */
 		private function get_dismiss_label( $source ) {
