@@ -599,7 +599,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				return false;
 			}
 			foreach ( $this->notices as $notice ) {
-				if( empty( $notice['source'] ) ) var_dump( $notice );
 				$status  = empty( $notice['status'] ) ? 'updated' : $notice['status'];
 				$message = empty( $notice['message'] ) ? '' : esc_html( $notice['message'] );
 
