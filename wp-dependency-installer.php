@@ -7,7 +7,7 @@
  * It can install a plugin from w.org, GitHub, Bitbucket, GitLab, Gitea or direct URL.
  *
  * @package   WP_Dependency_Installer
- * @author    Andy Fragen, Matt Gibbs
+ * @author    Andy Fragen, Matt Gibbs, Raruto
  * @license   MIT
  * @link      https://github.com/afragen/wp-dependency-installer
  */
@@ -106,21 +106,35 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		}
 
 		/**
-		 * Register wp-dependencies.json
+		 * Let's get going.
+		 * First load data from wp-dependencies.json if present.
+		 * Then load hooks needed to run.
 		 *
 		 * @param string $plugin_path Path to plugin or theme calling the framework.
 		 */
 		public function run( $plugin_path ) {
-			if ( file_exists( $plugin_path . '/wp-dependencies.json' ) ) {
-				$config = file_get_contents( $plugin_path . '/wp-dependencies.json' );
-				$config = json_decode( $config, true );
-			}
+			$config = $this->register_json_file( $plugin_path );
 			if ( ! empty( $config ) ) {
 				$this->register( $config, $plugin_path );
 			}
 			if ( ! empty( $this->config ) ) {
 				$this->load_hooks();
 			}
+		}
+
+		/**
+		 * Register data from wp-dependencies.json file.
+		 *
+		 * @return bool|array $config
+		 */
+		private function register_json_file( $plugin_path ) {
+			$config = [];
+			if ( file_exists( $plugin_path . '/wp-dependencies.json' ) ) {
+				$config = file_get_contents( $plugin_path . '/wp-dependencies.json' );
+				$config = json_decode( $config, true );
+			}
+
+			return $config;
 		}
 
 		/**
@@ -132,8 +146,12 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		public function register( $config, $plugin_path ) {
 			$source = basename( $plugin_path );
 			foreach ( $config as $dependency ) {
-				$dependency['source'] = $source;
-				$slug                 = $dependency['slug'];
+				$dependency['source']    = $source;
+				$dependency['sources'][] = $source;
+				$slug                    = $dependency['slug'];
+				if ( isset( $this->config[ $slug ] ) && $this->is_required( $dependency ) ) {
+					$dependency['sources'] = array_merge( $this->config[ $slug ]['sources'], $dependency['sources'] );
+				}
 				if ( ! isset( $this->config[ $slug ] ) || $this->is_required( $dependency ) ) {
 					$this->config[ $slug ] = $dependency;
 				}
@@ -241,9 +259,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				}
 
 				if ( $this->is_active( $slug ) ) {
-					if ( $this->is_mandatory_notice( $slug ) ) {
-						$this->notices[] = $this->mandatory_notice( $slug );
-					}
+					$this->notices = array_merge( $this->notices, $this->active_notices( $slug ) );
 				} elseif ( $this->is_installed( $slug ) ) {
 					if ( $is_required ) {
 						$this->notices[] = $this->activate( $slug );
@@ -349,17 +365,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		}
 
 		/**
-		 * Check if we were trying to deactivate this manadatory plugin.
-		 *
-		 * @param string $slug Plugin slug.
-		 *
-		 * @return boolean True if current plugin slug is within $_REQUEST uri
-		 */
-		public function is_mandatory_notice( &$slug ) {
-			return isset( $_REQUEST['wpdi_required'] ) && $slug === $_REQUEST['wpdi_required'];
-		}
-
-		/**
 		 * Is dependency active?
 		 *
 		 * @param string $slug Plugin slug.
@@ -442,6 +447,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 */
 		public function install_notice( $slug ) {
 			$dependency = $this->config[ $slug ];
+
 			return [
 				'action'  => 'install',
 				'slug'    => $slug,
@@ -486,6 +492,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 */
 		public function activate_notice( $slug ) {
 			$dependency = $this->config[ $slug ];
+
 			return [
 				'action'  => 'activate',
 				'slug'    => $slug,
@@ -508,20 +515,28 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		}
 
 		/**
-		 * Get mandatory plugin notice.
+		 * Get active plugin notices.
 		 *
 		 * @param string $slug Plugin slug.
 		 *
-		 * @return array Admin notice.
+		 * @return array Admin notices.
 		 */
-		public function mandatory_notice( $slug ) {
+		public function active_notices( $slug ) {
 			$dependency = $this->config[ $slug ];
-			return [
-				'status'  => 'error',
-				/* translators: %s: Plugin name */
-				'message' => sprintf( esc_html__( 'The %s plugin is a mandatory plugin.' ), $dependency['name'] ),
-				'source'  => $dependency['source'],
-			];
+			$notices    = [];
+			foreach ( $this->config[ $slug ]['sources'] as $source ) {
+				// Check if we were trying to deactivate a manadatory plugin.
+				if ( isset( $_REQUEST['wpdi_required'] ) && $slug === $_REQUEST['wpdi_required'] ) {
+					$notices[] = [
+						'status'  => 'error',
+						/* translators: %s: Plugin name */
+						'message' => sprintf( esc_html__( 'The %s plugin is a mandatory plugin.' ), $dependency['name'] ),
+						'source'  => $source,
+					];
+				}
+			}
+
+			return apply_filters( 'wp_dependency_active_notices', $notices, $slug );
 		}
 
 		/**
@@ -583,8 +598,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			if ( ! current_user_can( 'update_plugins' ) ) {
 				return false;
 			}
-			$message = null;
 			foreach ( $this->notices as $notice ) {
+				if( empty( $notice['source'] ) ) var_dump( $notice );
 				$status  = empty( $notice['status'] ) ? 'updated' : $notice['status'];
 				$message = empty( $notice['message'] ) ? '' : esc_html( $notice['message'] );
 
@@ -633,8 +648,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @param string $plugin_file Plugin file.
 		 */
 		public function hide_plugin_action_links( $plugin_file ) {
-			add_filter( 'network_admin_plugin_action_links_' . $plugin_file, [ $this, 'unset_action_links' ] );
-			add_filter( 'plugin_action_links_' . $plugin_file, [ $this, 'unset_action_links' ] );
+			add_filter( 'network_admin_plugin_action_links_' . $plugin_file, [ $this, 'unset_action_links' ], 10, 2 );
+			add_filter( 'plugin_action_links_' . $plugin_file, [ $this, 'unset_action_links' ], 10, 2 );
 			add_action(
 				'after_plugin_row_' . $plugin_file,
 				function ( $plugin_file ) {
@@ -645,19 +660,20 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		}
 
 		/**
-		 * Unset plugin action links so mandatory plugins can't be modified.
+		 * Unset plugin action links so required plugins can't be removed or deactivated.
 		 *
-		 * @param array $actions Action links.
+		 * @param array  $actions     Action links.
+		 * @param string $plugin_file Plugin file.
 		 *
 		 * @return mixed
 		 */
-		public function unset_action_links( $actions ) {
+		public function unset_action_links( $actions, $plugin_file ) {
 			if ( isset( $actions['delete'] ) ) {
 				unset( $actions['delete'] );
 			}
 
 			/* translators: %s: opening and closing span tags */
-			$actions = array_merge( [ 'required-plugin' => sprintf( esc_html__( '%1$sRequired Plugin%2$s' ), '<span class="network_active" style="font-variant-caps: small-caps;">', '</span>' ) ], $actions );
+			$actions = array_merge( [ 'required-plugin' => sprintf( esc_html__( '%1$sRequired Plugin%2$s' ), '<span class="network_active" style="font-variant-caps: small-caps; cursor: default;" title="' . $this->get_tooltip( $plugin_file ) . '">', '</span>' ) ], $actions );
 
 			return $actions;
 		}
@@ -678,6 +694,25 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				wp_safe_redirect( add_query_arg( 'wpdi_required', $_REQUEST['plugin'], $_SERVER['HTTP_REFERER'] ) );
 				exit();
 			}
+		}
+
+		/**
+		 * Get formatted string for tooltip.
+		 *
+		 * @param string $plugin_file Plugin file.
+		 *
+		 * @return string $tooltip
+		 */
+		private function get_tooltip( $plugin_file ) {
+			$labels = [];
+			foreach ( $this->config[ $plugin_file ]['sources'] as $source ) {
+				$label    = str_replace( '-', ' ', ucwords( $source ) );
+				$label    = str_ireplace( 'wp ', 'WP ', $label );
+				$labels[] = apply_filters( 'wp_dependency_dismiss_label', $label, $source );
+			}
+			$tooltip = implode( ', ', $labels );
+
+			return $tooltip;
 		}
 
 		/**
