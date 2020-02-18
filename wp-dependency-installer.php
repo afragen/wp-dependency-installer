@@ -113,7 +113,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @param string $plugin_path Path to plugin or theme calling the framework.
 		 */
 		public function run( $plugin_path ) {
-			$config = $this->register_json_file( $plugin_path );
+			$config = $this->json_file_decode( $plugin_path . '/wp-dependencies.json' );
 			if ( ! empty( $config ) ) {
 				$this->register( $config, $plugin_path );
 			}
@@ -123,14 +123,16 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		}
 
 		/**
-		 * Register data from wp-dependencies.json file.
+		 * Decode json config data from a file.
+		 *
+		 * @param string json file path.
 		 *
 		 * @return bool|array $config
 		 */
-		private function register_json_file( $plugin_path ) {
+		public function json_file_decode( $json_file ) {
 			$config = [];
-			if ( file_exists( $plugin_path . '/wp-dependencies.json' ) ) {
-				$config = file_get_contents( $plugin_path . '/wp-dependencies.json' );
+			if ( file_exists( $json_file ) ) {
+				$config = file_get_contents( $json_file );
 				$config = json_decode( $config, true );
 			}
 
