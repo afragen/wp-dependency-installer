@@ -659,6 +659,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			add_action(
 				'after_plugin_row_' . $plugin_file,
 				function ( $plugin_file ) {
+					print '<script>jQuery("tr[data-plugin=\'' . $plugin_file . '\'] .plugin-title > strong:first-child").append(\'<span class="wpdi-required"> *</span>\');</script>';
 					print '<script>jQuery(".inactive[data-plugin=\'' . $plugin_file . '\']").attr("class", "active");</script>';
 					print '<script>jQuery(".active[data-plugin=\'' . $plugin_file . '\'] .check-column input").remove();</script>';
 				}
