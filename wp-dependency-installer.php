@@ -625,16 +625,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				if ( class_exists( '\PAnd' ) && ! \PAnD::is_admin_notice_active( $dismissible ) ) {
 					continue;
 				}
-				/**
-				 * Filters the dismissal notice label
-				 *
-				 * @since 2.1.1
-				 *
-				 * @param  string Default dismissal notice string.
-				 * @param  string $notice['source'] Plugin slug of calling plugin.
-				 * @return string Dismissal notice string.
-				 */
-				$label = apply_filters( 'wp_dependency_dismiss_label', __( 'Dependency' ), $notice['source'] );
+
+				$label = $this->get_dismiss_label( $notice['source'] );
 				?>
 				<div data-dismissible="<?php echo $dismissible; ?>" class="<?php echo $status; ?> notice is-dismissible dependency-installer">
 					<p><?php echo '<strong>[' . esc_html( $label ) . ']</strong> ' . $message; ?></p>
@@ -705,15 +697,33 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @return string $tooltip
 		 */
 		private function get_tooltip( $plugin_file ) {
-			$labels = [];
-			foreach ( $this->config[ $plugin_file ]['sources'] as $source ) {
-				$label    = str_replace( '-', ' ', ucwords( $source ) );
-				$label    = str_ireplace( 'wp ', 'WP ', $label );
-				$labels[] = apply_filters( 'wp_dependency_dismiss_label', $label, $source );
-			}
+			$labels  = array_map( [ $this, 'get_dismiss_label' ], $this->config[ $plugin_file ]['sources'] );
 			$tooltip = implode( ', ', $labels );
 
 			return $tooltip;
+		}
+
+		/**
+		 * Get formatted source string for text usage.
+		 *
+		 * @param  string $source plugin source.
+		 * @return string friendly plugin name.
+		 */
+		private function get_dismiss_label( $source ) {
+				$label = str_replace( '-', ' ', $source );
+				$label = ucwords( $label );
+				$label = str_ireplace( 'wp ', 'WP ', $label );
+
+			/**
+			 * Filters the dismissal notice label
+			 *
+			 * @since 2.1.1
+			 *
+			 * @param  string $label Default dismissal notice string.
+			 * @param  string $source Plugin slug of calling plugin.
+			 * @return string Dismissal notice string.
+			 */
+			return apply_filters( 'wp_dependency_dismiss_label', $label, $source );
 		}
 
 		/**
