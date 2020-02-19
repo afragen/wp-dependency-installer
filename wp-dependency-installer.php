@@ -652,18 +652,20 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 		/**
 		 * Get formatted string for tooltip.
+		/**
+		 * Get formatted string of dependent plugins.
 		 *
 		 * @param string $plugin_file Plugin file.
 		 *
-		 * @return string $tooltip
+		 * @return string $dependents
 		 */
-		private function get_tooltip( $plugin_file ) {
-			$tooltip = implode( ', ', $this->config[ $plugin_file ]['tooltip'] );
-			$tooltip = str_replace( '-', ' ', $tooltip );
-			$tooltip = ucwords( $tooltip );
-			$tooltip = str_ireplace( ' wp ', ' WP ', $tooltip );
+		private function get_dependent_plugins( $plugin_file ) {
+			$dependents = implode( ', ', $this->config[ $plugin_file ]['sources'] );
+			$dependents = str_replace( '-', ' ', $dependents );
+			$dependents = ucwords( $dependents );
+			$dependents = str_ireplace( 'wp ', 'WP ', $dependents );
 
-			return $tooltip;
+			return $dependents;
 		}
 
 		/**
