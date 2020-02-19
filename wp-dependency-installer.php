@@ -144,12 +144,12 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			$source = basename( $plugin_path );
 			foreach ( $config as $dependency ) {
 				$dependency['source']    = $source;
+				$dependency['sources'][] = $source;
 				$slug                    = $dependency['slug'];
-				$dependency['tooltip'][] = $source;
+				if ( isset( $this->config[ $slug ] ) ) {
+					$dependency['sources'] = array_merge( $this->config[ $slug ]['sources'], $dependency['sources'] );
+				}
 				if ( ! isset( $this->config[ $slug ] ) || $this->is_required( $dependency ) ) {
-					if ( isset( $this->config[ $dependency['slug'] ] ) ) {
-						$dependency['tooltip'] = array_merge( $this->config[ $dependency['slug'] ]['tooltip'], $dependency['tooltip'] );
-					}
 					$this->config[ $slug ] = $dependency;
 				}
 			}
