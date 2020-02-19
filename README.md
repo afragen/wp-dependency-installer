@@ -1,5 +1,5 @@
 # WP Dependency Installer
-* Contributors: [Andy Fragen](https://github.com/afragen), [Matt Gibbs](https://github.com/mgibbs189), [contributors](https://github.com/afragen/wp-dependency-installer/graphs/contributors)
+* Contributors: [Andy Fragen](https://github.com/afragen), [Matt Gibbs](https://github.com/mgibbs189), [Raruto](https://github.com/Raruto), [contributors](https://github.com/afragen/wp-dependency-installer/graphs/contributors)
 * Tags: plugin, dependency, install
 * Requires at least: 5.1
 * Requires PHP: 5.6
