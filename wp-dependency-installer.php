@@ -252,7 +252,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				$is_required = $this->is_required( $dependency );
 
 				if ( $is_required ) {
-					$this->hide_plugin_action_links( $slug );
+					$this->modify_plugin_row( $slug );
 				}
 
 				if ( $this->is_active( $slug ) ) {
@@ -612,11 +612,11 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		}
 
 		/**
-		 * Hide links from plugin row.
+		 * Make modifications to plugin row.
 		 *
 		 * @param string $plugin_file Plugin file.
 		 */
-		public function hide_plugin_action_links( $plugin_file ) {
+		public function modify_plugin_row( $plugin_file ) {
 			add_filter( 'network_admin_plugin_action_links_' . $plugin_file, [ $this, 'unset_action_links' ], 10, 2 );
 			add_filter( 'plugin_action_links_' . $plugin_file, [ $this, 'unset_action_links' ], 10, 2 );
 			add_action(
