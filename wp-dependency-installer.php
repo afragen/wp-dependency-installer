@@ -619,13 +619,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		public function modify_plugin_row( $plugin_file ) {
 			add_filter( 'network_admin_plugin_action_links_' . $plugin_file, [ $this, 'unset_action_links' ], 10, 2 );
 			add_filter( 'plugin_action_links_' . $plugin_file, [ $this, 'unset_action_links' ], 10, 2 );
-			add_action(
-				'after_plugin_row_' . $plugin_file,
-				function ( $plugin_file ) {
-					print '<script>jQuery(".inactive[data-plugin=\'' . $plugin_file . '\']").attr("class", "active");</script>';
-					print '<script>jQuery(".active[data-plugin=\'' . $plugin_file . '\'] .check-column input").remove();</script>';
-				}
-			);
+			add_action( 'after_plugin_row_' . $plugin_file, [ $this, 'modify_plugin_row_elements' ] );
 		}
 
 		/**
@@ -651,7 +645,17 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		}
 
 		/**
-		 * Get formatted string for tooltip.
+		 * Modify the plugin row elements.
+		 *
+		 * @param string $plugin_file Plugin file.
+		 *
+		 * @return void
+		 */
+		public function modify_plugin_row_elements( $plugin_file ) {
+			print '<script>jQuery(".inactive[data-plugin=\'' . $plugin_file . '\']").attr("class", "active");</script>';
+			print '<script>jQuery(".active[data-plugin=\'' . $plugin_file . '\'] .check-column input").remove();</script>';
+		}
+
 		/**
 		 * Get formatted string of dependent plugins.
 		 *
