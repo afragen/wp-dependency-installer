@@ -29,42 +29,42 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @var WP_Dependency_Installer $instance
 		 */
-		protected static $instance;
+		private static $instance;
 
 		/**
 		 * Holds the JSON file contents.
 		 *
 		 * @var array $config
 		 */
-		protected $config;
+		private $config;
 
 		/**
 		 * Holds the current dependency's slug.
 		 *
 		 * @var string $current_slug
 		 */
-		protected $current_slug;
+		private $current_slug;
 
 		/**
 		 * Holds the calling plugin/theme path.
 		 *
 		 * @var string $source
 		 */
-		protected $plugin_path;
+		private $plugin_path;
 
 		/**
 		 * Holds the calling plugin/theme slug.
 		 *
 		 * @var string $source
 		 */
-		protected $source;
+		private $source;
 
 		/**
 		 * Holds names of installed dependencies for admin notices.
 		 *
 		 * @var array $notices
 		 */
-		protected $notices;
+		private $notices;
 
 		/**
 		 * Singleton.
@@ -80,7 +80,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Private constructor.
 		 */
-		protected function __construct() {
+		private function __construct() {
 			$this->config  = [];
 			$this->notices = [];
 		}
