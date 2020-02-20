@@ -639,8 +639,10 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				}
 			}
 
-			/* translators: %s: opening and closing span tags */
-			$actions = array_merge( [ 'required-plugin' => sprintf( esc_html__( '%1$sRequired Plugin%2$s' ), '<span class="network_active" style="font-variant-caps: small-caps;" title="' . $this->get_dependency_sources( $plugin_file ) . '">', '</span>' ) ], $actions );
+			if ( apply_filters( 'wp_dependency_required_label', true ) ) {
+				/* translators: %s: opening and closing span tags */
+				$actions = array_merge( [ 'required-plugin' => sprintf( esc_html__( '%1$sRequired Plugin%2$s' ), '<span class="network_active" style="font-variant-caps: small-caps;" title="' . $this->get_dependency_sources( $plugin_file ) . '">', '</span>' ) ], $actions );
+			}
 
 			return $actions;
 		}
@@ -656,7 +658,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 */
 		public function modify_plugin_row_elements( $plugin_file ) {
 			print '<script>';
-			if ( apply_filters( 'wp_dependency_sources_row_meta', true ) ) {
+			if ( apply_filters( 'wp_dependency_required_row_meta', true ) ) {
 				print 'jQuery("tr[data-plugin=\'' . $plugin_file . '\'] .plugin-version-author-uri").append("<br><br><strong>' . esc_html__( 'Required by:' ) . '</strong> ' . $this->get_dependency_sources( $plugin_file ) . '");';
 			}
 			print 'jQuery(".inactive[data-plugin=\'' . $plugin_file . '\']").attr("class", "active");';
