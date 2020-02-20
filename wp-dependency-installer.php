@@ -25,13 +25,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 	 */
 	class WP_Dependency_Installer {
 		/**
-		 * Holds singleton instance.
-		 *
-		 * @var WP_Dependency_Installer $instance
-		 */
-		private static $instance;
-
-		/**
 		 * Holds the JSON file contents.
 		 *
 		 * @var array $config
@@ -46,18 +39,18 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		private $current_slug;
 
 		/**
-		 * Holds the calling plugin/theme path.
+		 * Holds the calling plugin/theme file path.
 		 *
 		 * @var string $source
 		 */
-		private $plugin_path;
+		private static $caller;
 
 		/**
 		 * Holds the calling plugin/theme slug.
 		 *
 		 * @var string $source
 		 */
-		private $source;
+		private static $source;
 
 		/**
 		 * Holds names of installed dependencies for admin notices.
@@ -67,14 +60,19 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		private $notices;
 
 		/**
-		 * Singleton.
+		 * Factory.
+		 *
+		 * @param string $caller File path to calling plugin/theme.
 		 */
-		public static function instance() {
-			if ( ! self::$instance ) {
-				self::$instance = new self();
+		public static function instance( $caller = false ) {
+			static $instance = null;
+			if ( null === $instance ) {
+				$instance = new self( $caller );
 			}
+			self::$caller = $caller;
+			self::$source = ! $caller ? false : basename( $caller );
 
-			return self::$instance;
+			return $instance;
 		}
 
 		/**
@@ -100,9 +98,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 			// Initialize Persist admin Notices Dismissal dependency.
 			add_action( 'admin_init', [ 'PAnD', 'init' ] );
-
-			// Prevent single deactivation of required plugins.
-			add_action( 'admin_action_deactivate', [ $this, 'before_deactivate_plugin' ] );
 		}
 
 		/**
@@ -110,12 +105,13 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * First load data from wp-dependencies.json if present.
 		 * Then load hooks needed to run.
 		 *
-		 * @param string $plugin_path Path to plugin or theme calling the framework.
+		 * @param string $caller Path to plugin or theme calling the framework.
 		 */
-		public function run( $plugin_path ) {
-			$config = $this->json_file_decode( $plugin_path . '/wp-dependencies.json' );
+		public function run( $caller = false ) {
+			$caller = ! $caller ? self::$caller : $caller;
+			$config = $this->json_file_decode( $caller . '/wp-dependencies.json' );
 			if ( ! empty( $config ) ) {
-				$this->register( $config, $plugin_path );
+				$this->register( $config, $caller );
 			}
 			if ( ! empty( $this->config ) ) {
 				$this->load_hooks();
@@ -125,14 +121,14 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Decode json config data from a file.
 		 *
-		 * @param string json file path.
+		 * @param string $json_path File path to JSON config file.
 		 *
 		 * @return bool|array $config
 		 */
-		public function json_file_decode( $json_file ) {
+		private function json_file_decode( $json_path ) {
 			$config = [];
-			if ( file_exists( $json_file ) ) {
-				$config = file_get_contents( $json_file );
+			if ( file_exists( $json_path ) ) {
+				$config = file_get_contents( $json_path );
 				$config = json_decode( $config, true );
 			}
 
@@ -142,16 +138,16 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Register dependencies (supports multiple instances).
 		 *
-		 * @param array  $config      JSON config as array.
-		 * @param string $plugin_path Path to plugin or theme calling the framework.
+		 * @param array  $config JSON config as array.
+		 * @param string $caller Path to plugin or theme calling the framework.
 		 */
-		public function register( $config, $plugin_path ) {
-			$source = basename( $plugin_path );
+		public function register( $config, $caller = false ) {
+			$source = ! self::$source ? basename( $caller ) : self::$source;
 			foreach ( $config as $dependency ) {
 				$dependency['source']    = $source;
 				$dependency['sources'][] = $source;
 				$slug                    = $dependency['slug'];
-				if ( isset( $this->config[ $slug ] ) && $this->is_required( $dependency ) ) {
+				if ( isset( $this->config[ $slug ] ) ) {
 					$dependency['sources'] = array_merge( $this->config[ $slug ]['sources'], $dependency['sources'] );
 				}
 				if ( ! isset( $this->config[ $slug ] ) || $this->is_required( $dependency ) ) {
@@ -257,11 +253,11 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				$is_required = $this->is_required( $dependency );
 
 				if ( $is_required ) {
-					$this->hide_plugin_action_links( $slug );
+					$this->modify_plugin_row( $slug );
 				}
 
 				if ( $this->is_active( $slug ) ) {
-					$this->notices = array_merge( $this->notices, $this->active_notices( $slug ) );
+					// Do nothing.
 				} elseif ( $this->is_installed( $slug ) ) {
 					if ( $is_required ) {
 						$this->notices[] = $this->activate( $slug );
@@ -275,6 +271,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 						$this->notices[] = $this->install_notice( $slug );
 					}
 				}
+
+				$this->notices = apply_filters( 'wp_dependency_notices', $this->notices, $slug );
 			}
 		}
 
@@ -375,19 +373,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 */
 		public function is_active( $slug ) {
 			return is_plugin_active( $slug );
-		}
-
-		/**
-		 * Check current admin screen id.
-		 *
-		 * @param  string $screen_id screen to check.
-		 *
-		 * @return boolean check we are displaying selected screen.
-		 */
-		public function is_admin_screen( $screen_id ) {
-			global $current_screen;
-
-			return isset( $current_screen ) && isset( $current_screen->id ) && $screen_id === $current_screen->id;
 		}
 
 		/**
@@ -530,31 +515,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		}
 
 		/**
-		 * Get active plugin notices.
-		 *
-		 * @param string $slug Plugin slug.
-		 *
-		 * @return array Admin notices.
-		 */
-		public function active_notices( $slug ) {
-			$dependency = $this->config[ $slug ];
-			$notices    = [];
-			foreach ( $this->config[ $slug ]['sources'] as $source ) {
-				// Check if we were trying to deactivate a manadatory plugin.
-				if ( isset( $_REQUEST['wpdi_required'] ) && $slug === $_REQUEST['wpdi_required'] ) {
-					$notices[] = [
-						'status'  => 'error',
-						/* translators: %s: Plugin name */
-						'message' => sprintf( esc_html__( 'The %s plugin is a mandatory plugin.' ), $dependency['name'] ),
-						'source'  => $source,
-					];
-				}
-			}
-
-			return apply_filters( 'wp_dependency_active_notices', $notices, $slug );
-		}
-
-		/**
 		 * Correctly rename dependency for activation.
 		 *
 		 * @param string $source        Path fo $source.
@@ -649,23 +609,14 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		}
 
 		/**
-		 * Hide links from plugin row.
+		 * Make modifications to plugin row.
 		 *
 		 * @param string $plugin_file Plugin file.
 		 */
-		public function hide_plugin_action_links( $plugin_file ) {
+		public function modify_plugin_row( $plugin_file ) {
 			add_filter( 'network_admin_plugin_action_links_' . $plugin_file, [ $this, 'unset_action_links' ], 10, 2 );
 			add_filter( 'plugin_action_links_' . $plugin_file, [ $this, 'unset_action_links' ], 10, 2 );
-			add_action(
-				'after_plugin_row_' . $plugin_file,
-				function ( $plugin_file ) {
-					print '<script>';
-					print 'jQuery("tr[data-plugin=\'' . $plugin_file . '\'] .plugin-title > strong:first-child").append(\'<span class="wpdi-required"> *</span>\');';
-					print 'jQuery(".inactive[data-plugin=\'' . $plugin_file . '\']").attr("class", "active");';
-					print 'jQuery(".active[data-plugin=\'' . $plugin_file . '\'] .check-column input").remove();';
-					print '</script>';
-				}
-			);
+			add_action( 'after_plugin_row_' . $plugin_file, [ $this, 'modify_plugin_row_elements' ] );
 		}
 
 		/**
@@ -677,44 +628,56 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @return mixed
 		 */
 		public function unset_action_links( $actions, $plugin_file ) {
-			if ( isset( $actions['delete'] ) ) {
-				unset( $actions['delete'] );
+
+			if ( apply_filters( 'wp_dependency_unset_action_links', true ) ) {
+				if ( isset( $actions['delete'] ) ) {
+					unset( $actions['delete'] );
+				}
+
+				if ( isset( $actions['deactivate'] ) ) {
+					unset( $actions['deactivate'] );
+				}
 			}
 
 			/* translators: %s: opening and closing span tags */
-			$actions = array_merge( [ 'required-plugin' => sprintf( esc_html__( '%1$sRequired Plugin%2$s' ), '<span class="network_active" style="font-variant-caps: small-caps; cursor: default;" title="' . $this->get_tooltip( $plugin_file ) . '">', '</span>' ) ], $actions );
+			$actions = array_merge( [ 'required-plugin' => sprintf( esc_html__( '%1$sRequired Plugin%2$s' ), '<span class="network_active" style="font-variant-caps: small-caps;" title="' . $this->get_dependency_sources( $plugin_file ) . '">', '</span>' ) ], $actions );
 
 			return $actions;
 		}
 
-		/**
-		 * Prevent admin ‘?action=deactive’ for required plugins.
-		 *
-		 * @return void
-		 */
-		public function before_deactivate_plugin() {
-			if (
-				isset( $_REQUEST['plugin'] ) &&
-				$this->is_required( $_REQUEST['plugin'] ) &&
-				$this->is_admin_screen( 'plugins' )
-			) {
-				wp_safe_redirect( add_query_arg( 'wpdi_required', $_REQUEST['plugin'], $_SERVER['HTTP_REFERER'] ) );
-				exit();
-			}
-		}
+
 
 		/**
-		 * Get formatted string for tooltip.
+		 * Modify the plugin row elements.
 		 *
 		 * @param string $plugin_file Plugin file.
 		 *
-		 * @return string $tooltip
+		 * @return void
 		 */
-		private function get_tooltip( $plugin_file ) {
-			$labels  = array_map( [ $this, 'get_dismiss_label' ], $this->config[ $plugin_file ]['sources'] );
-			$tooltip = implode( ', ', $labels );
+		public function modify_plugin_row_elements( $plugin_file ) {
+			print '<script>';
+			if ( apply_filters( 'wp_dependency_sources_row_meta', true ) ) {
+				print 'jQuery("tr[data-plugin=\'' . $plugin_file . '\'] .plugin-version-author-uri").append("<br><br><strong>' . esc_html__( 'Dependency Source:' ) . '</strong> ' . $this->get_dependency_sources( $plugin_file ) . '");';
+			}
+			print 'jQuery(".inactive[data-plugin=\'' . $plugin_file . '\']").attr("class", "active");';
+			print 'jQuery(".active[data-plugin=\'' . $plugin_file . '\'] .check-column input").remove();';
+			print '</script>';
+		}
 
-			return $tooltip;
+		/**
+		 * Get formatted string of dependent plugins.
+		 *
+		 * @param string $plugin_file Plugin file.
+		 *
+		 * @return string $dependents
+		 */
+		private function get_dependency_sources( $plugin_file ) {
+			// Remove empty values from $sources.
+			$sources = array_filter( $this->config[ $plugin_file ]['sources'] );
+			$sources = array_map( [ $this, 'get_dismiss_label' ], $sources );
+			$sources = implode( ', ', $sources );
+
+			return $sources;
 		}
 
 		/**

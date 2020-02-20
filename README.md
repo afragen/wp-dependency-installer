@@ -59,7 +59,7 @@ You will then need to update `wp-dependencies.json` to suit your requirements.
 
 ```php
 require_once __DIR__ . '/vendor/autoload.php';
-WP_Dependency_Installer::instance()->run( __DIR__ );
+WP_Dependency_Installer::instance( __DIR__ )->run();
 ```
 
 4. (optional) Take a look at some of built in [Hooks](https://github.com/afragen/wp-dependency-installer/wiki/Actions-and-Hooks) and [Functions](https://github.com/afragen/wp-dependency-installer/wiki/Helper-Functions) to further customize your plugin look and behaviour:
@@ -71,7 +71,7 @@ WP_Dependency_Installer::instance()->run( __DIR__ );
 add_filter(
   'wp_dependency_dismiss_label',
   function( $label, $source ) {
-    $label = basename(__DIR__) !== $source ? $label : __( 'Group Plugin Installer', 'group-plugin-installer' );
+    $label = basename( __DIR__ ) !== $source ? $label : __( 'Group Plugin Installer', 'group-plugin-installer' );
     return $label;
   }, 10, 2
 );
