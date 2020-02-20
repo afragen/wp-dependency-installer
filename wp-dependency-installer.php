@@ -128,12 +128,14 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Register data from wp-dependencies.json file.
 		 *
+		 * @param $json_path File path to JSON config file.
+		 *
 		 * @return bool|array $config
 		 */
-		private function json_file_decode( $plugin_path ) {
+		private function json_file_decode( $json_path ) {
 			$config = [];
-			if ( file_exists( $plugin_path ) ) {
-				$config = file_get_contents( $plugin_path );
+			if ( file_exists( $json_path ) ) {
+				$config = file_get_contents( $json_path );
 				$config = json_decode( $config, true );
 			}
 
