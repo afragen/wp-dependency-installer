@@ -165,7 +165,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				$base          = null;
 				$uri           = $dependency['uri'];
 				$slug          = $dependency['slug'];
+				$port          = parse_url( $uri, PHP_URL_PORT );
 				$api           = parse_url( $uri, PHP_URL_HOST );
+				$api           = ! $port ? $api : "$api:$port";
 				$scheme        = parse_url( $uri, PHP_URL_SCHEME );
 				$scheme        = ! empty( $scheme ) ? $scheme . '://' : 'https://';
 				$path          = parse_url( $uri, PHP_URL_PATH );
