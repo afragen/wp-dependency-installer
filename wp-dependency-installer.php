@@ -654,7 +654,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		public function modify_plugin_row_elements( $plugin_file ) {
 			print '<script>jQuery(".inactive[data-plugin=\'' . $plugin_file . '\']").attr("class", "active");</script>';
 			print '<script>jQuery(".active[data-plugin=\'' . $plugin_file . '\'] .check-column input").remove();</script>';
-			print '<script>jQuery(".active[data-plugin=\'' . $plugin_file . '\'] .plugin-version-author-uri").append("<br><br><strong>' . esc_html__( 'Dependency Source:' ) . '</strong> ' . $this->get_dependent_plugins( $plugin_file ) . '");</script>';
+			print '<script>jQuery(".active[data-plugin=\'' . $plugin_file . '\'] .plugin-version-author-uri").append("<br><br><strong>' . esc_html__( 'Dependency Source:' ) . '</strong> ' . $this->get_dependency_sources( $plugin_file ) . '");</script>';
 		}
 
 		/**
@@ -664,8 +664,17 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return string $dependents
 		 */
-		private function get_dependent_plugins( $plugin_file ) {
-			$dependents = implode( ', ', $this->config[ $plugin_file ]['sources'] );
+		private function get_dependency_sources( $plugin_file ) {
+			$sources = $this->config[ $plugin_file ]['sources'];
+
+			// Remove empty values from $sources.
+			$sources    = array_filter(
+				$sources,
+				function( $value ) {
+					return ! empty( $value );
+				}
+			);
+			$dependents = implode( ', ', $sources );
 			$dependents = str_replace( '-', ' ', $dependents );
 			$dependents = ucwords( $dependents );
 			$dependents = str_ireplace( 'wp ', 'WP ', $dependents );
