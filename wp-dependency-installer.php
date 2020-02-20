@@ -537,7 +537,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return bool|void
 		 */
-		public function move( $source, $destination ) {
+		private function move( $source, $destination ) {
 			if ( @rename( $source, $destination ) ) {
 				return true;
 			}
