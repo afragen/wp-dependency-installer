@@ -141,7 +141,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @param array  $config JSON config as array.
 		 * @param string $caller Path to plugin or theme calling the framework.
 		 */
-		public function register( $config, $caller = '' ) {
+		public function register( $config, $caller = false ) {
 			$source = ! self::$source ? basename( $caller ) : self::$source;
 			foreach ( $config as $dependency ) {
 				$dependency['source']    = $source;
