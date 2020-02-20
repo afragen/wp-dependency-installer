@@ -542,7 +542,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return bool|void
 		 */
-		public function move( $source, $destination ) {
+		private function move( $source, $destination ) {
 			if ( @rename( $source, $destination ) ) {
 				return true;
 			}
@@ -657,7 +657,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		public function modify_plugin_row_elements( $plugin_file ) {
 			print '<script>';
 			if ( apply_filters( 'wp_dependency_sources_row_meta', true ) ) {
-				print 'jQuery("tr[data-plugin=\'' . $plugin_file . '\'] .plugin-version-author-uri").append("<br><br><strong>' . esc_html__( 'Dependency Source:' ) . '</strong> ' . $this->get_dependency_sources( $plugin_file ) . '");';
+				print 'jQuery("tr[data-plugin=\'' . $plugin_file . '\'] .plugin-version-author-uri").append("<br><br><strong>' . esc_html__( 'Required by:' ) . '</strong> ' . $this->get_dependency_sources( $plugin_file ) . '");';
 			}
 			print 'jQuery(".inactive[data-plugin=\'' . $plugin_file . '\']").attr("class", "active");';
 			print 'jQuery(".active[data-plugin=\'' . $plugin_file . '\'] .check-column input").remove();';
@@ -734,6 +734,11 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			$token   = empty( $package['token'] ) ? false : $package['token'];
 
 			if ( $token && $url === $package['download_link'] ) {
+				if ( 'bitbucket' === $host ) {
+					// Bitbucket token must be in the form of 'username:password'.
+					// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+					$args['headers']['Authorization'] = 'Basic ' . base64_encode( $token );
+				}
 				if ( 'github' === $host || 'gitea' === $host ) {
 					$args['headers']['Authorization'] = 'token ' . $token;
 				}
@@ -743,8 +748,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			}
 
 			// dot org should not have auth header.
+			// Remove auth header if URL not our download URL.
 			// phpcs:ignore WordPress.WP.CapitalPDangit.Misspelled
-			if ( 'wordpress' === $host ) {
+			if ( 'wordpress' === $host || false === strpos( $url, $host ) ) {
 				unset( $args['headers']['Authorization'] );
 			}
 			remove_filter( 'http_request_args', [ $this, 'add_basic_auth_headers' ] );
