@@ -70,7 +70,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				$instance = new self( $caller );
 			}
 			self::$caller = $caller;
-			self::$source = ! $caller ? false : basename( self::$caller );
+			self::$source = ! $caller ? false : basename( $caller );
 
 			return $instance;
 		}
