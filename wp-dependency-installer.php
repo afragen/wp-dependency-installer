@@ -25,13 +25,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 	 */
 	class WP_Dependency_Installer {
 		/**
-		 * Holds factory instance.
-		 *
-		 * @var WP_Dependency_Installer $instance
-		 */
-		private static $instance;
-
-		/**
 		 * Holds the JSON file contents.
 		 *
 		 * @var array $config
