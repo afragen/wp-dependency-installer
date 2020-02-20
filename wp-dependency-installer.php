@@ -187,7 +187,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 						$download_link = add_query_arg( 'sha', $dependency['branch'], $download_link );
 						break;
 					case 'gitea':
-						$download_link = "{$scheme}{$api}/repos/{$owner_repo}/archive/{$dependency['branch']}.zip";
+						$download_link = "{$scheme}{$api}/api/v1/repos/{$owner_repo}/archive/{$dependency['branch']}.zip";
 						break;
 					case 'wordpress':  // phpcs:ignore WordPress.WP.CapitalPDangit.Misspelled
 						$download_link = $this->get_dot_org_latest_download( basename( $owner_repo ) );
