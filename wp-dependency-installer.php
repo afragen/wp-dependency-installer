@@ -713,6 +713,11 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			$token   = empty( $package['token'] ) ? false : $package['token'];
 
 			if ( $token && $url === $package['download_link'] ) {
+				if ( 'bitbucket' === $host ) {
+					// Bitbucket token must be in the form of 'username:password'.
+					// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+					$args['headers']['Authorization'] = 'Basic ' . base64_encode( $token );
+				}
 				if ( 'github' === $host || 'gitea' === $host ) {
 					$args['headers']['Authorization'] = 'token ' . $token;
 				}
