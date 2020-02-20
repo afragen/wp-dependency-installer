@@ -655,7 +655,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		public function modify_plugin_row_elements( $plugin_file ) {
 			print '<script>jQuery(".inactive[data-plugin=\'' . $plugin_file . '\']").attr("class", "active");</script>';
 			print '<script>jQuery(".active[data-plugin=\'' . $plugin_file . '\'] .check-column input").remove();</script>';
-			print '<script>jQuery(".active[data-plugin=\'' . $plugin_file . '\'] .plugin-version-author-uri").append("<br><br><strong>' . esc_html__( 'Dependency Source:' ) . '</strong> ' . $this->get_dependency_sources( $plugin_file ) . '");</script>';
+			print '<script>jQuery(".active[data-plugin=\'' . $plugin_file . '\'] .plugin-version-author-uri").append("<br><br><strong>' . esc_html__( 'Required by:' ) . '</strong> ' . $this->get_dependency_sources( $plugin_file ) . '");</script>';
 		}
 
 		/**
