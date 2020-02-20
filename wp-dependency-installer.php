@@ -25,7 +25,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 	 */
 	class WP_Dependency_Installer {
 		/**
-		 * Holds singleton instance.
+		 * Holds factory instance.
 		 *
 		 * @var WP_Dependency_Installer $instance
 		 */
@@ -46,18 +46,18 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		private $current_slug;
 
 		/**
-		 * Holds the calling plugin/theme path.
+		 * Holds the calling plugin/theme file path.
 		 *
 		 * @var string $source
 		 */
-		private $plugin_path;
+		private static $caller;
 
 		/**
 		 * Holds the calling plugin/theme slug.
 		 *
 		 * @var string $source
 		 */
-		private $source;
+		private static $source;
 
 		/**
 		 * Holds names of installed dependencies for admin notices.
@@ -67,14 +67,19 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		private $notices;
 
 		/**
-		 * Singleton.
+		 * Factory.
+		 *
+		 * @param string $caller File path to calling plugin/theme.
 		 */
-		public static function instance() {
-			if ( ! self::$instance ) {
-				self::$instance = new self();
+		public static function instance( $caller = false ) {
+			static $instance = null;
+			if ( null === $instance ) {
+				$instance = new self( $caller );
 			}
+			self::$caller = $caller;
+			self::$source = ! $caller ? false : basename( self::$caller );
 
-			return self::$instance;
+			return $instance;
 		}
 
 		/**
@@ -107,12 +112,13 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * First load data from wp-dependencies.json if present.
 		 * Then load hooks needed to run.
 		 *
-		 * @param string $plugin_path Path to plugin or theme calling the framework.
+		 * @param string $caller Path to plugin or theme calling the framework.
 		 */
-		public function run( $plugin_path ) {
-			$config = $this->json_file_decode( $plugin_path . '/wp-dependencies.json' );
+		public function run( $caller = false ) {
+			$caller = ! $caller ? self::$caller : $caller;
+			$config = $this->json_file_decode( $caller . '/wp-dependencies.json' );
 			if ( ! empty( $config ) ) {
-				$this->register( $config, $plugin_path );
+				$this->register( $config, $caller );
 			}
 			if ( ! empty( $this->config ) ) {
 				$this->load_hooks();
@@ -137,11 +143,11 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Register dependencies (supports multiple instances).
 		 *
-		 * @param array  $config      JSON config as array.
-		 * @param string $plugin_path Path to plugin or theme calling the framework.
+		 * @param array  $config JSON config as array.
+		 * @param string $caller Path to plugin or theme calling the framework.
 		 */
-		public function register( $config, $plugin_path = '' ) {
-			$source = basename( $plugin_path );
+		public function register( $config, $caller = '' ) {
+			$source = ! self::$source ? basename( $caller ) : self::$source;
 			foreach ( $config as $dependency ) {
 				$dependency['source']    = $source;
 				$dependency['sources'][] = $source;
@@ -670,7 +676,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			// Remove empty values from $sources.
 			$sources    = array_filter(
 				$sources,
-				function( $value ) {
+				function ( $value ) {
 					return ! empty( $value );
 				}
 			);
