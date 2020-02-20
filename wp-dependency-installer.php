@@ -727,8 +727,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			}
 
 			// dot org should not have auth header.
+			// Remove auth header if URL not our download URL.
 			// phpcs:ignore WordPress.WP.CapitalPDangit.Misspelled
-			if ( 'wordpress' === $host ) {
+			if ( 'wordpress' === $host || false === strpos( $url, $host ) ) {
 				unset( $args['headers']['Authorization'] );
 			}
 			remove_filter( 'http_request_args', [ $this, 'add_basic_auth_headers' ] );
