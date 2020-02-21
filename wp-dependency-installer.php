@@ -120,7 +120,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 		/**
 		 * Decode JSON config data from a file.
-  	 *
+		 *
 		 * @param string $json_path File path to JSON config file.
 		 *
 		 * @return bool|array $config
@@ -278,7 +278,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				/**
 				 * Allow filtering of admin notices.
 				 *
-				 * @since
+				 * @since 3.0.0
 				 *
 				 * @param array  $notices admin notices.
 				 * @param string $slug    plugin slug.
@@ -639,11 +639,10 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @return mixed
 		 */
 		public function unset_action_links( $actions, $plugin_file ) {
-
 			/**
 			 * Allow to remove required plugin action links.
 			 *
-			 * @since
+			 * @since 3.0.0
 			 *
 			 * @param bool $unset remove default action links.
 			 */
@@ -660,7 +659,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			/**
 			 * Allow to display of requied plugin label.
 			 *
-			 * @since
+			 * @since 3.0.0
 			 *
 			 * @param bool $display show required plugin label.
 			 */
@@ -671,8 +670,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 			return $actions;
 		}
-
-
 
 		/**
 		 * Modify the plugin row elements.
@@ -686,7 +683,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			/**
 			 * Allow to display additional row meta info of required plugin.
 			 *
-			 * @since
+			 * @since 3.0.0
 			 *
 			 * @param bool $display show plugin row meta.
 			 */
@@ -717,7 +714,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Get formatted source string for text usage.
 		 *
-		 * @param  string $source plugin source.
+		 * @param string $source plugin source.
 		 *
 		 * @return string friendly plugin name.
 		 */
@@ -729,9 +726,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			/**
 			 * Filters the dismissal notice label
 			 *
-			 * @since 2.1.1
+			 * @since 3.0.0
 			 *
-			 * @param  string $label Default dismissal notice string.
+			 * @param  string $label  Default dismissal notice string.
 			 * @param  string $source Plugin slug of calling plugin.
 			 * @return string Dismissal notice string.
 			 */
