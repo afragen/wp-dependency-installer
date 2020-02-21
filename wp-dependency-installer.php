@@ -272,6 +272,14 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 					}
 				}
 
+				/**
+				 * Allow filtering of admin notices.
+				 *
+				 * @since
+				 *
+				 * @param array  $notices admin notices.
+				 * @param string $slug    plugin slug.
+				 */
 				$this->notices = apply_filters( 'wp_dependency_notices', $this->notices, $slug );
 			}
 		}
@@ -629,6 +637,13 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 */
 		public function unset_action_links( $actions, $plugin_file ) {
 
+			/**
+			 * Allow to remove required plugin action links.
+			 *
+			 * @since
+			 *
+			 * @param bool $unset remove default action links.
+			 */
 			if ( apply_filters( 'wp_dependency_unset_action_links', true ) ) {
 				if ( isset( $actions['delete'] ) ) {
 					unset( $actions['delete'] );
@@ -639,6 +654,13 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				}
 			}
 
+			/**
+			 * Allow to display of requied plugin label.
+			 *
+			 * @since
+			 *
+			 * @param bool $display show required plugin label.
+			 */
 			if ( apply_filters( 'wp_dependency_required_label', true ) ) {
 				/* translators: %s: opening and closing span tags */
 				$actions = array_merge( [ 'required-plugin' => sprintf( esc_html__( '%1$sRequired Plugin%2$s' ), '<span class="network_active" style="font-variant-caps: small-caps;">', '</span>' ) ], $actions );
@@ -658,6 +680,13 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 */
 		public function modify_plugin_row_elements( $plugin_file ) {
 			print '<script>';
+			/**
+			 * Allow to display additional row meta info of required plugin.
+			 *
+			 * @since
+			 *
+			 * @param bool $display show plugin row meta.
+			 */
 			if ( apply_filters( 'wp_dependency_required_row_meta', true ) ) {
 				print 'jQuery("tr[data-plugin=\'' . $plugin_file . '\'] .plugin-version-author-uri").append("<br><br><strong>' . esc_html__( 'Required by:' ) . '</strong> ' . $this->get_dependency_sources( $plugin_file ) . '");';
 			}
