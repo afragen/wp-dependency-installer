@@ -719,9 +719,10 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @return string friendly plugin name.
 		 */
 		private function get_dismiss_label( $source ) {
-				$label = str_replace( '-', ' ', $source );
-				$label = ucwords( $label );
-				$label = str_ireplace( 'wp ', 'WP ', $label );
+			$label = str_replace( '-', ' ', $source );
+			$label = ucwords( $label );
+			$label = str_ireplace( 'wp ', 'WP ', $label );
+			$label = empty( $label ) ? __( 'Dependency' ) : $label;
 
 			/**
 			 * Filters the dismissal notice label
