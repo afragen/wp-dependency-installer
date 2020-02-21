@@ -119,8 +119,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		}
 
 		/**
-		 * Decode JSON data from wp-dependencies.json file.
-		 *
+		 * Decode JSON config data from a file.
+  	 *
 		 * @param string $json_path File path to JSON config file.
 		 *
 		 * @return bool|array $config
@@ -260,7 +260,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				}
 
 				if ( $this->is_active( $slug ) ) {
-					continue;
+					// Do nothing.
 				} elseif ( $this->is_installed( $slug ) ) {
 					if ( $is_required ) {
 						$this->notices[] = $this->activate( $slug );
@@ -274,6 +274,16 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 						$this->notices[] = $this->install_notice( $slug );
 					}
 				}
+
+				/**
+				 * Allow filtering of admin notices.
+				 *
+				 * @since
+				 *
+				 * @param array  $notices admin notices.
+				 * @param string $slug    plugin slug.
+				 */
+				$this->notices = apply_filters( 'wp_dependency_notices', $this->notices, $slug );
 			}
 		}
 
@@ -334,6 +344,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @return boolean True if required. Default: False
 		 */
 		public function is_required( &$plugin ) {
+			if ( empty( $this->config ) ) {
+				return false;
+			}
 			if ( is_string( $plugin ) && isset( $this->config[ $plugin ] ) ) {
 				$dependency = &$this->config[ $plugin ];
 			} else {
@@ -571,7 +584,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			if ( ! current_user_can( 'update_plugins' ) ) {
 				return false;
 			}
-			$message = null;
 			foreach ( $this->notices as $notice ) {
 				$status  = empty( $notice['status'] ) ? 'updated' : $notice['status'];
 				$message = empty( $notice['message'] ) ? '' : esc_html( $notice['message'] );
@@ -597,16 +609,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				if ( class_exists( '\PAnd' ) && ! \PAnD::is_admin_notice_active( $dismissible ) ) {
 					continue;
 				}
-				/**
-				 * Filters the dismissal notice label
-				 *
-				 * @since 2.1.1
-				 *
-				 * @param  string Default dismissal notice string.
-				 * @param  string $notice['source'] Plugin slug of calling plugin.
-				 * @return string Dismissal notice string.
-				 */
-				$label = apply_filters( 'wp_dependency_dismiss_label', __( 'Dependency' ), $notice['source'] );
+
+				$label = $this->get_dismiss_label( $notice['source'] );
 				?>
 				<div data-dismissible="<?php echo $dismissible; ?>" class="<?php echo $status; ?> notice is-dismissible dependency-installer">
 					<p><?php echo '<strong>[' . esc_html( $label ) . ']</strong> ' . $message; ?></p>
@@ -635,18 +639,40 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @return mixed
 		 */
 		public function unset_action_links( $actions, $plugin_file ) {
-			if ( isset( $actions['delete'] ) ) {
-				unset( $actions['delete'] );
-			}
-			if ( isset( $actions['deactivate'] ) ) {
-				unset( $actions['deactivate'] );
+
+			/**
+			 * Allow to remove required plugin action links.
+			 *
+			 * @since
+			 *
+			 * @param bool $unset remove default action links.
+			 */
+			if ( apply_filters( 'wp_dependency_unset_action_links', true ) ) {
+				if ( isset( $actions['delete'] ) ) {
+					unset( $actions['delete'] );
+				}
+
+				if ( isset( $actions['deactivate'] ) ) {
+					unset( $actions['deactivate'] );
+				}
 			}
 
-			/* translators: %s: opening and closing span tags */
-			$actions = array_merge( [ 'required-plugin' => sprintf( esc_html__( '%1$sRequired Plugin%2$s' ), '<span class="network_active" style="font-variant-caps: small-caps;">', '</span>' ) ], $actions );
+			/**
+			 * Allow to display of requied plugin label.
+			 *
+			 * @since
+			 *
+			 * @param bool $display show required plugin label.
+			 */
+			if ( apply_filters( 'wp_dependency_required_label', true ) ) {
+				/* translators: %s: opening and closing span tags */
+				$actions = array_merge( [ 'required-plugin' => sprintf( esc_html__( '%1$sRequired Plugin%2$s' ), '<span class="network_active" style="font-variant-caps: small-caps;">', '</span>' ) ], $actions );
+			}
 
 			return $actions;
 		}
+
+
 
 		/**
 		 * Modify the plugin row elements.
@@ -656,9 +682,20 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @return void
 		 */
 		public function modify_plugin_row_elements( $plugin_file ) {
-			print '<script>jQuery(".inactive[data-plugin=\'' . $plugin_file . '\']").attr("class", "active");</script>';
-			print '<script>jQuery(".active[data-plugin=\'' . $plugin_file . '\'] .check-column input").remove();</script>';
-			print '<script>jQuery(".active[data-plugin=\'' . $plugin_file . '\'] .plugin-version-author-uri").append("<br><br><strong>' . esc_html__( 'Required by:' ) . '</strong> ' . $this->get_dependency_sources( $plugin_file ) . '");</script>';
+			print '<script>';
+			/**
+			 * Allow to display additional row meta info of required plugin.
+			 *
+			 * @since
+			 *
+			 * @param bool $display show plugin row meta.
+			 */
+			if ( apply_filters( 'wp_dependency_required_row_meta', true ) ) {
+				print 'jQuery("tr[data-plugin=\'' . $plugin_file . '\'] .plugin-version-author-uri").append("<br><br><strong>' . esc_html__( 'Required by:' ) . '</strong> ' . $this->get_dependency_sources( $plugin_file ) . '");';
+			}
+			print 'jQuery(".inactive[data-plugin=\'' . $plugin_file . '\']").attr("class", "active");';
+			print 'jQuery(".active[data-plugin=\'' . $plugin_file . '\'] .check-column input").remove();';
+			print '</script>';
 		}
 
 		/**
@@ -669,21 +706,36 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @return string $dependents
 		 */
 		private function get_dependency_sources( $plugin_file ) {
-			$sources = $this->config[ $plugin_file ]['sources'];
-
 			// Remove empty values from $sources.
-			$sources    = array_filter(
-				$sources,
-				function ( $value ) {
-					return ! empty( $value );
-				}
-			);
-			$dependents = implode( ', ', $sources );
-			$dependents = str_replace( '-', ' ', $dependents );
-			$dependents = ucwords( $dependents );
-			$dependents = str_ireplace( 'wp ', 'WP ', $dependents );
+			$sources = array_filter( $this->config[ $plugin_file ]['sources'] );
+			$sources = array_map( [ $this, 'get_dismiss_label' ], $sources );
+			$sources = implode( ', ', $sources );
 
-			return $dependents;
+			return $sources;
+		}
+
+		/**
+		 * Get formatted source string for text usage.
+		 *
+		 * @param  string $source plugin source.
+		 *
+		 * @return string friendly plugin name.
+		 */
+		private function get_dismiss_label( $source ) {
+				$label = str_replace( '-', ' ', $source );
+				$label = ucwords( $label );
+				$label = str_ireplace( 'wp ', 'WP ', $label );
+
+			/**
+			 * Filters the dismissal notice label
+			 *
+			 * @since 2.1.1
+			 *
+			 * @param  string $label Default dismissal notice string.
+			 * @param  string $source Plugin slug of calling plugin.
+			 * @return string Dismissal notice string.
+			 */
+			return apply_filters( 'wp_dependency_dismiss_label', $label, $source );
 		}
 
 		/**
