@@ -165,12 +165,13 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				$base          = null;
 				$uri           = $dependency['uri'];
 				$slug          = $dependency['slug'];
-				$port          = parse_url( $uri, PHP_URL_PORT );
-				$api           = parse_url( $uri, PHP_URL_HOST );
+				$uri_args      = parse_url( $uri ); // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url
+				$port          = isset( $uri_args['port'] ) ? $uri_args['port'] : null;
+				$api           = isset( $uri_args['host'] ) ? $uri_args['host'] : null;
 				$api           = ! $port ? $api : "$api:$port";
-				$scheme        = parse_url( $uri, PHP_URL_SCHEME );
-				$scheme        = ! empty( $scheme ) ? $scheme . '://' : 'https://';
-				$path          = parse_url( $uri, PHP_URL_PATH );
+				$scheme        = isset( $uri_args['scheme'] ) ? $uri_args['scheme'] : null;
+				$scheme        = null !== $scheme ? $scheme . '://' : 'https://';
+				$path          = isset( $uri_args['path'] ) ? $uri_args['path'] : null;
 				$owner_repo    = str_replace( '.git', '', trim( $path, '/' ) );
 
 				switch ( $dependency['host'] ) {
