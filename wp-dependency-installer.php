@@ -119,9 +119,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		}
 
 		/**
-		 * Register data from wp-dependencies.json file.
+		 * Decode JSON data from wp-dependencies.json file.
 		 *
-		 * @param $json_path File path to JSON config file.
+		 * @param string $json_path File path to JSON config file.
 		 *
 		 * @return bool|array $config
 		 */
