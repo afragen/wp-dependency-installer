@@ -119,8 +119,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		}
 
 		/**
-		 * Decode json config data from a file.
-		 *
+		 * Decode JSON config data from a file.
+  	 *
 		 * @param string $json_path File path to JSON config file.
 		 *
 		 * @return bool|array $config
@@ -165,10 +165,13 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				$base          = null;
 				$uri           = $dependency['uri'];
 				$slug          = $dependency['slug'];
-				$api           = parse_url( $uri, PHP_URL_HOST );
-				$scheme        = parse_url( $uri, PHP_URL_SCHEME );
-				$scheme        = ! empty( $scheme ) ? $scheme . '://' : 'https://';
-				$path          = parse_url( $uri, PHP_URL_PATH );
+				$uri_args      = parse_url( $uri ); // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url
+				$port          = isset( $uri_args['port'] ) ? $uri_args['port'] : null;
+				$api           = isset( $uri_args['host'] ) ? $uri_args['host'] : null;
+				$api           = ! $port ? $api : "$api:$port";
+				$scheme        = isset( $uri_args['scheme'] ) ? $uri_args['scheme'] : null;
+				$scheme        = null !== $scheme ? $scheme . '://' : 'https://';
+				$path          = isset( $uri_args['path'] ) ? $uri_args['path'] : null;
 				$owner_repo    = str_replace( '.git', '', trim( $path, '/' ) );
 
 				switch ( $dependency['host'] ) {
@@ -187,7 +190,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 						$download_link = add_query_arg( 'sha', $dependency['branch'], $download_link );
 						break;
 					case 'gitea':
-						$download_link = "{$scheme}{$api}/repos/{$owner_repo}/archive/{$dependency['branch']}.zip";
+						$download_link = "{$scheme}{$api}/api/v1/repos/{$owner_repo}/archive/{$dependency['branch']}.zip";
 						break;
 					case 'wordpress':  // phpcs:ignore WordPress.WP.CapitalPDangit.Misspelled
 						$download_link = $this->get_dot_org_latest_download( basename( $owner_repo ) );
@@ -779,9 +782,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			}
 
 			// dot org should not have auth header.
-			// Remove auth header if URL not our download URL.
 			// phpcs:ignore WordPress.WP.CapitalPDangit.Misspelled
-			if ( 'wordpress' === $host || false === strpos( $url, $host ) ) {
+			if ( 'wordpress' === $host ) {
 				unset( $args['headers']['Authorization'] );
 			}
 			remove_filter( 'http_request_args', [ $this, 'add_basic_auth_headers' ] );
