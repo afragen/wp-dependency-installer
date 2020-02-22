@@ -106,8 +106,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 */
 		public function register( $config ) {
 			foreach ( $config as $dependency ) {
-				$dependency['source'] = $this->source;
-				$slug                 = $dependency['slug'];
+				$dependency['source']   = $this->source;
+				$slug                   = $dependency['slug'];
+				$dependency['optional'] = isset( $dependency['required'] ) ? ! $dependency['required'] : $dependency['optional'];
 				if ( ! isset( $this->config[ $slug ] ) || ! $dependency['optional'] ) {
 					$this->config[ $slug ] = $dependency;
 				}
