@@ -749,9 +749,10 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		public function get_config( $slug = '', $key = '' ) {
 			if ( empty( $slug ) && empty( $key ) ) {
 				return $this->config;
-			}
-			if ( isset( $this->config[ $slug ] ) ) {
-				return empty( $key ) ? $this->config[ $slug ] : $this->config[ $slug ][ $key ];
+			} elseif ( empty( $key ) ) {
+				return isset( $this->config[ $slug ] ) ? $this->config[ $slug ] : false;
+			} else {
+				return isset( $this->config[ $slug ][ $key ] ) ? $this->config[ $slug ][ $key ] : false;
 			}
 			return false;
 		}
