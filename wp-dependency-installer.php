@@ -67,7 +67,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		public static function instance( $caller = false ) {
 			static $instance = null;
 			if ( null === $instance ) {
-				$instance = new self( $caller );
+				$instance = new self();
 			}
 			self::$caller = $caller;
 			self::$source = ! $caller ? false : basename( $caller );
