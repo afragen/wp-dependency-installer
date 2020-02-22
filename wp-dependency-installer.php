@@ -525,6 +525,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			];
 		}
 
+
 		/**
 		 * Correctly rename dependency for activation.
 		 *
