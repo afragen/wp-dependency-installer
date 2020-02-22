@@ -425,7 +425,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			}
 
 			wp_cache_flush();
-			if ( $this->is_required( $this->config[ $slug ] ) ) {
+			if ( $this->is_required( $slug ) ) {
 				$this->activate( $slug );
 
 				return [
@@ -747,11 +747,13 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @return mixed|array The configuration.
 		 */
 		public function get_config( $slug = '', $key = '' ) {
-			if ( isset( $this->config[ $slug ] ) ) {
-				return empty( $key ) ? $this->config[ $slug ] : $this->config[ $slug ][ $key ];
-			} else {
+			if ( empty( $slug ) && empty( $key ) ) {
 				return $this->config;
 			}
+			if ( isset( $this->config[ $slug ] ) ) {
+				return empty( $key ) ? $this->config[ $slug ] : $this->config[ $slug ][ $key ];
+			}
+			return false;
 		}
 
 		/**
