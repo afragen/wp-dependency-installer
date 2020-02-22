@@ -129,7 +129,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return bool|array $config
 		 */
-		private function json_file_decode( $json_path ) {
+		public function json_file_decode( $json_path ) {
 			$config = [];
 			if ( file_exists( $json_path ) ) {
 				$config = file_get_contents( $json_path );
