@@ -754,7 +754,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			} else {
 				return isset( $this->config[ $slug ][ $key ] ) ? $this->config[ $slug ][ $key ] : null;
 			}
-			return null;
 		}
 
 		/**
