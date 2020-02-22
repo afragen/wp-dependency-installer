@@ -106,6 +106,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * Then load hooks needed to run.
 		 *
 		 * @param string $caller Path to plugin or theme calling the framework.
+		 *
+		 * @return self
 		 */
 		public function run( $caller = false ) {
 			$caller = ! $caller ? self::$caller : $caller;
@@ -116,6 +118,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			if ( ! empty( $this->config ) ) {
 				$this->load_hooks();
 			}
+
+			return $this;
 		}
 
 		/**
@@ -140,6 +144,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @param array  $config JSON config as array.
 		 * @param string $caller Path to plugin or theme calling the framework.
+		 *
+		 * @return self
 		 */
 		public function register( $config, $caller = false ) {
 			$source = ! self::$source ? basename( $caller ) : self::$source;
@@ -154,6 +160,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 					$this->config[ $slug ] = $dependency;
 				}
 			}
+
+			return $this;
 		}
 
 		/**
