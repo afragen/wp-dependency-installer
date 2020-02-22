@@ -742,11 +742,16 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @since 1.4.11
 		 *
 		 * @param string $slug Plugin slug.
+		 * @param string $key Dependency key.
 		 *
-		 * @return array The configuration.
+		 * @return mixed|array The configuration.
 		 */
-		public function get_config( $slug = '' ) {
-			return isset( $this->config[ $slug ] ) ? $this->config[ $slug ] : $this->config;
+		public function get_config( $slug = '', $key = '' ) {
+			if ( isset( $this->config[ $slug ] ) ) {
+				return empty( $key ) ? $this->config[ $slug ] : $this->config[ $slug ][ $key ];
+			} else {
+				return $this->config;
+			}
 		}
 
 		/**
