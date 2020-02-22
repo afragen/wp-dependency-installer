@@ -585,38 +585,41 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				return false;
 			}
 			foreach ( $this->notices as $notice ) {
-				$status  = empty( $notice['status'] ) ? 'updated' : $notice['status'];
-				$message = empty( $notice['message'] ) ? '' : esc_html( $notice['message'] );
+				$status      = empty( $notice['status'] ) ? 'updated' : $notice['status'];
+				$source      = empty( $notice['source'] ) ? __( 'Dependency' ) : $notice['source'];
+				$class       = esc_attr( $status ) . ' notice is-dismissible dependency-installer';
+				$label       = esc_html( $this->get_dismiss_label( $source ) );
+				$message     = '';
+				$action      = '';
+				$dismissible = null;
 
+				if ( ! empty( $notice['message'] ) ) {
+					$message = esc_html( $notice['message'] );
+				}
 				if ( ! empty( $notice['action'] ) ) {
-					$action   = esc_attr( $notice['action'] );
-					$message .= ' <a href="javascript:;" class="wpdi-button" data-action="' . $action . '" data-slug="' . $notice['slug'] . '">' . ucfirst( $action ) . ' Now &raquo;</a>';
+					$action = sprintf(
+						' <a href="javascript:;" class="wpdi-button" data-action="%1$s" data-slug="%2$s">%3$s Now &raquo;</a> ',
+						esc_attr( $notice['action'] ),
+						esc_attr( $notice['slug'] ),
+						esc_html( ucfirst( $notice['action'] ) )
+					);
 				}
-
-				/**
-				 * Filters the dismissal timeout.
-				 *
-				 * @since 1.4.1
-				 *
-				 * @param string|int '7'           Default dismissal in days.
-				 * @param  string     $notice['source'] Plugin slug of calling plugin.
-				 * @return string|int Dismissal timeout in days.
-				 */
-				$timeout     = '-' . apply_filters( 'wp_dependency_timeout', '7', $notice['source'] );
-				$dismissible = isset( $notice['slug'] )
-				? 'dependency-installer-' . dirname( $notice['slug'] ) . $timeout
-				: null;
-				if ( class_exists( '\PAnd' ) && ! \PAnD::is_admin_notice_active( $dismissible ) ) {
-					continue;
+				if ( ! empty( $notice['slug'] ) ) {
+					/**
+					 * Filters the dismissal timeout.
+					 *
+					 * @since 1.4.1
+					 *
+					 * @param string|int '7'           Default dismissal in days.
+					 * @param  string     $notice['source'] Plugin slug of calling plugin.
+					 * @return string|int Dismissal timeout in days.
+					 */
+					$timeout     = '-' . apply_filters( 'wp_dependency_timeout', '7', $source );
+					$dismissible = esc_attr( 'dependency-installer-' . dirname( $notice['slug'] ) . $timeout );
 				}
-
-				$notice['source'] = empty( $notice['source'] ) ? __( 'Dependency' ) : $notice['source'];
-				$label            = $this->get_dismiss_label( $notice['source'] );
-				?>
-				<div data-dismissible="<?php echo $dismissible; ?>" class="<?php echo $status; ?> notice is-dismissible dependency-installer">
-					<p><?php echo '<strong>[' . esc_html( $label ) . ']</strong> ' . $message; ?></p>
-				</div>
-				<?php
+				if ( class_exists( '\PAnd' ) && \PAnD::is_admin_notice_active( $dismissible ) ) {
+					printf( '<div class="%1$s" data-dismissible="%2$s"><p><strong>[%3$s]</strong> %4$s%5$s</p></div>', $class, $dismissible, $label, $message, $action );
+				}
 			}
 		}
 
