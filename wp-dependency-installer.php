@@ -610,7 +610,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 					continue;
 				}
 
-				$label = $this->get_dismiss_label( $notice['source'] );
+				$notice['source'] = empty( $notice['source'] ) ? __( 'Dependency' ) : $notice['source'];
+				$label            = $this->get_dismiss_label( $notice['source'] );
 				?>
 				<div data-dismissible="<?php echo $dismissible; ?>" class="<?php echo $status; ?> notice is-dismissible dependency-installer">
 					<p><?php echo '<strong>[' . esc_html( $label ) . ']</strong> ' . $message; ?></p>
@@ -722,7 +723,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			$label = str_replace( '-', ' ', $source );
 			$label = ucwords( $label );
 			$label = str_ireplace( 'wp ', 'WP ', $label );
-			$label = empty( $label ) ? __( 'Dependency' ) : $label;
 
 			/**
 			 * Filters the dismissal notice label
