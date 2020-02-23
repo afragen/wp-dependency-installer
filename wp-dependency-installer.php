@@ -213,6 +213,13 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				 */
 				$this->config[ $slug ]['download_link'] = apply_filters( 'wp_dependency_download_link', $download_link, $dependency );
 
+				if ( ! isset( $dependency['activate_notice'] ) ) {
+					$dependency['activate_notice'] = true;
+				}
+				if ( ! isset( $dependency['install_notice'] ) ) {
+					$dependency['install_notice'] = true;
+				}
+
 				/**
 				 * Allow filtering of individual dependency config.
 				 *
@@ -274,8 +281,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			// Generate admin notices.
 			foreach ( $this->config as $slug => $dependency ) {
 				$is_required     = $this->is_required( $dependency );
-				$suggest_active  = ! empty( $dependency['activate_notice'] );
-				$suggest_install = ! empty( $dependency['install_notice'] );
+				$suggest_active  = $dependency['activate_notice'];
+				$suggest_install = $dependency['install_notice'];
 
 				if ( $is_required ) {
 					$this->modify_plugin_row( $slug );
