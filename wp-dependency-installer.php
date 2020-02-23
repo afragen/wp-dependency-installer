@@ -144,10 +144,11 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		public function register( $config, $caller = false ) {
 			$source = ! self::$source ? basename( $caller ) : self::$source;
 			foreach ( $config as $dependency ) {
+				// Save a reference of current dependent plugin.
 				$dependency['source']    = $source;
 				$dependency['sources'][] = $source;
 				$slug                    = $dependency['slug'];
-				// Save a reference of all dependent plugins.
+				// Keep a reference of all dependent plugins.
 				if ( isset( $this->config[ $slug ] ) ) {
 					$dependency['sources'] = array_merge( $this->config[ $slug ]['sources'], $dependency['sources'] );
 				}
