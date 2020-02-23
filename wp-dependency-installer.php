@@ -463,7 +463,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				'action'  => 'install',
 				'slug'    => $slug,
 				/* translators: %s: Plugin name */
-				'message' => sprintf( esc_html__( 'The %s plugin is required.' ), $dependency['name'] ),
+				'message' => sprintf( esc_html__( 'The %s plugin is recommended.' ), $dependency['name'] ),
 				'source'  => $dependency['source'],
 			];
 		}
