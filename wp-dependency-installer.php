@@ -591,7 +591,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				$label       = esc_html( $this->get_dismiss_label( $source ) );
 				$message     = '';
 				$action      = '';
-				$dismissible = null;
+				$dismissible = false;
 
 				if ( ! empty( $notice['message'] ) ) {
 					$message = esc_html( $notice['message'] );
