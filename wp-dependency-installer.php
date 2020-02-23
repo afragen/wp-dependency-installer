@@ -214,10 +214,10 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				$this->config[ $slug ]['download_link'] = apply_filters( 'wp_dependency_download_link', $download_link, $dependency );
 
 				if ( ! isset( $dependency['activate_notice'] ) ) {
-					$dependency['activate_notice'] = true;
+					$this->config[ $slug ]['activate_notice'] = true;
 				}
 				if ( ! isset( $dependency['install_notice'] ) ) {
-					$dependency['install_notice'] = true;
+					$this->config[ $slug ]['install_notice'] = true;
 				}
 
 				/**
@@ -227,7 +227,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				 *
 				 * @param array  $dependency    Dependency configuration.
 				 */
-				$this->config[ $slug ] = apply_filters( "wp_dependency_config_{$slug}", $dependency );
+				$this->config[ $slug ] = apply_filters( "wp_dependency_config_{$slug}", $this->config[ $slug ] );
 			}
 
 			/**
