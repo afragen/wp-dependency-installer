@@ -256,7 +256,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			// Generate admin notices.
 			foreach ( $this->config as $slug => $dependency ) {
 				$is_required  = $this->is_required( $dependency );
-				$admin_notice = ! empty( $dependency['admin_notice'] );
+				$is_suggested = ! empty( $dependency['activate_notice'] );
 
 				if ( $is_required ) {
 					$this->modify_plugin_row( $slug );
@@ -267,13 +267,13 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				} elseif ( $this->is_installed( $slug ) ) {
 					if ( $is_required ) {
 						$this->notices[] = $this->activate( $slug );
-					} elseif ( $admin_notice ) {
+					} elseif ( $is_suggested ) {
 						$this->notices[] = $this->activate_notice( $slug );
 					}
 				} else {
 					if ( $is_required ) {
 						$this->notices[] = $this->install( $slug );
-					} elseif ( $admin_notice ) {
+					} else {
 						$this->notices[] = $this->install_notice( $slug );
 					}
 				}
