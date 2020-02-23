@@ -615,7 +615,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 					 * @return string|int Dismissal timeout in days.
 					 */
 					$timeout     = apply_filters( 'wp_dependency_timeout', '7', $source );
-					$dismissible = sprintf( 'dependency-installer-%1$s-%2$s', esc_attr( dirname( $notice['slug'] ) ), esc_attr( $timeout ) );
+					$dependency  = dirname( $notice['slug'] );
+					$dismissible = empty( $timeout ) ? '' : sprintf( 'dependency-installer-%1$s-%2$s', esc_attr( $dependency ), esc_attr( $timeout ) );
 				}
 				if ( class_exists( '\PAnd' ) && \PAnD::is_admin_notice_active( $dismissible ) ) {
 					printf( '<div class="%1$s" data-dismissible="%2$s"><p><strong>[%3$s]</strong> %4$s%5$s</p></div>', $class, $dismissible, $label, $message, $action );
