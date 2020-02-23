@@ -585,18 +585,18 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				return false;
 			}
 			foreach ( $this->notices as $notice ) {
-				$status      = empty( $notice['status'] ) ? 'updated' : $notice['status'];
-				$source      = empty( $notice['source'] ) ? __( 'Dependency' ) : $notice['source'];
+				$status      = isset( $notice['status'] ) ? $notice['status'] : 'updated';
+				$source      = isset( $notice['source'] ) ? $notice['source'] : __( 'Dependency' );
 				$class       = esc_attr( $status ) . ' notice is-dismissible dependency-installer';
 				$label       = esc_html( $this->get_dismiss_label( $source ) );
 				$message     = '';
 				$action      = '';
 				$dismissible = '';
 
-				if ( ! empty( $notice['message'] ) ) {
+				if ( isset( $notice['message'] ) ) {
 					$message = esc_html( $notice['message'] );
 				}
-				if ( ! empty( $notice['action'] ) ) {
+				if ( isset( $notice['action'] ) ) {
 					$action = sprintf(
 						' <a href="javascript:;" class="wpdi-button" data-action="%1$s" data-slug="%2$s">%3$s Now &raquo;</a> ',
 						esc_attr( $notice['action'] ),
@@ -604,7 +604,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 						esc_html( ucfirst( $notice['action'] ) )
 					);
 				}
-				if ( ! empty( $notice['slug'] ) ) {
+				if ( isset( $notice['slug'] ) ) {
 					/**
 					 * Filters the dismissal timeout.
 					 *
