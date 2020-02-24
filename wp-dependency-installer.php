@@ -158,6 +158,13 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				if ( isset( $this->config[ $slug ] ) ) {
 					$dependency['sources'] = array_merge( $this->config[ $slug ]['sources'], $dependency['sources'] );
 				}
+				// Set default values.
+				if ( ! isset( $dependency['activate_notice'] ) ) {
+					$dependency['activate_notice'] = true;
+				}
+				if ( ! isset( $dependency['install_notice'] ) ) {
+					$dependency['install_notice'] = true;
+				}
 				// Update config.
 				if ( ! isset( $this->config[ $slug ] ) || $this->is_required( $dependency ) ) {
 					$this->config[ $slug ] = $dependency;
@@ -264,7 +271,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 			// Generate admin notices.
 			foreach ( $this->config as $slug => $dependency ) {
-				$is_required = $this->is_required( $dependency );
+				$is_required     = $this->is_required( $dependency );
+				$suggest_active  = $dependency['activate_notice'];
+				$suggest_install = $dependency['install_notice'];
 
 				if ( $is_required ) {
 					$this->modify_plugin_row( $slug );
@@ -275,13 +284,13 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				} elseif ( $this->is_installed( $slug ) ) {
 					if ( $is_required ) {
 						$this->notices[] = $this->activate( $slug );
-					} else {
+					} elseif ( $suggest_active ) {
 						$this->notices[] = $this->activate_notice( $slug );
 					}
 				} else {
 					if ( $is_required ) {
 						$this->notices[] = $this->install( $slug );
-					} else {
+					} elseif ( $suggest_install ) {
 						$this->notices[] = $this->install_notice( $slug );
 					}
 				}
