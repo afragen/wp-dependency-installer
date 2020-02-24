@@ -170,7 +170,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		/**
 		 * Process the registered dependencies.
 		 */
-		public function apply_config() {
+		private function apply_config() {
 			foreach ( $this->config as $dependency ) {
 				$download_link = null;
 				$base          = null;
@@ -231,7 +231,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @param  string $slug Plugin slug.
 		 * @return string $download_link
 		 */
-		public function get_dot_org_latest_download( $slug ) {
+		private function get_dot_org_latest_download( $slug ) {
 			$download_link = get_site_transient( 'wpdi-' . md5( $slug ) );
 
 			if ( ! $download_link ) {
@@ -641,7 +641,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @param string $plugin_file Plugin file.
 		 */
-		public function modify_plugin_row( $plugin_file ) {
+		private function modify_plugin_row( $plugin_file ) {
 			add_filter( 'network_admin_plugin_action_links_' . $plugin_file, [ $this, 'unset_action_links' ], 10, 2 );
 			add_filter( 'plugin_action_links_' . $plugin_file, [ $this, 'unset_action_links' ], 10, 2 );
 			add_action( 'after_plugin_row_' . $plugin_file, [ $this, 'modify_plugin_row_elements' ] );
