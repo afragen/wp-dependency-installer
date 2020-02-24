@@ -607,6 +607,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				if ( isset( $notice['message'] ) ) {
 					$message = esc_html( $notice['message'] );
 				}
+
 				if ( isset( $notice['action'] ) ) {
 					$action = sprintf(
 						' <a href="javascript:;" class="wpdi-button" data-action="%1$s" data-slug="%2$s">%3$s Now &raquo;</a> ',
