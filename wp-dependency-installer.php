@@ -219,9 +219,16 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				 * @param string $download_link Download link.
 				 * @param array  $dependency    Dependency configuration.
 				 */
-				$download_link = apply_filters( 'wp_dependency_download_link', $download_link, $dependency );
+				$dependency['download_link'] = apply_filters( 'wp_dependency_download_link', $download_link, $dependency );
 
-				$this->config[ $slug ]['download_link'] = $download_link;
+				/**
+				 * Allow filtering of individual dependency config.
+				 *
+				 * @since 3.0.0
+				 *
+				 * @param array  $dependency    Dependency configuration.
+				 */
+				$this->config[ $slug ] = apply_filters( 'wp_dependency_config', $dependency );
 			}
 		}
 
