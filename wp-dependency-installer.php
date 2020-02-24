@@ -67,7 +67,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		public static function instance( $caller = false ) {
 			static $instance = null;
 			if ( null === $instance ) {
-				$instance = new self( $caller );
+				$instance = new self();
 			}
 			self::$caller = $caller;
 			self::$source = ! $caller ? false : basename( $caller );
@@ -106,6 +106,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * Then load hooks needed to run.
 		 *
 		 * @param string $caller Path to plugin or theme calling the framework.
+		 *
+		 * @return self
 		 */
 		public function run( $caller = false ) {
 			$caller = ! $caller ? self::$caller : $caller;
@@ -116,6 +118,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			if ( ! empty( $this->config ) ) {
 				$this->load_hooks();
 			}
+
+			return $this;
 		}
 
 		/**
@@ -125,7 +129,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @return bool|array $config
 		 */
-		private function json_file_decode( $json_path ) {
+		public function json_file_decode( $json_path ) {
 			$config = [];
 			if ( file_exists( $json_path ) ) {
 				$config = file_get_contents( $json_path );
@@ -140,6 +144,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @param array  $config JSON config as array.
 		 * @param string $caller Path to plugin or theme calling the framework.
+		 *
+		 * @return self
 		 */
 		public function register( $config, $caller = false ) {
 			$source = ! self::$source ? basename( $caller ) : self::$source;
@@ -157,6 +163,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 					$this->config[ $slug ] = $dependency;
 				}
 			}
+
+			return $this;
 		}
 
 		/**
@@ -211,34 +219,10 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				 * @param string $download_link Download link.
 				 * @param array  $dependency    Dependency configuration.
 				 */
-				$this->config[ $slug ]['download_link'] = apply_filters( 'wp_dependency_download_link', $download_link, $dependency );
+				$download_link = apply_filters( 'wp_dependency_download_link', $download_link, $dependency );
 
-				if ( ! isset( $dependency['activate_notice'] ) ) {
-					$this->config[ $slug ]['activate_notice'] = true;
-				}
-				if ( ! isset( $dependency['install_notice'] ) ) {
-					$this->config[ $slug ]['install_notice'] = true;
-				}
-
-				/**
-				 * Allow filtering of individual dependency config.
-				 *
-				 * @since 3.0.0
-				 *
-				 * @param array  $dependency    Dependency configuration.
-				 */
-				$this->config[ $slug ] = apply_filters( "wp_dependency_config_{$slug}", $this->config[ $slug ] );
+				$this->config[ $slug ]['download_link'] = $download_link;
 			}
-
-			/**
-			 * Allow filtering of whole dependencies config.
-			 *
-			 * @since 3.0.0
-			 *
-			 * @param array  $this->config   Dependencies configuration.
-			 */
-			$this->config = apply_filters( 'wp_dependency_config', $this->config );
-
 		}
 
 		/**
@@ -280,9 +264,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 			// Generate admin notices.
 			foreach ( $this->config as $slug => $dependency ) {
-				$is_required     = $this->is_required( $dependency );
-				$suggest_active  = $dependency['activate_notice'];
-				$suggest_install = $dependency['install_notice'];
+				$is_required = $this->is_required( $dependency );
 
 				if ( $is_required ) {
 					$this->modify_plugin_row( $slug );
@@ -293,13 +275,13 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				} elseif ( $this->is_installed( $slug ) ) {
 					if ( $is_required ) {
 						$this->notices[] = $this->activate( $slug );
-					} elseif ( $suggest_active ) {
+					} else {
 						$this->notices[] = $this->activate_notice( $slug );
 					}
 				} else {
 					if ( $is_required ) {
 						$this->notices[] = $this->install( $slug );
-					} elseif ( $suggest_install ) {
+					} else {
 						$this->notices[] = $this->install_notice( $slug );
 					}
 				}
@@ -454,7 +436,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			}
 
 			wp_cache_flush();
-			if ( $this->is_required( $this->config[ $slug ] ) ) {
+			if ( $this->is_required( $slug ) ) {
 				$this->activate( $slug );
 
 				return [
@@ -775,11 +757,18 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @since 1.4.11
 		 *
 		 * @param string $slug Plugin slug.
+		 * @param string $key Dependency key.
 		 *
-		 * @return array The configuration.
+		 * @return mixed|array The configuration.
 		 */
-		public function get_config( $slug = '' ) {
-			return isset( $this->config[ $slug ] ) ? $this->config[ $slug ] : $this->config;
+		public function get_config( $slug = '', $key = '' ) {
+			if ( empty( $slug ) && empty( $key ) ) {
+				return $this->config;
+			} elseif ( empty( $key ) ) {
+				return isset( $this->config[ $slug ] ) ? $this->config[ $slug ] : null;
+			} else {
+				return isset( $this->config[ $slug ][ $key ] ) ? $this->config[ $slug ][ $key ] : null;
+			}
 		}
 
 		/**
