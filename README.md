@@ -80,6 +80,26 @@ add_filter(
 );
 ```
 
+5. Sanity Check
+
+```php
+// Sanity check for WPDI v3.0.0.
+if ( ! method_exists( 'WP_Dependency_Installer', 'json_file_decode' ) ) {
+ add_action(
+   'admin_notices',
+   function() {
+     $class   = 'notice notice-error is-dismissible';
+     $label   = __( 'Your Plugin Name', 'your-plugin' );
+     $file    = ( new ReflectionClass( 'WP_Dependency_Installer' ) )->getFilename();
+     $message = __( 'Another theme or plugin is using a previous version of the WPDI library, please update this file and try again:', 'group-plugin-installer' );
+     printf( '<div class="%1$s"><p><strong>[%2$s]</strong> %3$s</p><pre>%4$s</pre></div>', esc_attr( $class ), esc_html( $label ), esc_html( $message ), esc_html( $file ) );
+   },
+   1
+ );
+ return false; // Exit early.
+}
+```
+
 That's it, happy blogging!
 
 ## Development
