@@ -1,5 +1,5 @@
 # WP Dependency Installer
-* Contributors: [Andy Fragen](https://github.com/afragen), [Matt Gibbs](https://github.com/mgibbs189), [contributors](https://github.com/afragen/wp-dependency-installer/graphs/contributors)
+* Contributors: [Andy Fragen](https://github.com/afragen), [Matt Gibbs](https://github.com/mgibbs189), [Raruto](https://github.com/Raruto), [contributors](https://github.com/afragen/wp-dependency-installer/graphs/contributors)
 * Tags: plugin, dependency, install
 * Requires at least: 5.1
 * Requires PHP: 5.6
@@ -7,106 +7,100 @@
 * Donate link: <https://thefragens.com/wp-dependency-installer-donate>
 * License: MIT
 
-A lightweight class to add to WordPress plugins or themes to automatically install required plugin dependencies. Uses a JSON config file to declare plugin dependencies.
+This is a drop in class for developers to optionally or automatically install plugin dependencies for their own plugins or themes. It can install a plugin from wp.org, GitHub, Bitbucket, GitLab, Gitea, or a direct URL.
+
+[Comprehensive information regarding WP Dependency Installer is available on the wiki.](https://github.com/afragen/wp-dependency-installer/wiki)
+
+See also: [example plugin](https://github.com/afragen/wp-dependency-installer-examples).
 
 ## Description
 
-This is a drop in class for developers to optionally or automatically install plugin dependencies for their own plugins or themes. It can install a plugin from w.org, GitHub, Bitbucket, GitLab, Gitea, or a direct URL. You must include a JSON config file in the root directory of the plugin/theme file.
+You can use **composer** to install this package within your WordPress plugin / theme.
 
-This contains an example plugin and an example JSON configuration file. Only required dependencies are installed automatically, optional dependencies are not. Required dependencies are always kept active.
+1. Within your plugin or theme root folder, run the following command:
 
-## Installation
-
-WP Dependency Installer v2.0.0 or greater now requires PHP 5.6 or greater and WordPress 5.1 or greater.
-
-Install the package via composer.
-
-Run the composer command: ```composer require afragen/wp-dependency-installer```
-
-Then create a new `wp-dependencies.json` file.
-
-```cp ./vendor/afragen/wp-dependency-installer/wp-dependencies-example.json wp-dependencies.json```
-
-You will then need to update `wp-dependencies.json` to suit your requirements.
-
-Add the following lines to your plugin or to your theme's `functions.php` file.
-
-```php
-include_once( __DIR__ . '/vendor/autoload.php' );
-WP_Dependency_Installer::instance()->run( __DIR__ );
+```shell
+composer require afragen/wp-dependency-installer
 ```
 
-## JSON config file format
+2. Then create a sample [**`wp-dependencies.json`**](https://github.com/afragen/wp-dependency-installer/wiki/Configuration#json-config-file-format) file
 
-This file must be named `wp-dependencies.json` and it must be in the root directory of your plugin or theme.
-
-```json
+```js
 [
-  {
-    "name": "Query Monitor",
-    "host": "wordpress",
-    "slug": "query-monitor/query-monitor.php",
-    "uri": "https://wordpress.org/plugins/query-monitor/",
-    "optional": false
-  },
   {
     "name": "GitHub Updater",
     "host": "github",
     "slug": "github-updater/github-updater.php",
     "uri": "afragen/github-updater",
-    "branch": "master",
-    "optional": false,
-    "token": null
-  },
-  {
-    "name": "Test Plugin Notags",
-    "host": "bitbucket",
-    "slug": "test-plugin-notags/test-plugin-notags.php",
-    "uri": "https://bitbucket.org/afragen/test-plugin-notags",
-    "branch": "master",
-    "optional": true
-  },
-  {
-    "name": "Test Gitlab Plugin2",
-    "host": "gitlab",
-    "slug": "test-gitlab-plugin2/test-gitlab-plugin2.php",
-    "uri": "https://gitlab.com/afragen/test-gitlab-plugin2",
     "branch": "develop",
-    "optional": true,
+    "required": true,
     "token": null
   },
   {
-    "name": "Test Direct Plugin Download",
-    "host": "direct",
-    "slug": "test-direct-plugin/test-plugin.php",
-    "uri": "https://direct-download.com/path/to.zip",
+    "name": "Query Monitor",
+    "host": "wordpress",
+    "slug": "query-monitor/query-monitor.php",
+    "uri": "https://wordpress.org/plugins/query-monitor/",
     "optional": true
+  },
+  {
+    "name": "Local Development",
+    "host": "WordPress",
+    "slug": "local-development/local-development.php",
+    "uri": "https://wordpress.org/plugins/local-development/",
+    "required": true
   }
 ]
 ```
 
-An example file is included, `wp-dependencies-example.json`. You may use a shorthand uri such as `<owner>/<repo>` in the JSON.
+You will then need to update `wp-dependencies.json` to suit your requirements.
 
-If you want to programmatically add dependencies you can send an associative array directly to
+3. Finally add the following lines to your plugin or theme's `functions.php` file:
 
 ```php
-WP_Dependency_Installer::instance()->register( $config )
+require_once __DIR__ . '/vendor/autoload.php';
+WP_Dependency_Installer::instance( __DIR__ )->run();
+
+// Needed in theme's functions.php file.
+add_filter( 'pand_theme_loader', '__return_true' );
 ```
 
-where `$config` is an associative array as in identical format as `json_decode( wp-dependencies.json content )`
-
-The default timeout for dismissal of a notification is 7 days. There is a filter `wp_dependency_timeout` to adjust this on a per project basis.
+4. (optional) Take a look at some of built in [Hooks](https://github.com/afragen/wp-dependency-installer/wiki/Actions-and-Hooks) and [Functions](https://github.com/afragen/wp-dependency-installer/wiki/Helper-Functions) to further customize your plugin look and behaviour:
 
 ```php
+/**
+ * Display your plugin or theme name in dismissable notices.
+ */
 add_filter(
-  'wp_dependency_timeout', function( $timeout, $source ) {
-    $timeout = $source !== basename( __DIR__ ) ? $timeout : 14;
-    return $timeout;
+  'wp_dependency_dismiss_label',
+  function( $label, $source ) {
+    $label = basename( __DIR__ ) !== $source ? $label : __( 'Group Plugin Installer', 'group-plugin-installer' );
+    return $label;
   }, 10, 2
 );
 ```
 
-The download link can be filtered using the filter hook `wp_dependency_download_link`. The `$download_link` and the `$dependency` are passed as parameters.
+5. Sanity Check
+
+```php
+// Sanity check for WPDI v3.0.0.
+if ( ! method_exists( 'WP_Dependency_Installer', 'json_file_decode' ) ) {
+ add_action(
+   'admin_notices',
+   function() {
+     $class   = 'notice notice-error is-dismissible';
+     $label   = __( 'Your Plugin Name', 'your-plugin' );
+     $file    = ( new ReflectionClass( 'WP_Dependency_Installer' ) )->getFilename();
+     $message = __( 'Another theme or plugin is using a previous version of the WPDI library, please update this file and try again:', 'group-plugin-installer' );
+     printf( '<div class="%1$s"><p><strong>[%2$s]</strong> %3$s</p><pre>%4$s</pre></div>', esc_attr( $class ), esc_html( $label ), esc_html( $message ), esc_html( $file ) );
+   },
+   1
+ );
+ return false; // Exit early.
+}
+```
+
+That's it, happy blogging!
 
 ## Development
 

@@ -1,7 +1,8 @@
 {
   "name": "afragen/wp-dependency-installer",
   "description": "Library that helps WordPress plugin dependency management.",
-  "version": "2.1.1",
+  "version": "3.0.0",
+  "type": "library",
   "license": "MIT",
   "authors": [
     {
@@ -12,6 +13,12 @@
     },
     {
       "name": "Matt Gibbs",
+      "homepage": "https://facetwp.com",
+      "role": "Developer"
+    },
+    {
+      "name": "Raruto",
+      "homepage": "https://raruto.github.io",
       "role": "Developer"
     }
   ],
