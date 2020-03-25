@@ -179,7 +179,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				$uri_args      = parse_url( $uri ); // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url
 				$port          = isset( $uri_args['port'] ) ? $uri_args['port'] : null;
 				$api           = isset( $uri_args['host'] ) ? $uri_args['host'] : null;
-				$api           = ! $port ? $api : "$api:$port";
+				$api           = ! $port ? $api : "{$api}:{$port}";
 				$scheme        = isset( $uri_args['scheme'] ) ? $uri_args['scheme'] : null;
 				$scheme        = null !== $scheme ? $scheme . '://' : 'https://';
 				$path          = isset( $uri_args['path'] ) ? $uri_args['path'] : null;
@@ -580,12 +580,12 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			$source = untrailingslashit( $source );
 			// phpcs:ignore WordPress.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition
 			while ( false !== ( $file = readdir( $dir ) ) ) {
-				if ( ( '.' !== $file ) && ( '..' !== $file ) && "$source/$file" !== $destination ) {
-					if ( is_dir( "$source/$file" ) ) {
-						$this->move( "$source/$file", "$destination/$file" );
+				if ( ( '.' !== $file ) && ( '..' !== $file ) && "{$source}/{$file}" !== $destination ) {
+					if ( is_dir( "{$source}/{$file}" ) ) {
+						$this->move( "{$source}/{$file}", "{$destination}/{$file}" );
 					} else {
-						copy( "$source/$file", "$destination/$file" );
-						unlink( "$source/$file" );
+						copy( "{$source}/{$file}", "{$destination}/{$file}" );
+						unlink( "{$source}/{$file}" );
 					}
 				}
 			}
