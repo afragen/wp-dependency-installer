@@ -675,9 +675,9 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 						'<div class="%1$s" data-dismissible="%2$s"><p><strong>[%3$s]</strong> %4$s%5$s</p></div>',
 						esc_attr( $class ),
 						esc_attr( $dismissible ),
-						esc_attr( $label ),
-						esc_attr( $message ),
-						esc_attr( $action )
+						esc_html( $label ),
+						esc_html( $message ),
+						esc_html( $action )
 					);
 				}
 			}
@@ -752,7 +752,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			 * @param bool $display show plugin row meta.
 			 */
 			if ( apply_filters( 'wp_dependency_required_row_meta', true ) ) {
-				print 'jQuery("tr[data-plugin=\'' . esc_attr( $plugin_file ) . '\'] .plugin-version-author-uri").append("<br><br><strong>' . esc_html__( 'Required by:' ) . '</strong> ' . $this->get_dependency_sources( $plugin_file ) . '");';
+				print 'jQuery("tr[data-plugin=\'' . esc_attr( $plugin_file ) . '\'] .plugin-version-author-uri").append("<br><br><strong>' . esc_html__( 'Required by:' ) . '</strong> ' . esc_html( $this->get_dependency_sources( $plugin_file ) ) . '");';
 			}
 			print 'jQuery(".inactive[data-plugin=\'' . esc_attr( $plugin_file ) . '\']").attr("class", "active");';
 			print 'jQuery(".active[data-plugin=\'' . esc_attr( $plugin_file ) . '\'] .check-column input").remove();';
