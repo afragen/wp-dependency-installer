@@ -679,7 +679,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 						esc_attr( $dismissible ),
 						esc_html( $label ),
 						esc_html( $message ),
-						esc_html( $action )
+						$action // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 					);
 				}
 			}
