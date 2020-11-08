@@ -343,8 +343,10 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * AJAX router.
 		 */
 		public function ajax_router() {
-			$method    = isset( $_POST['method'] ) ? wp_unslash( $_POST['method'] ) : '';
-			$slug      = isset( $_POST['slug'] ) ? wp_unslash( $_POST['slug'] ) : '';
+			// phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$method = isset( $_POST['method'] ) ? wp_unslash( $_POST['method'] ) : '';
+			$slug   = isset( $_POST['slug'] ) ? wp_unslash( $_POST['slug'] ) : '';
+			// phpcs:enable
 			$whitelist = [ 'install', 'activate', 'dismiss' ];
 
 			if ( in_array( $method, $whitelist, true ) ) {
