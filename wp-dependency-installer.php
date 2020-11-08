@@ -572,25 +572,58 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @return bool|void
 		 */
 		private function move( $source, $destination ) {
-			if ( @rename( $source, $destination ) ) {
+			if ( $this->filesystem_move( $source, $destination ) ) {
 				return true;
 			}
-			$dir = opendir( $source );
-			mkdir( $destination );
-			$source = untrailingslashit( $source );
-			// phpcs:ignore WordPress.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition
-			while ( false !== ( $file = readdir( $dir ) ) ) {
-				if ( ( '.' !== $file ) && ( '..' !== $file ) && "{$source}/{$file}" !== $destination ) {
-					if ( is_dir( "{$source}/{$file}" ) ) {
-						$this->move( "{$source}/{$file}", "{$destination}/{$file}" );
-					} else {
-						copy( "{$source}/{$file}", "{$destination}/{$file}" );
-						unlink( "{$source}/{$file}" );
+			if ( is_dir( $destination ) && rename( $source, $destination ) ) {
+				return true;
+			}
+			// phpcs:ignore WordPress.CodeAnalysis.AssignmentInCondition.Found, Squiz.PHP.DisallowMultipleAssignments.FoundInControlStructure
+			if ( $dir = opendir( $source ) ) {
+				if ( ! file_exists( $destination ) ) {
+					mkdir( $destination );
+				}
+				$source = untrailingslashit( $source );
+				// phpcs:ignore WordPress.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition
+				while ( false !== ( $file = readdir( $dir ) ) ) {
+					if ( ( '.' !== $file ) && ( '..' !== $file ) && "{$source}/{$file}" !== $destination ) {
+						if ( is_dir( "{$source}/{$file}" ) ) {
+							$this->move( "{$source}/{$file}", "{$destination}/{$file}" );
+						} else {
+							copy( "{$source}/{$file}", "{$destination}/{$file}" );
+							unlink( "{$source}/{$file}" );
+						}
 					}
 				}
+				$iterator = new \FilesystemIterator( $source );
+				if ( ! $iterator->valid() ) { // True if directory is empty.
+					rmdir( $source );
+				}
+				closedir( $dir );
+
+				return true;
 			}
-			@rmdir( $source );
-			closedir( $dir );
+
+			return false;
+		}
+
+		/**
+		 * Non-direct filesystem move.
+		 *
+		 * @uses $wp_filesystem->move() when FS_METHOD is not 'direct'
+		 *
+		 * @param string $source      File path of source.
+		 * @param string $destination File path of destination.
+		 *
+		 * @return bool|void True on success, false on failure.
+		 */
+		public function filesystem_move( $source, $destination ) {
+			global $wp_filesystem;
+			if ( 'direct' !== $wp_filesystem->method ) {
+				return $wp_filesystem->move( $source, $destination );
+			}
+
+			return false;
 		}
 
 		/**
