@@ -179,7 +179,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				$uri_args      = parse_url( $uri ); // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url
 				$port          = isset( $uri_args['port'] ) ? $uri_args['port'] : null;
 				$api           = isset( $uri_args['host'] ) ? $uri_args['host'] : null;
-				$api           = ! $port ? $api : "$api:$port";
+				$api           = ! $port ? $api : "{$api}:{$port}";
 				$scheme        = isset( $uri_args['scheme'] ) ? $uri_args['scheme'] : null;
 				$scheme        = null !== $scheme ? $scheme . '://' : 'https://';
 				$path          = isset( $uri_args['path'] ) ? $uri_args['path'] : null;
@@ -277,6 +277,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 					$this->modify_plugin_row( $slug );
 				}
 
+				// phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedIf
 				if ( $this->is_active( $slug ) ) {
 					// Do nothing.
 				} elseif ( $this->is_installed( $slug ) ) {
@@ -343,13 +344,15 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * AJAX router.
 		 */
 		public function ajax_router() {
-			$method    = isset( $_POST['method'] ) ? $_POST['method'] : '';
-			$slug      = isset( $_POST['slug'] ) ? $_POST['slug'] : '';
+			// phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$method = isset( $_POST['method'] ) ? wp_unslash( $_POST['method'] ) : '';
+			$slug   = isset( $_POST['slug'] ) ? wp_unslash( $_POST['slug'] ) : '';
+			// phpcs:enable
 			$whitelist = [ 'install', 'activate', 'dismiss' ];
 
 			if ( in_array( $method, $whitelist, true ) ) {
 				$response = $this->$method( $slug );
-				echo $response['message'];
+				esc_html_e( $response['message'] );
 			}
 			wp_die();
 		}
@@ -572,25 +575,58 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @return bool|void
 		 */
 		private function move( $source, $destination ) {
-			if ( @rename( $source, $destination ) ) {
+			if ( $this->filesystem_move( $source, $destination ) ) {
 				return true;
 			}
-			$dir = opendir( $source );
-			mkdir( $destination );
-			$source = untrailingslashit( $source );
-			// phpcs:ignore WordPress.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition
-			while ( false !== ( $file = readdir( $dir ) ) ) {
-				if ( ( '.' !== $file ) && ( '..' !== $file ) && "$source/$file" !== $destination ) {
-					if ( is_dir( "$source/$file" ) ) {
-						$this->move( "$source/$file", "$destination/$file" );
-					} else {
-						copy( "$source/$file", "$destination/$file" );
-						unlink( "$source/$file" );
+			if ( is_dir( $destination ) && rename( $source, $destination ) ) {
+				return true;
+			}
+			// phpcs:ignore WordPress.CodeAnalysis.AssignmentInCondition.Found, Squiz.PHP.DisallowMultipleAssignments.FoundInControlStructure
+			if ( $dir = opendir( $source ) ) {
+				if ( ! file_exists( $destination ) ) {
+					mkdir( $destination );
+				}
+				$source = untrailingslashit( $source );
+				// phpcs:ignore WordPress.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition
+				while ( false !== ( $file = readdir( $dir ) ) ) {
+					if ( ( '.' !== $file ) && ( '..' !== $file ) && "{$source}/{$file}" !== $destination ) {
+						if ( is_dir( "{$source}/{$file}" ) ) {
+							$this->move( "{$source}/{$file}", "{$destination}/{$file}" );
+						} else {
+							copy( "{$source}/{$file}", "{$destination}/{$file}" );
+							unlink( "{$source}/{$file}" );
+						}
 					}
 				}
+				$iterator = new \FilesystemIterator( $source );
+				if ( ! $iterator->valid() ) { // True if directory is empty.
+					rmdir( $source );
+				}
+				closedir( $dir );
+
+				return true;
 			}
-			@rmdir( $source );
-			closedir( $dir );
+
+			return false;
+		}
+
+		/**
+		 * Non-direct filesystem move.
+		 *
+		 * @uses $wp_filesystem->move() when FS_METHOD is not 'direct'
+		 *
+		 * @param string $source      File path of source.
+		 * @param string $destination File path of destination.
+		 *
+		 * @return bool|void True on success, false on failure.
+		 */
+		public function filesystem_move( $source, $destination ) {
+			global $wp_filesystem;
+			if ( 'direct' !== $wp_filesystem->method ) {
+				return $wp_filesystem->move( $source, $destination );
+			}
+
+			return false;
 		}
 
 		/**
@@ -638,7 +674,14 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 					$dismissible = empty( $timeout ) ? '' : sprintf( 'dependency-installer-%1$s-%2$s', esc_attr( $dependency ), esc_attr( $timeout ) );
 				}
 				if ( class_exists( '\PAnD' ) && \PAnD::is_admin_notice_active( $dismissible ) ) {
-					printf( '<div class="%1$s" data-dismissible="%2$s"><p><strong>[%3$s]</strong> %4$s%5$s</p></div>', $class, $dismissible, $label, $message, $action );
+					printf(
+						'<div class="%1$s" data-dismissible="%2$s"><p><strong>[%3$s]</strong> %4$s%5$s</p></div>',
+						esc_attr( $class ),
+						esc_attr( $dismissible ),
+						esc_html( $label ),
+						esc_html( $message ),
+						$action // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					);
 				}
 			}
 		}
@@ -712,10 +755,10 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			 * @param bool $display show plugin row meta.
 			 */
 			if ( apply_filters( 'wp_dependency_required_row_meta', true ) ) {
-				print 'jQuery("tr[data-plugin=\'' . $plugin_file . '\'] .plugin-version-author-uri").append("<br><br><strong>' . esc_html__( 'Required by:' ) . '</strong> ' . $this->get_dependency_sources( $plugin_file ) . '");';
+				print 'jQuery("tr[data-plugin=\'' . esc_attr( $plugin_file ) . '\'] .plugin-version-author-uri").append("<br><br><strong>' . esc_html__( 'Required by:' ) . '</strong> ' . esc_html( $this->get_dependency_sources( $plugin_file ) ) . '");';
 			}
-			print 'jQuery(".inactive[data-plugin=\'' . $plugin_file . '\']").attr("class", "active");';
-			print 'jQuery(".active[data-plugin=\'' . $plugin_file . '\'] .check-column input").remove();';
+			print 'jQuery(".inactive[data-plugin=\'' . esc_attr( $plugin_file ) . '\']").attr("class", "active");';
+			print 'jQuery(".active[data-plugin=\'' . esc_attr( $plugin_file ) . '\'] .check-column input").remove();';
 			print '</script>';
 		}
 
@@ -826,6 +869,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 	 * Class WPDI_Plugin_Installer_Skin
 	 */
 	class WPDI_Plugin_Installer_Skin extends Plugin_Installer_Skin {
+		// phpcs:disable Squiz.Commenting.FunctionComment.Missing
 		public function header() {
 		}
 
@@ -837,5 +881,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 		public function feedback( $string, ...$args ) {
 		}
+		// phpcs:enable
 	}
 }
