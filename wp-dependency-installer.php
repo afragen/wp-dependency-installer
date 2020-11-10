@@ -277,6 +277,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 					$this->modify_plugin_row( $slug );
 				}
 
+				// phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedIf
 				if ( $this->is_active( $slug ) ) {
 					// Do nothing.
 				} elseif ( $this->is_installed( $slug ) ) {
