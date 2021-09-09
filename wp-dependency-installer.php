@@ -281,17 +281,17 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 				if ( $this->is_active( $slug ) ) {
 					// Do nothing.
 				} elseif ( $this->is_installed( $slug ) ) {
-					if ( $is_required ) {
-						$this->notices[] = $this->activate( $slug );
-					} else {
+					//if ( $is_required ) {
+					//	$this->notices[] = $this->activate( $slug );
+					//} else {
 						$this->notices[] = $this->activate_notice( $slug );
-					}
+					//}
 				} else {
-					if ( $is_required ) {
-						$this->notices[] = $this->install( $slug );
-					} else {
+					//if ( $is_required ) {
+					//	$this->notices[] = $this->install( $slug );
+					//} else {
 						$this->notices[] = $this->install_notice( $slug );
-					}
+					//}
 				}
 
 				/**
@@ -446,17 +446,17 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			}
 
 			wp_cache_flush();
-			if ( $this->is_required( $slug ) ) {
-				$this->activate( $slug );
-
-				return [
-					'status'  => 'updated',
-					'slug'    => $slug,
-					/* translators: %s: Plugin name */
-					'message' => sprintf( esc_html__( '%s has been installed and activated.' ), $this->config[ $slug ]['name'] ),
-					'source'  => $this->config[ $slug ]['source'],
-				];
-			}
+			//if ( $this->is_required( $slug ) ) {
+			//	$this->activate( $slug );
+//
+			//	return [
+			//		'status'  => 'updated',
+			//		'slug'    => $slug,
+			//		/* translators: %s: Plugin name */
+			//		'message' => sprintf( esc_html__( '%s has been installed and activated.' ), $this->config//[ $slug ]['name'] ),
+			//		'source'  => $this->config[ $slug ]['source'],
+			//	];
+			//}
 
 			if ( true !== $result && 'error' === $result['status'] ) {
 				return $result;
@@ -479,12 +479,20 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 */
 		public function install_notice( $slug ) {
 			$dependency = $this->config[ $slug ];
+			if ( $this->is_required($dependency)){
+				/* translators: %s: Plugin name */
+				$message = sprintf( 'The %1$s plugin is required.' , $dependency['name']);
+			} else {
+				/* translators: %s: Plugin name */
+				$message = sprintf( 'The %1$s plugin is recommended.' , $dependency['name']);
+			}
 
 			return [
 				'action'  => 'install',
 				'slug'    => $slug,
 				/* translators: %s: Plugin name */
-				'message' => sprintf( esc_html__( 'The %s plugin is recommended.' ), $dependency['name'] ),
+				//'message' => sprintf( esc_html__( 'The %s plugin is recommended.' ), $dependency['name'] ),
+				'message' => esc_html__( $message ),
 				'source'  => $dependency['source'],
 			];
 		}
