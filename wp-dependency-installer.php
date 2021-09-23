@@ -96,7 +96,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			add_action( 'wp_ajax_dependency_installer', [ $this, 'ajax_router' ] );
 			add_filter( 'http_request_args', [ $this, 'add_basic_auth_headers' ], 15, 2 );
 
-			new WP_Dismiss_Notice();
+			new \WP_Dismiss_Notice();
 		}
 
 		/**
