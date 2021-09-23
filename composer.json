@@ -25,7 +25,7 @@
   "prefer-stable": true,
   "require": {
     "php": ">=5.6",
-    "afragen/wp-dismiss-notice": "^0.1"
+    "afragen/wp-dismiss-notice": "*"
   },
   "support": {
     "issues": "https://github.com/afragen/wp-dependency-installer/issues",
