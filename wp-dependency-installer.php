@@ -96,8 +96,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			add_action( 'wp_ajax_dependency_installer', [ $this, 'ajax_router' ] );
 			add_filter( 'http_request_args', [ $this, 'add_basic_auth_headers' ], 15, 2 );
 
-			// Initialize Persist admin Notices Dismissal dependency.
-			add_action( 'admin_init', [ 'PAnD', 'init' ] );
+			new \WP_Dismiss_Notice();
 		}
 
 		/**
@@ -673,7 +672,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 					$dependency  = dirname( $notice['slug'] );
 					$dismissible = empty( $timeout ) ? '' : sprintf( 'dependency-installer-%1$s-%2$s', esc_attr( $dependency ), esc_attr( $timeout ) );
 				}
-				if ( class_exists( '\PAnD' ) && \PAnD::is_admin_notice_active( $dismissible ) ) {
+				if ( \WP_Dismiss_Notice::is_admin_notice_active( $dismissible ) ) {
 					printf(
 						'<div class="%1$s" data-dismissible="%2$s"><p><strong>[%3$s]</strong> %4$s%5$s</p></div>',
 						esc_attr( $class ),
