@@ -60,6 +60,13 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		private $notices;
 
 		/**
+		 * Holds nonce.
+		 *
+		 * @var $nonce
+		 */
+		protected static $nonce;
+
+		/**
 		 * Factory.
 		 *
 		 * @param string $caller File path to calling plugin/theme.
@@ -81,6 +88,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		private function __construct() {
 			$this->config  = [];
 			$this->notices = [];
+			static::$nonce = wp_create_nonce( 'wp-dependency-installer' );
 		}
 
 		/**
@@ -343,10 +351,12 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * AJAX router.
 		 */
 		public function ajax_router() {
-			// phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-			$method = isset( $_POST['method'] ) ? wp_unslash( $_POST['method'] ) : '';
-			$slug   = isset( $_POST['slug'] ) ? wp_unslash( $_POST['slug'] ) : '';
-			// phpcs:enable
+			if ( ! wp_verify_nonce( static::$nonce, 'wp-dependency-installer' ) ) {
+				return;
+			}
+
+			$method    = isset( $_POST['method'] ) ? sanitize_text_field( wp_unslash( $_POST['method'] ) ) : '';
+			$slug      = isset( $_POST['slug'] ) ? sanitize_text_field( wp_unslash( $_POST['slug'] ) ) : '';
 			$whitelist = [ 'install', 'activate', 'dismiss' ];
 
 			if ( in_array( $method, $whitelist, true ) ) {
@@ -679,7 +689,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 						esc_attr( $dismissible ),
 						esc_html( $label ),
 						esc_html( $message ),
-						$action // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+						esc_html( $action )
 					);
 				}
 			}
