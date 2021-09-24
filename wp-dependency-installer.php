@@ -421,7 +421,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			$this->current_slug = $slug;
 			add_filter( 'upgrader_source_selection', [ $this, 'upgrader_source_selection' ], 10, 2 );
 
-			$skin     = new WPDI_Plugin_Installer_Skin(
+			$skin     = new WP_Dependency_Installer_Skin(
 				[
 					'type'  => 'plugin',
 					'nonce' => wp_nonce_url( $this->config[ $slug ]['download_link'] ),
@@ -860,26 +860,5 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 
 			return $args;
 		}
-	}
-
-	require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
-
-	/**
-	 * Class WPDI_Plugin_Installer_Skin
-	 */
-	class WPDI_Plugin_Installer_Skin extends Plugin_Installer_Skin {
-		// phpcs:disable Squiz.Commenting.FunctionComment.Missing
-		public function header() {
-		}
-
-		public function footer() {
-		}
-
-		public function error( $errors ) {
-		}
-
-		public function feedback( $string, ...$args ) {
-		}
-		// phpcs:enable
 	}
 }
