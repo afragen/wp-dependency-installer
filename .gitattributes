@@ -3,4 +3,4 @@
 .gitattributes export-ignore
 .gitignore export-ignore
 .gitignore composer.lock
-.gitignore /.github
+/.github export-ignore
