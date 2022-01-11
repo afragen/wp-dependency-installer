@@ -60,13 +60,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		private $notices;
 
 		/**
-		 * Holds nonce.
-		 *
-		 * @var $nonce
-		 */
-		protected static $nonce;
-
-		/**
 		 * Factory.
 		 *
 		 * @param string $caller File path to calling plugin/theme.
@@ -88,9 +81,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		private function __construct() {
 			$this->config  = [];
 			$this->notices = [];
-			if ( defined( 'DOING_AJAX' ) && \DOING_AJAX ){
-				static::$nonce = wp_create_nonce( 'wp-dependency-installer' );
-			}
 		}
 
 		/**
@@ -353,12 +343,10 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * AJAX router.
 		 */
 		public function ajax_router() {
-			if ( ! wp_verify_nonce( static::$nonce, 'wp-dependency-installer' ) ) {
-				return;
-			}
-
-			$method    = isset( $_POST['method'] ) ? sanitize_text_field( wp_unslash( $_POST['method'] ) ) : '';
-			$slug      = isset( $_POST['slug'] ) ? sanitize_text_field( wp_unslash( $_POST['slug'] ) ) : '';
+			// phpcs:disable WordPress.Security.NonceVerification.Missing
+			$method = isset( $_POST['method'] ) ? sanitize_text_field( wp_unslash( $_POST['method'] ) ) : '';
+			$slug   = isset( $_POST['slug'] ) ? sanitize_text_field( wp_unslash( $_POST['slug'] ) ) : '';
+			// phpcs:enable
 			$whitelist = [ 'install', 'activate', 'dismiss' ];
 
 			if ( in_array( $method, $whitelist, true ) ) {
