@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6eb29cbcb252aa959651accbe224e802",
+    "content-hash": "522013fc51ab7aee32000de625cce168",
     "packages": [
         {
             "name": "afragen/wp-dismiss-notice",
@@ -59,5 +59,5 @@
         "php": ">=5.6"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.1.0"
+    "plugin-api-version": "2.2.0"
 }
