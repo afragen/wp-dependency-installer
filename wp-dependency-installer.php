@@ -602,9 +602,8 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 *
 		 * @global WP_Filesystem_Base $wp_filesystem WordPress filesystem subclass.
 		 *
-		 * @param string $from        Source directory.
-		 * @param string $to          Destination directory.
-		 *
+		 * @param string $from Source directory.
+		 * @param string $to   Destination directory.
 		 * @return true|WP_Error True on success, WP_Error on failure.
 		 */
 		private function move_dir( $from, $to ) {
@@ -663,7 +662,6 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @global WP_Filesystem_Base $wp_filesystem WordPress filesystem subclass.
 		 *
 		 * @param string $dir The path to invalidate.
-		 *
 		 * @return void
 		 */
 		public function wp_opcache_invalidate_directory( $dir ) {
@@ -687,11 +685,18 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			}
 
 			/*
-			 * Recursively invalidate opcache of nested files.
-			 *
-			 * @param array  $dirlist Array of file/directory information from WP_Filesystem_Base::dirlist().
-			 * @param string $path    Path to directory.
-			 */
+			* Recursively invalidate opcache of files in a directory.
+			*
+			* WP_Filesystem_*::dirlist() returns an array of file and directory information.
+			*
+			* This does not include a path to the file or directory.
+			* To invalidate files within sub-directories, recursion is needed
+			* to prepend an absolute path containing the sub-directory's name.
+			*
+			* @param array  $dirlist Array of file/directory information from WP_Filesystem_Base::dirlist(),
+			*                        with sub-directories represented as nested arrays.
+			* @param string $path    Absolute path to the directory.
+			*/
 			$invalidate_directory = function( $dirlist, $path ) use ( &$invalidate_directory ) {
 				$path = trailingslashit( $path );
 
