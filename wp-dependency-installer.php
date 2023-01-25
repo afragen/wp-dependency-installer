@@ -587,7 +587,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 */
 		public function upgrader_source_selection( $source, $remote_source ) {
 			$new_source = trailingslashit( $remote_source ) . dirname( $this->current_slug );
-			$this->move_dir( $source, $new_source );
+			$this->move_dir( $source, $new_source, true );
 
 			return trailingslashit( $new_source );
 		}
