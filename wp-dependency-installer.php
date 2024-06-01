@@ -440,7 +440,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @return bool|array false or Message.
 		 */
 		public function install( $slug ) {
-			if ( $this->is_installed( $slug ) || ! current_user_can( 'update_plugins' ) ) {
+			if ( $this->is_installed( $slug ) || ! current_user_can( 'install_plugins' ) ) {
 				return false;
 			}
 
@@ -741,7 +741,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 		 * @return bool/string false or Admin notice.
 		 */
 		public function admin_notices() {
-			if ( ! current_user_can( 'update_plugins' ) ) {
+			if ( ! current_user_can( 'activate_plugins' ) ) {
 				return false;
 			}
 			foreach ( $this->notices as $notice ) {
