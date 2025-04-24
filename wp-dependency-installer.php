@@ -258,7 +258,7 @@ if ( ! class_exists( 'WP_Dependency_Installer' ) ) {
 			$download_link = get_site_transient( 'wpdi-' . md5( $slug ) );
 
 			if ( ! $download_link ) {
-				$url           = 'https://api.wordpress.org/plugins/info/1.1/';
+				$url           = 'https://api.wordpress.org/plugins/info/1.2/';
 				$url           = add_query_arg(
 					[
 						'action'                        => 'plugin_information',
